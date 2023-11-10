@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="原文链接Geometry Queries.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Geometry Queries(碰撞检测)--翻译">
+<meta property="og:url" content="https://fdcumt.github.io/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="原文链接Geometry Queries.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-11-09T10:04:11.348Z">
+<meta property="article:modified_time" content="2023-11-09T10:04:11.348Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="翻译">
+<meta property="article:tag" content="PhysX">
+<meta property="article:tag" content="Geometry Queries">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/","path":"2023/11/09/UE/移动/碰撞检测-翻译/","title":"Geometry Queries(碰撞检测)--翻译"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Geometry Queries(碰撞检测)--翻译 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%8F%E8%A8%80"><span class="nav-number">2.</span> <span class="nav-text">序言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#raycasts"><span class="nav-number">3.</span> <span class="nav-text">Raycasts</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91spheres-capsules-boxs-convex-meshes%E6%89%93%E5%B0%84%E7%BA%BF"><span class="nav-number">3.1.</span> <span class="nav-text">向Spheres
+Capsules Boxs
+Convex Meshes打射线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91%E5%B9%B3%E9%9D%A2%E6%89%93%E5%B0%84%E7%BA%BF"><span class="nav-number">3.2.</span> <span class="nav-text">向平面打射线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91triangle-meshes%E6%89%93%E5%B0%84%E7%BA%BF"><span class="nav-number">3.3.</span> <span class="nav-text">向Triangle meshes打射线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91heightfields%E6%89%93%E5%B0%84%E7%BA%BF"><span class="nav-number">3.4.</span> <span class="nav-text">向Heightfields打射线</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#overlap"><span class="nav-number">4.</span> <span class="nav-text">overlap</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#penetration-depth"><span class="nav-number">5.</span> <span class="nav-text">Penetration Depth</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sweeps"><span class="nav-number">6.</span> <span class="nav-text">Sweeps</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#initial-overlaps"><span class="nav-number">6.1.</span> <span class="nav-text">Initial Overlaps</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#precise-sweeps"><span class="nav-number">6.2.</span> <span class="nav-text">Precise Sweeps</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sweeps-against-height-fields"><span class="nav-number">6.3.</span> <span class="nav-text">Sweeps against Height Fields</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pitfalls"><span class="nav-number">6.4.</span> <span class="nav-text">Pitfalls</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#additional-pxgeometryquery-functions"><span class="nav-number">7.</span> <span class="nav-text">Additional PxGeometryQuery
+functions</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pxmeshquery"><span class="nav-number">8.</span> <span class="nav-text">PxMeshQuery</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mesh-overlaps"><span class="nav-number">8.1.</span> <span class="nav-text">Mesh Overlaps</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sweeps-against-triangles"><span class="nav-number">8.2.</span> <span class="nav-text">Sweeps against Triangles</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Geometry Queries(碰撞检测)--翻译 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Geometry Queries(碰撞检测)--翻译
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/" itemprop="url" rel="index"><span itemprop="name">翻译</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/PhysX/" itemprop="url" rel="index"><span itemprop="name">PhysX</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/PhysX/Geometry-Queries/" itemprop="url" rel="index"><span itemprop="name">Geometry Queries</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>21 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>原文链接<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html">Geometry
+Queries</a>.</p>
+<span id="more"></span>
+<h1 id="前言">前言</h1>
+<p><code>solid half-space</code>:
+我对<code>solid half-space</code>的理解是: 正常封闭型固体分成内部和外部,
+<code>half-space geometry</code>表示外部与外界相交,
+内部也能与外部相交的几何体.
+例如平面就可以被当做<code>solid half-space</code>.</p>
+<p><code>SPU</code>和<code>PPU</code>是什么? 解释:<a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/99446588">PS3中的处理器核心</a>.</p>
+<h1 id="序言">序言</h1>
+<p>这篇文章介绍使用PhysX处理独立几何体的碰撞和形状查询.
+碰撞和场景查询形成对比, 后者碰撞或者查询场景中所有的对象.
+有四种主要的几何<code>Geometry Query</code>:</p>
+<ul>
+<li><code>Raycasts(Raycast Queries)</code>: 射线是否与几何体相交</li>
+<li><code>Sweeps(Sweep Queries)</code>: 沿着直线移动一个几何体,
+找到与之相交的几何体的第一个点</li>
+<li><code>Overlaps(Overlap Queries)</code>: 决定两个结合体怎么相交.</li>
+<li>渗入深度计算(<code>minimal translational distance queries</code>,
+缩写<code>MTD</code>):
+查找能使两个<code>Overlap</code>的几何体分开的最小距离的方向.</li>
+</ul>
+<p>另外,
+<code>PhysX</code>提供一个<code>Geometry Object</code>的计算<code>AABB</code>的方法,
+以及计算一个点到<code>Geometry Object</code>的距离.</p>
+<p>以下所有函数中,
+<code>Geometry Object</code>都是以<code>PxGeometry structure</code>定义形状,
+以<code>PxTransform structure</code>定义姿势的.
+所有的<code>Transform</code>和<code>Vector</code>都被解释为在任意空间,
+并且返回该空间中的结果.</p>
+<h1 id="raycasts">Raycasts</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryRaycast-1696640665770-26.png" /></p>
+<p><code>Raycast Query</code>:沿着一条线段追踪一个点,
+并记录与几何体表面相交的信息.
+<code>PhysX</code>支持向所有几何体打射线.</p>
+<p>下面的代码举例说明如何使用<code>Raycast Query</code>:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">PxRaycastHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxU32</span> maxHits = <span class="number">1</span>;</span><br><span class="line">bool anyHit = <span class="literal">false</span>;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eUV</span>;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:raycast</span>(origin, unitDir,</span><br><span class="line">                                          geom, pose,</span><br><span class="line">                                          maxDist,</span><br><span class="line">                                          hitFlags,</span><br><span class="line">                                          maxHits, &amp;hitInfo, anyHit);</span><br></pre></td></tr></table></figure>
+<p>对参数的解释如下:</p>
+<ul>
+<li><code>Origin</code>: 射线起始位置.</li>
+<li><code>unitDir</code>: 定义射线方向的单位向量.</li>
+<li><code>maxDist</code>: 沿射线搜寻的最大距离.
+<code>maxDist</code>必须在<span class="math inline">\([0,
+inf]\)</span>范围之内. 如果1<code>maxDist</code>为0,
+只有当射线起始点在图形内部才会返回一个<code>hit</code>,
+下面对每个几何体进行详细说明.</li>
+<li><code>geom</code>: 被测试的几何体.</li>
+<li><code>pose</code>: 被测试几何体的位置</li>
+<li><code>hitFlag</code>: 指定查询应返回的值, 以及处理查询的选项.</li>
+<li><code>maxHits</code>: 返回的最大<code>hit</code>数量.</li>
+<li><code>hitInfo</code>: 指定射线结果存储的地方,
+即<code>PxRaycastHit</code>结构体.</li>
+<li><code>anyHit</code>: 已废弃.
+它等价于<code>PxHitFlag::eMESH_ANY</code>.
+应该使用<code>PxHitFlag::eMESH_ANY</code>.</li>
+</ul>
+<p>返回结果为交互的数量. 每个交互的信息,
+都会用<code>PxRaycastHit</code>存储. 结构体属性如下:</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PxRigidActor*   actor;</span><br><span class="line">PxShape*        <span class="keyword">shape;</span></span><br><span class="line"><span class="keyword"></span>PxVec3          position;</span><br><span class="line">PxVec3          <span class="keyword">normal;</span></span><br><span class="line"><span class="keyword"></span>PxF32           <span class="keyword">distance;</span></span><br><span class="line"><span class="keyword"></span>PxHitFlags      flags;</span><br><span class="line">PxU32           faceIndex;</span><br><span class="line">PxF32           u, v;</span><br></pre></td></tr></table></figure>
+<p>某些字段是可选的, <code>flag</code>字段指明哪些成员会被填充到结果中.
+如果在输入中设置了相应的字段, 该字段将被填充到输出结构中. 例如,
+如果<code>hitFlags</code>被设置成<code>PxHitFlag::ePOSITION</code>,
+查询将会填充<code>PxRaycastHit::position</code>字段,
+并且在<code>PxRaycastHit::flags</code>中填充<code>PxRaycastHit::position</code>值.
+如果<code>Input Flag</code>中没有设置指定的成员,
+输出结果中不一定会包含相应成员的数据.
+如果输入中不包含<code>eNormal</code>和<code>ePosition</code>标记,
+查询会更快.</p>
+<p>对于那些最初不与几何体相交的射线,
+字段填充如下(可选字段和控制它们的标记列在一起):</p>
+<ul>
+<li><p><code>actor</code>和<code>shape</code>不会被填充(这些字段只在<code>scene-level raycast</code>中被使用,
+详情:<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scene-queries">Scene
+Queries</a>).</p></li>
+<li><p><code>position (PxHitFlag::ePOSITION)</code>:相交的位置.</p></li>
+<li><p><code>normal (PxHitFlag::eNORMAL)</code>:交点的表面法线.</p></li>
+<li><p><code>distance (PxHitFlag::eDISTANCE)</code>:
+射线上找到交点的距离.</p></li>
+<li><p><code>flag</code>指明了结构体中哪些字段是可用的.</p></li>
+<li><p><code>faceIndex</code>:射线<code>hit</code>到的<code>face</code>的<code>index</code>.
+对于<code>三角形网格(triangle mesh)</code>和<code>高度场(height field)</code>相交,
+它表示三角形索引. 对于<code>凸多边形(convex mesh)</code>相交,
+它是多边形的索引. 对于其他形状,
+它永远是<code>0xFFFFFFFF</code>.</p></li>
+<li><p><code>u</code>和<code>v</code>(<code>PxHitFlag::eUV</code>)是交点的重心坐标系.
+这些字段(以及标记)只支持<code>mesh</code>(不支持<code>高度场(height field)</code>).</p></li>
+</ul>
+<p><code>Position</code>字段和重心坐标系相关, 公式如下,
+其中<code>v0</code>,
+<code>v1</code>和<code>v2</code>是被<code>hit</code>的三角形的顶点.</p>
+<blockquote>
+<p>position = (1 - u - v)<em>v0 + u</em>v1 + v*v2;</p>
+</blockquote>
+<p>如何在<code>triangle mesh</code>中检索面和顶点数据,
+在<code>凸多边形mesh(convex mesh)</code>和<code>高度场(height field)</code>中使用面和顶点索引,
+详情请查询<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/Geometry.html#geometry">Geometry</a>.</p>
+<p>当射线起点在几何体内部时, 除了应用上面的行为,
+对于某些字段<code>PhysX</code>可能无法计算出有意义的值. 这种情况下,
+这些字段不会发生更改, 并且对应的标记也不会被设置.
+具体细节因几何类型而异, 如下所述.</p>
+<p>射线交点的具体情况如下:</p>
+<h2
+id="向spheres-capsules-boxs-convex-meshes打射线">向<code>Spheres</code>
+<code>Capsules</code> <code>Boxs</code>
+<code>Convex Meshes</code>打射线</h2>
+<p>当射线原点在固体对象(<code>Spheres</code>, <code>Capsules</code>
+<code>Boxs</code>
+<code>Convex Meshes</code>)内部时,最多返回一个结果:</p>
+<ul>
+<li><code>PxHitFlag::eDISTANCE</code>被设置,
+并且<code>distance</code>为0.</li>
+<li><code>PxHitFlag::eNORMAL</code>被设置,
+并且交点法线方向与射线方向相反.</li>
+<li><code>PxHitFlag::ePOSITION</code>被设置,
+并且<code>position (impact point)</code>设置为射线原点.</li>
+</ul>
+<p>如果射线的起点和终点与物体表面非常近,
+它有可能被看做成<code>surface</code>的任何一边(<code>side</code>).</p>
+<h2 id="向平面打射线">向平面打射线</h2>
+<p>对于射线检测,
+会把平面当做只有半个空间(<code>half-space</code>)的固体,
+(和<code>overlap</code>不同, <strong>为什么不同?</strong>).
+大多数情况下会返回一个结果, 如果射线原点在平面的后边,
+即使射线和平面相交, 也不会有<code>hit</code>点.</p>
+<p>如果射线的起始和结束点与平面非常接近,
+它可能会被当做平面的任何一边.</p>
+<h2
+id="向triangle-meshes打射线">向<code>Triangle meshes</code>打射线</h2>
+<p>把<code>triangle meshes</code>当做非常薄的三角形面而不是固体对象.
+可以通过配置返回一个任意<code>hit</code>点,
+或者很多个<code>hit</code>点.</p>
+<ul>
+<li>如果<code>maxHits</code>为1,
+并且没有设置<code>PxHitFlag::eMESH_ANY</code>(或者<code>anyHit</code>为<code>true</code>),
+查询将会返回最近的交点.</li>
+<li>如果<code>maxHits</code>为1,
+并设置了<code>PxHitFlag::eMESH_ANY</code>(并且<code>anyHit</code>为<code>false</code>),
+查询将会返回任意<code>hit</code>点.
+对于<code>line of sight</code>或者<code>shadow ray</code>而言,
+使用它就可以完全可以知道射线是否<code>hit</code>到<code>mesh</code>.</li>
+<li>如果如果<code>maxHit</code>大于1, 查询将会返回多个交点,
+最多为<code>maxHits</code>个. 如果交点个数超过<code>maxHits</code>,
+无法保证结果中包含最近的<code>hit</code>. 使用示例:
+击中多个三角行的穿墙(<code>wall-piercing</code>)子弹,
+或者要求特定的过滤. 注意,
+在这些例子中必须使用<code>PxHitFlag::eMESH_MULTIPLE</code>.
+还要注意如果<code>hit</code>点彼此非常接近,
+<code>SDK</code>默认返回第一个<code>found</code>到的<code>hit</code>结果.</li>
+</ul>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+<span style="color:red;">通常<em>any hit</em> 比<em>closest hit</em>
+更快, <em>closest hit</em> 比<em>multiple hits</em>更快, 即:<em>any
+hit</em> 快于<em>closest hit</em> 快于<em>multiple hits</em>.
+</span><br>
+</td>
+</tr>
+</table>
+<p>默认情况下, 背面<code>hits</code>(<code>back face hits</code>,
+三角形外向法线和射线的点乘(<code>dot</code>)结果为负)会被剔除,
+<del>所以对于任何命中上述法线的三角形, 与射线方向的点乘结果都为负</del>
+如果三角形正面法线(<code>outward-face-normal</code>)与射线的点乘为负,
+则<code>hit</code>点被剔除.</p>
+<ul>
+<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>或者<code>PxHitFlag::eMESH_BOTH_SIDES</code>被设置,
+则禁止剔除.</li>
+<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>被设置,
+<code>back face hit</code>将会把最终结果的法线反转.</li>
+</ul>
+<p>这句话太难翻译直接贴原文了(<code>reported-normal</code>不知道怎么翻译):</p>
+<blockquote>
+<p>For example a transparent glass window could be modeled as a
+double-sided mesh, so that a ray would hit either side with the reported
+normal facing opposite to the ray direction. A raycast tracing the path
+of a bullet that may penetrate the front side of a mesh and emerge from
+the back could use <em>eMESH_BOTH_SIDES</em> to find both front and back
+facing triangles even when the mesh is single-sided.</p>
+<p>例如一个类型为<code>double-sided mesh</code>的玻璃窗, so that a ray
+would hit either side with the reported normal facing opposite to the
+ray direction. 有些子弹可以击穿mesh, 模拟这类子弹路径的射线,
+可以使用<code>eMESH_BOTH_SIDES</code>来找正面和背面的三角形,
+即使该mesh是<code>single-side</code>.</p>
+</blockquote>
+<p>下图展示了当单一射线和一个mesh在几个不同的地方相交时,
+不同<code>flag</code>会发生什么.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/RayMeshDS_Permutations-1696640665770-28.png" /></p>
+<p>只针对某些<code>mesh</code>使用<code>PxHitFlag::eMESH_BOTH_SIDES</code>标志位,
+并且该<code>flag</code>在<code>PxQueryFilterCallback</code>中设置.</p>
+<p>如果射线开始和结束的点和三角面非常接近,
+可能会被当成三角形的任何一边(正面/背面).</p>
+<h2 id="向heightfields打射线">向<code>Heightfields</code>打射线</h2>
+<ul>
+<li>处理<code>Heightfields</code>和<code>triangle meshes</code>不同,
+<code>heightfields</code>会一直被当做<code>double side</code>,
+意味着无论射线原点在<code>heightfileds surface</code>的上面或者下面,
+最终的<code>hits</code>都会被注册.</li>
+<li><code>hit normal</code>一直是<code>triangle hit</code>的法线,
+当<code>thickness</code> <span class="math inline">\(&lt;=\)</span> 0,
+朝向(在<code>heightfields</code>空间)<span
+class="math inline">\(+y\)</span>方向; 当<code>thickness</code>大于0,
+朝向(在<code>heightfields</code>空间)<span
+class="math inline">\(-y\)</span>方向.</li>
+<li>除了上述情况,
+<code>heightfields thickness</code>对其他方面没有任何影响. 特殊的,
+固体的<code>heightfield</code>部分不会生成<code>hit</code>.</li>
+<li>当射线<code>hit</code> <code>heightfield</code>时候,
+<code>UVs</code>不会被设置,
+<code>PxHitFlag::eUV</code>标记也不会被设置.</li>
+</ul>
+<h1 id="overlap">overlap</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryOverlap-1696640665770-30.png" /></p>
+<p><code>overlap</code>查询只是简单的查询两个几何体是否重叠了.
+其中一个几何体必须是<code>box</code>,<code>sphere</code>,<code>capsule</code>或者<code>凸多边形</code>,
+另一个几何体可以使任意类型.</p>
+<p>下面代码说明了如何使用<code>overlap</code>查询:</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">bool isOverlapping</span> = overlap(geom0, pose0, geom1, pose1);</span><br></pre></td></tr></table></figure>
+<p><code>overlap</code>不支持<code>hit flag</code>,
+只是返回一个<code>bool</code>类型的结果.</p>
+<ul>
+<li>平面被当做<code>solid half-space</code>:
+任何处于平面下的都被当做<code>volume</code>的一部分.</li>
+<li><code>triangle mesh</code>被当做非常薄的三角形表面,
+而不是固体对象.</li>
+<li><code>heightfield</code>被当做由其厚度挤压成的三角形表面.
+<code>overlap</code>几何体不会与<code>heightfield</code>相交,
+但是挤压空间将会上报<code>hit</code></li>
+</ul>
+<p>如果对于<code>triagnle mesh</code>和<code>heightfield</code>类型不仅仅需要一个<code>bool</code>结果,
+使用<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>
+API.</p>
+<h1 id="penetration-depth">Penetration Depth</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPenetration-1696853091899-1.png" /></p>
+<p>当两个对象相交,
+<code>PhysX</code>能够计算通过平移将二者分开的最小距离和方向(分开的量涉及到<code>MTD</code>,
+即: <code>最小平移距离(minimum translational distance)</code>,
+通过平移将二者分开的长度最小的向量).
+其中一个几何体必须是<code>box</code>, <code>sphere</code>,
+<code>capsule</code>, 或者<code>convex mesh</code>,
+另一个可以是任意类型.</p>
+<p>如下代码阐述了如何使用<code>penetration depth</code>的查询:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> isPenetrating = PxGeometryQuery::<span class="built_in">computePenetration</span>(direction, depth,</span><br><span class="line">                                                         geom0, pose0,</span><br><span class="line">                                                         geom1, pose1);</span><br></pre></td></tr></table></figure>
+<p>参数解释如下:</p>
+<ul>
+<li><code>direction</code>:
+第一个对象通过平移从第二个对象中脱离(<code>depenetrate</code>)出来的方向.</li>
+<li><code>distance</code>:
+第一个对象从第二个对象中脱离(<code>depenetrate</code>)出来的距离.</li>
+<li><code>geom0</code>: 第一个几何体.</li>
+<li><code>pos0</code>: 第一个几何体的<code>transform</code>.</li>
+<li><code>geom1</code>:第二个几何体.</li>
+<li><code>pos1</code>: 第二个几个题的<code>transform</code>.</li>
+</ul>
+<p>如果对象有渗入, 则返回<code>true</code>, 这种情况下,
+会设置其方向和深度字段. 通过平移向量(<span
+class="math inline">\(\vec{D}=\vec{Direction}*depth\)</span>)将二者分离开来.
+如果函数返回<code>true</code>, <code>depth</code>一定<span
+class="math inline">\(&gt;=0\)</span>.
+如果几何体没有<code>overlap</code>, 函数返回<code>false</code>,
+<code>direction</code>和<code>depth</code>都不会进行设置.</p>
+<p>对于简单(<code>convex</code>)的形状, 返回结果是精确的.</p>
+<p>对于<code>mesh</code>和<code>heightfields</code>,
+在<code>PxExtensions</code>中, 将使用的循环算法和专用函数暴露出来了.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">PxVec3 direction = <span class="built_in">PxComputeMeshPenetration</span>(maxIter,</span><br><span class="line">                                            geom, geomPose,</span><br><span class="line">                                            meshGeom, meshPose,</span><br><span class="line">                                            nb);</span><br><span class="line"></span><br><span class="line">PxVec3 direction = <span class="built_in">PxComputeHeightFieldPenetration</span>(maxIter,</span><br><span class="line">                                                   geom, geomPose,</span><br><span class="line">                                                   heightFieldGeom, heightFieldPose,</span><br><span class="line">                                                   nb);</span><br></pre></td></tr></table></figure>
+<p>这里, <code>maxIter</code>是算法的最大循环次数,
+并且<code>nb</code>是真正的循环执行数量,
+并且作为<code>output</code>变量输出出来.
+如果检测没有<code>overlap</code>, <code>nb</code>将会被设置成0.
+代码尝试至多<code>maxIter</code>此循环,
+但是如果找到<code>depenetration</code>向量, 可能会提前返回. 通常,
+<code>maxIter = 4</code>就会得出一个不错的结果.</p>
+<p>这些函数只会计算出一个近似的<code>depenetration</code>向量,
+当在几何体和<code>mesh/heightfield</code>之间的<code>overlap</code>数量比较小的时候,
+会工作良好. 特别的, 当对象中心在三角形背面时, 将会忽略与三角形的交互.
+如果所有相交的三角形都符合上述条件,
+该函数将不会计算<code>MTD</code>向量.</p>
+<h1 id="sweeps">Sweeps</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQuerySweep-1696640665770-34.png" /></p>
+<p><code>sweep query</code>追踪一个对象横穿空间的过程,
+并找到在这个过程中与第二个几何体碰撞的点. 并且上报关于碰撞点的信息.
+<code>PhysX</code>只支持第一个对象(贯穿空间的那个对象)为<code>sphere</code>,
+<code>box</code>, <code>capsule</code>, 或者<code>convex</code>几何体,
+第二个对象可以是任何类型.</p>
+<p>下面的代码举例说明如何使用<code>sweep query</code>:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">PxSweepHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE</span>;</span><br><span class="line"><span class="title class_">PxReal</span> inflation = <span class="number">0</span>.0f;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:sweep</span>(unitDir, maxDist,</span><br><span class="line">                                        geomToSweep, poseToSweep,</span><br><span class="line">                                        geomSweptAgainst, poseSweptAgainst,</span><br><span class="line">                                        hitInfo,</span><br><span class="line">                                        hitFlags,</span><br><span class="line">                                        inflation);</span><br></pre></td></tr></table></figure>
+<p>这些参数解释如下:</p>
+<ul>
+<li><code>unitDir</code>: 定义<code>sweep</code>的单位向量.</li>
+<li><code>maxDist</code>: 定义了沿着<code>sweep</code>查询的最大距离.
+它必须在<span class="math inline">\([0, inf)\)</span>之间,
+并且通过SDK会被限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.
+当<code>sweep</code>距离为0时, 等价于<code>overlap</code>检测.</li>
+<li><code>geomToSweep</code>: 将要<code>sweep</code>的几何体,
+支持<code>box</code>, <code>sphere</code>, <code>capsule</code>,
+或者<code>convex mesh</code>类型.</li>
+<li><code>PosToSweep</code>:
+用于<code>sweep</code>几何体的初始位置.</li>
+<li><code>geomSweptAgainst</code>:
+<code>sweep against</code>的几何体.</li>
+<li><code>hitInfo</code>: 最终返回的结果.
+一个<code>sweep</code>最多返回一个<code>hit</code>.</li>
+<li><code>hitFlags</code>: 决定<code>sweep</code>将被如何处理,
+如果发现<code>impact</code>点, 会返回对应的数据.</li>
+<li><code>inflation</code>: 以对象表面向外扩展的方式膨胀第一个几何体,
+并将所有角都做成圆角.
+当使用<code>sweep</code>来测试<code>movement</code>是否可用时,
+它用来保证几何体最小的空间边界.</li>
+</ul>
+<p>正如射线检测一样,
+如果某个<code>flag</code>在<code>hitFlags</code>中设置,
+在输出结构体对应的字段会被填充. <code>PxSweepHit</code>的字段如下:</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">PxRigidActor*   actor<span class="comment">;</span></span><br><span class="line">PxShape*        shape<span class="comment">;</span></span><br><span class="line">PxVec3          position<span class="comment">;</span></span><br><span class="line">PxVec3          normal<span class="comment">;</span></span><br><span class="line">PxF32           distance<span class="comment">;</span></span><br><span class="line">PxHitFlags      flags<span class="comment">;</span></span><br><span class="line">PxU32           faceIndex<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>actor</code>和<code>shape</code>:
+<code>actor</code>和<code>shape</code>不会被设置(这些字段只有在<code>scene-level sweep</code>中才会被使用,
+详见: <a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scenequeries"><em>Scene
+Queries</em></a>).</li>
+<li><code>position</code>(<code>PxHitFlag::ePOSITION</code>):
+交点的位置. 当有多个<code>impact</code>点时, 例如两个<code>box</code>,
+面和面相撞, <code>physX</code>将任意选择一个点.
+针对<code>meshes</code>或者<code>height fields</code>类型, 使用函数<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>获取详细信息.</li>
+<li><code>normal</code>(<code>PxHitFlag::eNORMAL</code>):<code>impact</code>点的表面法线.
+他是一个单位向量, 指向被击中对象的外侧, 与<code>sweep</code>方向相反(即:
+<code>sweep</code>方向和<code>impact</code>法线的点乘是负数.).</li>
+<li><code>distance</code>(<code>PxHitFlag::eDISTANCE</code>):沿着射线方向,
+物体与碰撞点的距离.</li>
+<li><code>flag</code>: 指定结构体的哪些字段是可用的.</li>
+<li><code>faceIndex</code>: <code>sweep hit</code>的面索引.
+这个是被击中对象的面, 而不是<code>sweep</code>对象.
+对于和<code>triangle mesh</code>和<code>heightfield</code>的<code>sweep</code>交点,
+它是三角形顶点索引, 与<code>convex mesh</code>的交点,
+它是多边形顶点索引. 对于其他类型, 它是0xffffffff.</li>
+</ul>
+<p>当<code>sweep</code>
+<code>hit</code>到<code>triangle mesh</code>或者<code>convex mesh</code>,
+返回的被选择的三角形如下:</p>
+<ul>
+<li>对于<code>convex</code>和<code>box</code> <code>sweep</code>,
+选择距离最短的三角形.</li>
+<li>对于<code>capsule</code>和<code>sphere</code>,
+最短距离的三角形不一定会被选择, 最短距离在<span
+class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
+选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
+如果这些三角形法线相同, 会随机选择他们中的一个然后返回.</li>
+</ul>
+<p>这些例子中, <code>hit</code>点, 位置(<span
+style="color:red;">例如两个<em>box</em>的面和面<code>sweep</code>会随机选择其中一个点</span>),
+法线(<span
+style="color:red;">对于<code>capsule</code>和<code>sphere</code>,
+最短距离的三角形不一定会被选择, 最短距离在<span
+class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
+选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
+如果这些三角形法线相同,
+会随机选择他们中的一个然后返回.</span>),都会影响最终选择哪个三角形.</p>
+<p>与<code>raycast</code>不同, <code>sweep</code>不支持<code>u</code>,
+<code>v</code>坐标.</p>
+<p>对于几何对象的<code>sweep against</code>:</p>
+<ul>
+<li>平面被当做半个空间的固体,
+也就是说任何在平面后面的物体多会被当做<code>volume</code>的一部分进行<code>sweep against</code>.</li>
+<li>相同的背面剔除规则(应用在<code>raycast</code>上的)也会应用到<code>sweep</code>上,
+需要注意的是,
+不支持<code>eMESH_MULTIPLE</code>和<code>eMESH_BOTH_SIDES</code>.</li>
+</ul>
+<h2 id="initial-overlaps">Initial Overlaps</h2>
+<p>和射线检测相似, 开始就在对象内部,
+两个几何体<code>sweep</code>时候可能就已经相交了. 默认情况下,
+<code>PhysX</code>会检测并上报<code>overlap</code>.
+使用<code>PxSweepHit::hadInitialOverlap()</code>来查看<code>hit</code>是否是<code>initial overlap</code>生成的.</p>
+<p>对于<code>triangle mesh</code>和<code>height field</code>,
+背面剔除在<code>overlap check</code>之前执行,
+因为如果<code>triangle</code>被剔除了,
+就不会上报<code>overlap</code>事件了.</p>
+<p><code>PhysX</code>是否计算<code>MTD</code>由<code>PxHitFlag::eMTD</code>决定.
+如果<code>PxHitFlag::eMTD</code>没有被设置:</p>
+<ul>
+<li><code>distance</code>将被设置成0,
+<code>PxHitFlag::eDISTANCE</code>也会在<code>PxSweepHit</code>结构体中设置.</li>
+<li><code>normal</code>和<code>sweep</code>方向相反,
+并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::eNORMAL</code>会被设置.</li>
+<li><code>position</code>不会被定义,
+并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::ePOSITION</code>不会被设置.</li>
+<li><code>faceIndex</code>是第二个几何对象的面.
+对于<code>heightfield</code>和<code>triangle mesh</code>,
+他是第一个被发现的<code>overlap triangle</code>的索引. 对于其他几何类型,
+将设置为<code>0xffffffff</code>.</li>
+</ul>
+<p>如果<code>PxHitFlag::eMTD</code>被设置,
+<code>hit</code>结果的定义如下:</p>
+<ul>
+<li><code>distance</code>被设置成<code>penetrate</code>的深度,
+<code>PxSweepHit</code>
+中的<code>PxHitFlag::eDISTANCE</code>被设置.</li>
+<li><code>normal</code>被设置成<code>penetrate</code>的方向,
+<code>PxSweepHit</code>中的<code>PxHitFlag::eNORMAL</code>被设置.</li>
+<li><code>position</code>为<code>sweep</code>几何对象上的一个点(即:第一个几何对象参数),
+并且<code>PxSweepHit</code>中的<code>PxHitFlag::ePOSITION</code>会被设置.</li>
+<li><code>faceIndex</code>是第二个几何对象上的面.
+<ul>
+<li>对于<code>convex mesh</code>, 它是最小<code>penetrate</code>的面.
+如果<code>MTD</code>可以通过<code>edge</code>或者<code>convex</code>顶点分离对象,
+将选择法线(面的法线)最接近分开方向的面.</li>
+<li>对于<code>triangle mesh</code>和<code>heightfield</code>,
+它是在<code>depenetration</code>算法最后一次循环中查找到的最后一个<code>penetrate</code>三角形.</li>
+<li>对于其他几何类型,
+<code>faceIndex</code>将会被设置成<code>0xffffffff</code>.</li>
+</ul></li>
+</ul>
+<p>在<code>initial overlap</code>中, 这个标志将会带来额外负担的处理操作.
+另外, 会启用如下限制:</p>
+<ul>
+<li><code>PxHitFlag::eMTD</code>与<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>(见下文)不兼容.
+<code>PxHitFlag::eMTD</code>与他们中的任何一个组合使用都会报错,
+并且与<code>PxHitFlag::eMTD</code>不兼容的标志将被忽略.</li>
+<li>在<code>PS3</code>中,
+<code>PxHitFlag::eMTD</code>不支持<code>SPU(Power Processing Element) sweep</code>.
+如果在<code>SPU sweep</code>中包含了<code>PxHitFlag::eMTD</code>,
+将会报错.
+<code>PPU(Synergistic Processing Elements)</code>完全支持<code>PxHitFlag::eMTD</code>.</li>
+</ul>
+<p>有时使用定制的代码路径测试<code>initial overlap</code>会带来性能消耗.
+有必要保证几何对象不是<code>initially overlapping</code>,
+<code>overlap</code>支持使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>进行检测.
+有一些使用该<code>flag</code>的限制, 详见:<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#sweep-pitfalls"><em>Pitfalls</em></a>.</p>
+<ul>
+<li>当<code>initial overlap</code>几何体处理未定义行为时,
+会使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>标志.</li>
+<li><code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>与<code>zero sweep distance</code>组合使用会导致<code>warning</code>和<code>undefined behavior</code>.</li>
+</ul>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 具有<em>PxHitFlag::eMTD</em>
+flag的<em>sweep</em>使用两种针对三角形的背面剔除. 首先,
+在<em>Sweep</em>方向上被剔除的三角形决定这是否是一个<em>overlap</em>.
+如果检测到<em>overlap</em>,
+他们会进一步检测<em>centroid(面心)</em>是否在三角形后面,
+如果没找到三角形, <em>direction</em>将设置为<em>sweep
+diection</em>的反方向, <em>distance</em>设置为0.
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 大多数情况下, 将第一个几何体平移<em>-normal*distance</em>距离,
+会将对象分开. 尽管可以使用循环<em>depenetration</em>算法找到<em>triangle
+mesh</em>和<em>height field</em>的<em>MTD</em>,
+但是有些情况下<em>MTD</em>可能不会将mesh完全分离开. 这种情况下,
+在应用平移后, 要调用第二次查询.
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 在<em>PhysX
+3.3</em>中一个已知的问题是当<em>eMTD</em>没有设置时, <em>sweep against
+convex mesh</em>的<em>face index</em>是<em>undefined</em>
+</td>
+</tr>
+</table>
+<h2 id="precise-sweeps">Precise Sweeps</h2>
+<p><code>PxHitFlag::ePRECISE_SWEEP</code>允许更加精确的<code>sweep</code>代码(默认情况下使用更快的但是精度不高的解决方案).
+<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>inflation</code>和<code>PxHitFlag::eMTD</code>不兼容.</p>
+<h2 id="sweeps-against-height-fields">Sweeps against Height Fields</h2>
+<ul>
+<li><code>Height field</code>被当做很薄的三角形面, 而不是固体对象.</li>
+<li>厚度不会影响<code>initial overlap</code>检测和点的碰撞.</li>
+<li>对于<code>single height field</code>, 如果厚度小于0,
+<code>hit</code>的法线方向为本地坐标系中的<code>+Y</code>方向,
+如果厚度大于0,
+<code>hit</code>的法线方向为本地坐标系中的<code>-Y</code>方向.</li>
+<li>如果设置了<code>eDOUBLE_SIDED</code>或者<code>eMESH_BOTH_SIDES</code>,
+<code>height field</code>将被认为是双面的.
+<ul>
+<li>返回的<code>hit</code>会一直朝向<code>sweep</code>方向.</li>
+</ul></li>
+<li><code>eMESH_ANY</code>不起作用.</li>
+<li><code>ePRECISE_SWEEP</code>不起作用.</li>
+</ul>
+<h2 id="pitfalls">Pitfalls</h2>
+<p>在使用<code>sweep</code>时候需要注意一些隐患:</p>
+<ul>
+<li>由于精度问题, 当两个对象有非常巨大的大小差异, 会返回错误的结果.</li>
+<li>由于算法不同,
+<code>sweep query</code>可能不仅仅检测到一个<code>overlap</code>查询,
+而是会检测一个不同的<code>overlapping</code>形状的初始化集合.
+执行一个<code>overlap check</code>还不足以判定<code>PxHitFlag::eIGNORE_INITIAL_OVERLAP</code>标志位的安全性,
+需要一系列的<code>overlap/sweep/penetration depth</code>信息的应用程序应该使用带有<code>initial overlap testing</code>和<code>PxHitFlag::eMTD</code>标志的<code>sweep check</code>.</li>
+</ul>
+<h1 id="additional-pxgeometryquery-functions">Additional PxGeometryQuery
+functions</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPointDistance-1696643163649-41.png" /></p>
+<p>下面的函数计算点和几何体之间的距离. 只支持<code>box</code>,
+<code>sphere</code>,
+<code>capsule</code>和<code>convex shape</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PxReal dist = PxGeometryQuery::<span class="built_in">pointDistance</span>(point, geom, pose, closestPoint);</span><br></pre></td></tr></table></figure>
+<p><code>closestPoint</code>是一个可选地输出参数, 它返回最近的点.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryWorldBounds-1696643311796-44.png" /></p>
+<p>下面的函数计算几何体轴对齐的包围盒(<code>AABB</code>),
+并返回它的姿态.</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PxBounds3 bounds = PxGeometryQuery::get<span class="constructor">WorldBounds(<span class="params">geom</span>, <span class="params">pose</span>, <span class="params">inflation</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>AABB</code>包围盒被<code>inflation</code>缩放,
+如果没有显式指定, 它的值为`<code>1.01f</code>.</p>
+<h1 id="pxmeshquery">PxMeshQuery</h1>
+<p>对于<code>triangle mesh</code>, <code>height field overlap</code>,
+以及对<code>triangle</code>数组的<code>sweep</code>,
+<code>PhysX</code>提供额外的函数可以获得多个结果.
+只有<code>boxes</code>, <code>spheres</code>,
+<code>capsules</code>与<code>mesh</code>或<code>heightFields</code>被测试的时候使用这些函数.</p>
+<h2 id="mesh-overlaps">Mesh Overlaps</h2>
+<p>下面的代码举例说明了如何处理<code>mesh triangle</code>与给定球状体积:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PxU32 triangleIndexBuffer[bufferSize];</span><br><span class="line">PxU32 startIndex = <span class="number">0</span>;</span><br><span class="line"><span class="type">bool</span> bufferOverflowOccured = <span class="literal">false</span>;</span><br><span class="line">PxU32 nbTriangles = PxMeshQuery::<span class="built_in">findOverlapTriangleMesh</span>(sphereGeom, spherePose,</span><br><span class="line">                                                         meshGeom, meshPose,</span><br><span class="line">                                                         triangleIndexBuffer, bufferSize,</span><br><span class="line">                                                         startIndex, bufferOverflowOccured);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(PxU32 i=<span class="number">0</span>; i &lt; nbTriangles; i++)</span><br><span class="line">&#123;</span><br><span class="line">    PxTriangle tri;</span><br><span class="line">    PxU32 vertexIndices[<span class="number">3</span>];</span><br><span class="line">    PxMeshQuery::<span class="built_in">getTriangle</span>(meshGeom, meshPose, triangleIndexBuffer[i], tri, vertexIndices);</span><br><span class="line"></span><br><span class="line">     ...  <span class="comment">// process triangle info</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>findOverlapTriangleMesh</code>函数用于额外提取三角形索引.</p>
+<ul>
+<li><code>sphereGeom</code>和<code>spherePose</code>指定<code>overlap</code>的区域.</li>
+<li><code>meshGeom</code>和<code>meshPose</code>指定<code>mesh</code>和它的姿态.</li>
+<li><code>triangleIndexBuffer</code>和<code>triangleSize</code>指定<code>buffer</code>以及<code>buffer</code>的大小.</li>
+<li>当<code>buffer</code>溢出时,
+<code>startIndex</code>用于重新启动查询. 在这里例子中,
+为了查询更多的三角形集合, 将该参数设置为目前已检索的数量.</li>
+<li>当查询的结果超过<code>buffer</code>的大小,
+会设置<code>bufferOverflowOccured</code>标志位.</li>
+</ul>
+<p><code>height field</code>也存在类似的查询函数.</p>
+<h2 id="sweeps-against-triangles">Sweeps against Triangles</h2>
+<p>有时候, 例如, 当使用<code>mesh overlap API</code>时,
+它会很方便的与一组三角形进行<code>sweep</code>. 为此,
+<code>PhysX</code>提供指定的函数. 函数签名如下:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">sweep</span><span class="params">(<span class="type">const</span> PxVec3&amp; unitDir,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal distance,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxGeometry&amp; geom,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTransform&amp; pose,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxU32 triangleCount,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTriangle* triangles,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxSweepHit&amp; sweepHit,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxHitFlags hitFlags = PxHitFlag::eDEFAULT,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxU32* cachedIndex = <span class="literal">NULL</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal inflation = <span class="number">0.0f</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">bool</span> doubleSided = <span class="literal">false</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数解释如下:</p>
+<ul>
+<li><code>unitDir</code>, <code>distance</code>,
+<code>geom</code>和<code>pose</code>与<code>PxGeometryQuery::sweep()</code>函数头四个参数一样.
+<code>distance</code>的范围限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.</li>
+<li><code>triangleCount</code>为包含在<code>buffer</code>中的三角形数量.</li>
+<li><code>triangles</code>为三角形的<code>buffer</code>.</li>
+<li><code>hitFlags</code>指定输出所需信息.</li>
+<li><code>cachedIndex</code>, 如果设置了,
+则该值表示第一个测试的三角形索引.
+当重复的与三角形集合<code>sweep</code>时, 它非常有用.</li>
+<li><code>inflation</code>与函数<code>PxGeometryQuery::sweep()</code>中的<code>inflation</code>参数一致.</li>
+<li><code>doubleSided</code>表示输入的三角形是否为<code>double-side</code>.
+它和<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>标志是等价的.
+它支持背面剔除, 对于任何<code>hit</code>,
+返回的面法线与<code>sweep</code>方向相反(详见:<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#raycasts-vs-meshes"><em>Raycasts
+against Triangle Meshes</em></a>).</li>
+</ul>
+<p>与其他查询相比, 该函数有额外的限制:</p>
+<ul>
+<li>几何体类型必须是<code>sphere</code>,
+<code>capsule</code>或者<code>box</code>.
+不支持<code>convex</code>几何体.</li>
+<li>该函数返回单一<code>hit</code>.
+不支持<code>multiple hits</code>(尤其是<code>PxHitFlag::eMESH_MULTIPLE</code>).</li>
+<li>该函数总是返回最近的点.</li>
+<li>只支持 <code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>,
+<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eMESH_BOTH_SIDES</code>.</li>
+<li>在返回的<code>PxSweepHit</code>结构体中,
+不会设置有效标志位(<code>PxHitFlag::ePOSITION</code>,
+<code>PxHitFlag::eNORMAL</code>, <code>PxHitFlag::eDISTANCE</code>,
+<code>PxHitFlag::eUV</code>)</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag"># 翻译</a>
+              <a href="/tags/PhysX/" rel="tag"># PhysX</a>
+              <a href="/tags/Geometry-Queries/" rel="tag"># Geometry Queries</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/" rel="prev" title="Channel的创建和销毁">
+                  <i class="fa fa-chevron-left"></i> Channel的创建和销毁
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/" rel="next" title="NetDormancy">
+                  NetDormancy <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">32k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:55</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

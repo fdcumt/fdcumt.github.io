@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="概述 ReplicateActor分成三步: SerializeNewActor+序列化属性+序列化删除的Objs.  其中序列化属性中的属性又分成三类: Actor自身属性+ActorComponent属性+SubObject属性. 每类属性的序列化都会调用同一个函数: FObjectReplicator::ReplicateProperties.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE网络-ReplicationActor">
+<meta property="og:url" content="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicationActor/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="概述 ReplicateActor分成三步: SerializeNewActor+序列化属性+序列化删除的Objs.  其中序列化属性中的属性又分成三类: Actor自身属性+ActorComponent属性+SubObject属性. 每类属性的序列化都会调用同一个函数: FObjectReplicator::ReplicateProperties.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-11-09T10:04:11.352Z">
+<meta property="article:modified_time" content="2023-11-09T10:04:11.352Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="ReplicationActor">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicationActor/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicationActor/","path":"2023/11/09/UE/网络/UE网络-ReplicationActor/","title":"UE网络-ReplicationActor"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE网络-ReplicationActor | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">整体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#serializenewactor"><span class="nav-number">2.1.</span> <span class="nav-text">SerializeNewActor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E5%B1%9E%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">序列化属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%A0%E9%99%A4objs%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">2.3.</span> <span class="nav-text">序列化删除Objs的属性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fobjectreplicator.replicateproperties"><span class="nav-number">3.</span> <span class="nav-text">FObjectReplicator.ReplicateProperties</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#updatechangelistmgr"><span class="nav-number">3.1.</span> <span class="nav-text">UpdateChangelistMgr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mergenotsendchangelist"><span class="nav-number">3.2.</span> <span class="nav-text">MergeNotSendChangeList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mergeresendchangehistory"><span class="nav-number">3.3.</span> <span class="nav-text">MergeResendChangeHistory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#buildsharedserialize"><span class="nav-number">3.4.</span> <span class="nav-text">BuildSharedSerialize</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#customdeltaproperties"><span class="nav-number">3.5.</span> <span class="nav-text">CustomDeltaProperties</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#replicate-queuedunreliable-functions"><span class="nav-number">3.6.</span> <span class="nav-text">Replicate
+Queued(unreliable functions)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%BC%E6%8E%A5contentblock"><span class="nav-number">3.7.</span> <span class="nav-text">拼接ContentBlock</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%A7%A3%E6%9E%90%E6%95%B0%E6%8D%AE"><span class="nav-number">4.</span> <span class="nav-text">客户端解析数据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90serializeactor"><span class="nav-number">4.1.</span> <span class="nav-text">解析SerializeActor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90contentblockheader"><span class="nav-number">4.2.</span> <span class="nav-text">解析ContentBlockHeader</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90netfieldindex"><span class="nav-number">4.3.</span> <span class="nav-text">解析NetFieldIndex</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90property"><span class="nav-number">4.4.</span> <span class="nav-text">解析Property</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">思考</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#actor%E9%A6%96%E6%AC%A1%E5%90%8C%E6%AD%A5%E5%9C%A8%E8%BF%9B%E8%A1%8C%E6%AF%94%E8%BE%83%E6%97%B6%E5%80%99%E5%92%8C%E8%B0%81%E8%BF%9B%E8%A1%8C%E5%AF%B9%E6%AF%94"><span class="nav-number">5.1.</span> <span class="nav-text">Actor首次同步在进行比较时候和谁进行对比?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9Amergenotsendchangelist"><span class="nav-number">5.2.</span> <span class="nav-text">为什么会MergeNotSendChangeList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#freplayoutcmd.relativehandle%E5%92%8Cchangelist%E4%B8%AD%E7%9A%84handle%E6%98%AF%E4%B8%80%E4%B8%AA%E5%90%97"><span class="nav-number">5.3.</span> <span class="nav-text">FRepLayoutCmd.RelativeHandle和ChangeList中的Handle是一个吗?</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicationActor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE网络-ReplicationActor | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE网络-ReplicationActor
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/ReplicationActor/" itemprop="url" rel="index"><span itemprop="name">ReplicationActor</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="概述">概述</h1>
+<p><code>ReplicateActor</code>分成三步:
+<code>SerializeNewActor</code>+<code>序列化属性</code>+<code>序列化删除的Objs</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913110345472.png" /></p>
+<p>其中序列化属性中的属性又分成三类:
+<code>Actor自身属性</code>+<code>ActorComponent属性</code>+<code>SubObject属性</code>.
+每类属性的序列化都会调用同一个函数:
+<code>FObjectReplicator::ReplicateProperties</code>.</p>
+<span id="more"></span>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913104905694.png" /></p>
+<p><code>FObjectReplicator::ReplicateProperties</code>分成如下几个步骤:</p>
+<ol type="1">
+<li>UpdateChangelistMgr</li>
+<li>MergeNotSendChangeList</li>
+<li>MergeResendChangeHistory</li>
+<li>CustomDeltaProperties</li>
+<li>Replicate Queued (unreliable functions)</li>
+<li>拼接ContentBlock</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913110941424.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype-1694577437093-1.png"
+alt="整体消息框架" />
+<figcaption aria-hidden="true">整体消息框架</figcaption>
+</figure>
+<h1 id="整体架构">整体架构</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913111721794.png" /></p>
+<h2 id="serializenewactor">SerializeNewActor</h2>
+<p>当该Channel第一次(<code>OpenPacketId.First</code>为空)发送数据时,
+会序列化<code>SerializeNewActor</code>,
+将Actor的<code>ArchetypeGUID</code>,
+<code>LevelGUID</code>等信息全部进行序列化.
+注意大约什么情况下是Channel第一次发送消息呢? 一般而言,
+是Actor第一次创建Channel, 或者休眠恢复之后, 重建Channel,
+该Channel第一次发送消息, 而不是该Actor第一次发送信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913140745487.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913140844477.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913140943887.png" /></p>
+<h2 id="序列化属性">序列化属性</h2>
+<p>下文详述.</p>
+<h2 id="序列化删除objs的属性">序列化删除Objs的属性</h2>
+<p>遍历该Actor下所有<code>Replicator</code>(<code>UActorChannel.ReplicationMap</code>),
+检测<code>FObjectReplicator.WeakObjectPtr</code>的有效性, 如果失效了,
+证明该Obj被销毁了, 需要删除, 然后将其信息记录下来, 序列化到Bunch内.
+带有删除信息的<code>Bunch</code>必定是<code>Reliable</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913141813311.png" /></p>
+<p>消息结构:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913141913205.png" /></p>
+<h1
+id="fobjectreplicator.replicateproperties"><code>FObjectReplicator.ReplicateProperties</code></h1>
+<p><strong>注意,
+以下流程是拼接<code>ContentBlockPayload</code></strong></p>
+<p><code>FObjectReplicator::ReplicateProperties</code>分成如下几个步骤:</p>
+<ol type="1">
+<li>UpdateChangelistMgr</li>
+<li>MergeNotSendChangeList</li>
+<li>MergeResendChangeHistory</li>
+<li>CustomDeltaProperties</li>
+<li>Replicate Queued (unreliable functions)</li>
+<li>拼接ContentBlock</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913142205079.png" /></p>
+<p>最终会组建ContentBlockPayload:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913113511615.png" /></p>
+<h2 id="updatechangelistmgr">UpdateChangelistMgr</h2>
+<p>遍历所有<code>ParentCmd</code>,
+如果<code>PushModel</code>为dirty就进行比较, 否则直接跳过.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913143514270.png" /></p>
+<p>遍历<code>ParentCmd</code>对应的<code>Cmd</code>,
+使用<code>PropertiesAreIdentical</code>进行比较, 如果确实发生变化,
+则将<code>Handle</code>放入<code>ChangedList</code>中. <span
+style="color:red;">还会将当前数据放入<code>Shadow</code>中. </span></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913143752353.png" /></p>
+<p>对于数组类型, 要展开进行递归处理. 首先递归比较其数组中的每个元素:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913144539833.png" /></p>
+<p>如果数组发生了变化,
+会将<code>数组的Handle</code>+<code>数组数量</code>+<code>数组中变化元素的Handle</code>+<code>结束符0</code>放入<code>ChangedList</code>中</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913144615659.png" /></p>
+<p>如果数组被清空了(数组大小发生了变化, 但是比较结果又是空的,
+证明数组被清空了),
+会将<code>数组的Handle</code>+<code>数组数量(空数组,数量为0)</code>+<code>结束符0</code>填入<code>ChangedList</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913144840982.png" /></p>
+<p>其中数组元素属性的对应<code>Handle</code>的计算方式为<code>ArrayIndex*PropertyNum+PropertyIndex+1</code>.
+以<code>FMyTestDataItem</code>为例, 结构体内部有五个属性,
+并且有一个<code>TArray&lt;FMyTestDataItem&gt; ItemList;</code>需要网络同步,
+当<code>ItemList[0].DataItemBool</code>发生变化时候,
+根据公式:<code>ArrayIndex*PropertyNum+PropertyIndex</code>
+需要填入的<code>Handle</code>为<code>0*5+1+1=2</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">USTRUCT</span>(BlueprintType)</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">FMyTestDataItem</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(BlueprintReadWrite)</span><br><span class="line">        int32 DataItemInt = <span class="number">0</span>; <span class="comment">// PropertyIndex为0</span></span><br><span class="line">    <span class="built_in">UPROPERTY</span>(BlueprintReadWrite)</span><br><span class="line">        <span class="type">bool</span> DataItemBool = <span class="literal">false</span>; <span class="comment">// PropertyIndex为1</span></span><br><span class="line">    <span class="built_in">UPROPERTY</span>(BlueprintReadWrite)</span><br><span class="line">        FName DataItemName; <span class="comment">// PropertyIndex为2</span></span><br><span class="line">    <span class="built_in">UPROPERTY</span>(BlueprintReadWrite)</span><br><span class="line">        <span class="type">float</span> DataItemFloat = <span class="number">0.1</span>; <span class="comment">// PropertyIndex为3</span></span><br><span class="line">    <span class="built_in">UPROPERTY</span>(BlueprintReadWrite)</span><br><span class="line">        EMyTestEnum DataItemEnum = EMyTestEnum::ENone; <span class="comment">// PropertyIndex为4</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如下类型需要网络同步</span></span><br><span class="line">TArray&lt;FMyTestDataItem&gt; ItemList;</span><br></pre></td></tr></table></figure>
+<p>实例:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913152358973.png" /></p>
+<p><span style="color:red;">注意:
+填入<code>ChangedList</code>中的<code>Handle</code>, 对非数组类型,
+其为<code>cmd.RelativeHandle</code>, 对数组类型,
+其为:<code>ArrayIndex*PropertyNum+PropertyIndex+1</code>.</span></p>
+<h2 id="mergenotsendchangelist">MergeNotSendChangeList</h2>
+<p>每个<code>Connection</code>的<code>Repstate</code>中会记录<code>LastChangelistIndex</code>,
+每次Replication时,
+会将[<code>LastChangelistIndex</code>-最新数据的ChangeIndex]合并.
+并且这些数据会合并到HistoryItem中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913171802099.png" /></p>
+<p>为什么会有额外未发送(除了当帧的)的Changelist呢?</p>
+<p>因为所有<code>Connection</code>共用一套<code>changeList</code>,
+某些<code>Actor</code>在某些情况下针对<code>ConnectionA</code>可能不会进行同步,
+而其他<code>Connection</code>同步了该<code>Actor</code>,
+那么共享的<code>Changelist</code>中就有<code>ConnectionA</code>没有同步的数据,
+所以要将这些数据合并到待发送的<code>Changelsit</code>中.</p>
+<h2 id="mergeresendchangehistory">MergeResendChangeHistory</h2>
+<p>每次收到Nak的时候, 需要将HistoryList中的Item标记为Resend,
+在属性同步时将其合并, 进行重发. 并且这些数据会合并到HistoryItem中.
+并且将之前的ResendHistoryItem清空, 意味着责任转移, 如果当前包丢失,
+只需要重传当前HistoryItem就可以了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913171751636.png" /></p>
+<h2 id="buildsharedserialize">BuildSharedSerialize</h2>
+<p>根据ChangedData, 将允许<code>SharedSerialize</code>的属性,
+放入共享结构<code>FRepSerializationSharedInfo</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913172147556.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913172730911.png" /></p>
+<h2 id="customdeltaproperties">CustomDeltaProperties</h2>
+<p>FastArray中有详细介绍.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913172844780.png" /></p>
+<h2 id="replicate-queuedunreliable-functions">Replicate
+Queued(unreliable functions)</h2>
+<p>详见:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" title="RPC浅析">RPC浅析</a>中的<code>QueueBunch</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913172920513.png" /></p>
+<h2 id="拼接contentblock">拼接ContentBlock</h2>
+<p><code>ContentBlockHeader</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913173718682.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913173543795.png" /></p>
+<h1 id="客户端解析数据">客户端解析数据</h1>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype-1694609017857-8.png"
+alt="BunchArchetype" />
+<figcaption aria-hidden="true">BunchArchetype</figcaption>
+</figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913204257268.png"
+alt="解析流程" />
+<figcaption aria-hidden="true">解析流程</figcaption>
+</figure>
+<h2 id="解析serializeactor">解析SerializeActor</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913195121972.png" /></p>
+<p>当<code>Channel</code>中的<code>Actor</code>为<code>nullptr</code>,
+并且<code>Bunch.bOpen</code>为true, 则重新反序列化对应的Actor.
+这里反序列化是指将<code>Bunch</code>中对应数据取出,
+是否重新<code>spawn</code>要看<code>Actor</code>是否真正存在,
+如果不存在会<code>Spawn</code>, 否则直接引用. 一般在Dormancy时,
+Channel会回收, 当<code>FlushDormancy</code>时会重新将Channel和Actor绑定,
+这时候客户端就不会创建, 仅仅将消息处理掉,
+并将<code>Channel</code>和<code>Actor</code>绑定.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913194237028.png" /></p>
+<p>无论怎么样,
+都会将Bunch中的<code>SerializeNewActor</code>数据读取出来.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913194956799.png" /></p>
+<h2 id="解析contentblockheader">解析ContentBlockHeader</h2>
+<p>解析ContentBlock中的数据,
+<code>GUID</code>表示当前处理的是哪个<code>UObject</code>,
+当UObject不存在时, 使用<code>ClassGUID</code>直接创建,
+<code>bHasReplayout</code>表示<code>ContentBlockPayload</code>中是否包含属性.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913174337920.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913174103300.png" /></p>
+<h2 id="解析netfieldindex">解析NetFieldIndex</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913195306126.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913195829490.png" /></p>
+<h2 id="解析property">解析Property</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913195322520.png" /></p>
+<p>如果<code>ContentBlock</code>中<code>bHasRepLayout</code>为true ,
+则表明有属性传输, 则进行属性反序列化.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913154805986.png" /></p>
+<p>首先解析<code>PropertyHandle</code>,
+然后递归解析<code>Property属性</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913155122231.png" /></p>
+<p>每次在函数<code>ReceiveProperties_r</code>尾部,
+继续读取<code>Handle</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913155234338.png" /></p>
+<p>函数<code>ReceivePropertyHelper</code>真正解析属性:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913155852011.png" /></p>
+<p><strong>处理数组类型:</strong></p>
+<p>数组的<code>Handle</code>从0开始.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913163826280.png" /></p>
+<p>每次比较, <code>Handle</code>都会+1.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913163951903.png" /></p>
+<p>最终, 如果和DS发来的<code>Handle</code>一致, 则表明是同一个Handle,
+解析其后面的属性.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913164034686.png" /></p>
+<h1 id="思考">思考</h1>
+<h2
+id="actor首次同步在进行比较时候和谁进行对比">Actor首次同步在进行比较时候和谁进行对比?</h2>
+<p>该问题换一种说法是<code>ReplicationObj</code>的Shadow初始化对象是什么?</p>
+<p>Actor首次同步, 在进行比较时候和谁进行对比?(UObject的CDO). 从代码上看,
+是其<code>Archetype</code>, 即一般情况下就是CDO.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">在首次ReplicationActor时, 首次并初始化`FRepChangelistState.StaticBuffer`的流程</span><br><span class="line">--UActorChannel.ReplicateActor.if </span><br><span class="line">|<span class="string">--ABasePlayerController.ReplicateSubobjects </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string">--AActor.ReplicateSubobjects.for.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.ReplicateSubobject </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.FindOrCreateReplicator</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.StartReplicating</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.GetReplicationChangeListMgr</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 在这里会传入ShadowStateSource, 其值为InObject-&gt;GetArchetype();, 可以理解为CDO</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.CreateReplicationChangelistMgr</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FReplicationChangelistMgr::FReplicationChangelistMgr</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepChangelistState::FRepChangelistState</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--InRepLayout-&gt;CreateShadowBuffer(InSource)</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.InitRepStateStaticBuffer()</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ShadowData.Buffer.SetNumZeroed(ShadowDataBufferSize);</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ConstructProperties(ShadowData);</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有Parent.Property, 进行初始化</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Parent.Property-&gt;InitializeValue(ShadowData + Parent);</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--CopyProperties(ShadowData, Source);</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有Parent.Property, 拷贝Source数据到Shadow中</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Parent.Property-&gt;InitializeValue(ShadowData + Parent);</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913103248166.png" /></p>
+<h2
+id="为什么会mergenotsendchangelist">为什么会MergeNotSendChangeList</h2>
+<p>因为所有<code>Connection</code>共用一套<code>changeList</code>,
+某些<code>Actor</code>在某些情况下针对<code>ConnectionA</code>可能不会进行同步,
+而其他<code>Connection</code>同步了该<code>Actor</code>,
+那么共享的<code>Changelist</code>中就有<code>ConnectionA</code>没有同步的数据,
+所以要将这些数据合并到待发送的<code>Changelsit</code>中.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/HistoryListArchitecture-1694596089462-3.png"
+alt="HistoryListArchitecture" />
+<figcaption aria-hidden="true">HistoryListArchitecture</figcaption>
+</figure>
+<h2
+id="freplayoutcmd.relativehandle和changelist中的handle是一个吗"><code>FRepLayoutCmd.RelativeHandle</code>和<code>ChangeList</code>中的<code>Handle</code>是一个吗?</h2>
+<p><span style="color:red;">不完全是.
+填入<code>ChangedList</code>中的<code>Handle</code>, 对非数组类型,
+其为<code>cmd.RelativeHandle</code>, 对数组类型,
+其为:<code>ArrayIndex*PropertyNum+PropertyIndex+1</code>.</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/ReplicationActor/" rel="tag"># ReplicationActor</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/" rel="prev" title="UE4消息结构">
+                  <i class="fa fa-chevron-left"></i> UE4消息结构
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/" rel="next" title="自定义UObject进行Replicate">
+                  自定义UObject进行Replicate <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">32k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:55</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

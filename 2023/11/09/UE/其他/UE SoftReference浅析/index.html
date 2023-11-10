@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="概述 资源路径: &#x2F;Game&#x2F;ThirdPersonCPP&#x2F;Maps&#x2F;UEDPIE_0_NewMap1.NewMap1:PersistentLevel.TestActor1_2  红色&#x2F;Game: 资源分区, &#x2F;Game为GameContent区域, &#x2F;Engine为EngineContent区域, &#x2F;Plugin为PluginContent区域    紫色&#x2F;ThirdPers">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE SoftReference浅析">
+<meta property="og:url" content="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="概述 资源路径: &#x2F;Game&#x2F;ThirdPersonCPP&#x2F;Maps&#x2F;UEDPIE_0_NewMap1.NewMap1:PersistentLevel.TestActor1_2  红色&#x2F;Game: 资源分区, &#x2F;Game为GameContent区域, &#x2F;Engine为EngineContent区域, &#x2F;Plugin为PluginContent区域    紫色&#x2F;ThirdPers">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-11-09T10:04:11.346Z">
+<meta property="article:modified_time" content="2023-11-09T10:04:11.346Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="UE SoftReference">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/","path":"2023/11/09/UE/其他/UE SoftReference浅析/","title":"UE SoftReference浅析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE SoftReference浅析 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E6%89%BE%E8%BF%87%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">查找过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#subobj%E5%88%86%E9%9A%94%E7%AC%A6"><span class="nav-number">2.1.</span> <span class="nav-text">SubObj分隔符:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%BE%E5%88%B0%E7%AC%AC%E4%B8%80%E4%B8%AApackage"><span class="nav-number">2.2.</span> <span class="nav-text">找到第一个Package</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87package%E6%89%BE%E5%88%B0%E5%85%B6%E5%86%85%E9%83%A8%E7%9A%84object"><span class="nav-number">2.3.</span> <span class="nav-text">通过Package找到其内部的Object</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%92%E5%BD%92%E6%9F%A5%E6%89%BE"><span class="nav-number">2.4.</span> <span class="nav-text">递归查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%92%E5%8F%B7%E7%9A%84%E6%84%8F%E6%80%9D"><span class="nav-number">3.1.</span> <span class="nav-text">冒号的意思</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#package%E8%B7%AF%E5%BE%84"><span class="nav-number">3.2.</span> <span class="nav-text">Package路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A6%96%E4%B8%AAobj%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.3.</span> <span class="nav-text">首个Obj对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%90%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.4.</span> <span class="nav-text">子对象</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE SoftReference浅析 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE SoftReference浅析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>712</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="概述">概述</h1>
+<p>资源路径: <span style="color:red;">/Game</span><span
+style="color:Purple;">/ThirdPersonCPP/Maps</span><span
+style="color:Blue;">/UEDPIE_0_NewMap1</span><span
+style="color:Gold;">.NewMap1</span><span
+style="color:Black;">:</span><span
+style="color:SeaGreen;">PersistentLevel.</span><span
+style="color:DarkOrange;">TestActor1_2</span></p>
+<ol type="1">
+<li>红色<span style="color:red;">/Game</span>: 资源分区,
+<code>/Game</code>为GameContent区域,
+<code>/Engine</code>为EngineContent区域,
+<code>/Plugin</code>为PluginContent区域</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812153324842.png" /></p>
+<ol start="2" type="1">
+<li>紫色<span
+style="color:Purple;">/ThirdPersonCPP/Maps</span>表示资源路径</li>
+<li>蓝色<span
+style="color:Blue;">UEDPIE_0_NewMap1</span>表示Package名称</li>
+<li>黄色<span style="color:Gold;">NewMap1</span>表示Package内对象名称,
+即World.</li>
+<li>黑色<span style="color:Black;">:</span>子对象分隔符,
+表明其后面的都是子对象.</li>
+<li>绿色<span style="color:SeaGreen;">PersistentLevel</span>表示以<span
+style="color:Gold;">NewMap1</span>作为Outer的SubObject,
+World中的Level.</li>
+<li>橙色<span style="color:DarkOrange;">TestActor1_2</span>表示以<span
+style="color:SeaGreen;">PersistentLevel</span>为Outer的SubObject,
+Level内的Actor.</li>
+</ol>
+<p>搜寻过程: <strong>通过资源全路径(<span
+style="color:red;">/Game</span><span
+style="color:Purple;">/ThirdPersonCPP/Maps</span><span
+style="color:Blue;">/UEDPIE_0_NewMap1</span>)找到package(蓝色<span
+style="color:Blue;">UEDPIE_0_NewMap1</span>),
+通过Package找到World(黄色<span style="color:Gold;">NewMap1</span>),
+通过world找到Level(绿色<span
+style="color:SeaGreen;">PersistentLevel</span>),
+通过Level找到Actor(橙色<span
+style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
+<span id="more"></span>
+<h1 id="查找过程">查找过程</h1>
+<p>构造调试环境:
+在LevelBlueprint里面添加<code>Resolve Soft Reference</code>节点,
+它会将SoftRef转换成ObjRef.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812142607189.png" /></p>
+<p>其中蓝图节点<code>ExpandNode</code>内的关键函数为:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812122104044-1691821775726-5.png" /></p>
+<p>调试堆栈:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812122024991.png" /></p>
+<p>跟随堆栈, 解析关键函数<code>ResolveObjectInternal</code>,
+通过<code>FindObject&lt;UObject&gt;(nullptr, PathString)</code>根据路径查找对应UObject.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812143210853.png" /></p>
+<h2 id="subobj分隔符">SubObj分隔符<code>:</code></h2>
+<p><code>:</code>为SubObject分割符, 其表明后面的Obj为SubObject.
+而SubObj不会有<code>FindScriptPackageName</code>查找步骤.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812151853189.png" /></p>
+<p>深入函数<code>StaticFindObject</code>,
+发现其调用<code>ResolveName</code>, 在<code>ResolveName</code>函数中,
+首先将<code>:</code>替换成<code>..</code>,
+其意思是将SubObject分隔符<code>:</code>替换成<code>..</code>.
+然后资源路径由<code>/Game/ThirdPersonCPP/Maps/UEDPIE_1_NewMap1.NewMap1:PersistentLevel.TestActor1_2</code>变成了<code>/Game/ThirdPersonCPP/Maps/UEDPIE_1_NewMap1.NewMap1..PersistentLevel.TestActor1_2</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812143846817.png" /></p>
+<h2 id="找到第一个package">找到第一个Package</h2>
+<p>又将<code>.</code>作为分隔符, 提取左边字符串,
+后得到:<code>/Game/ThirdPersonCPP/Maps/UEDPIE_1_NewMap1</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812144250757.png" /></p>
+<p>通过<code>FindObject&lt;UPackage&gt;( InPackage, *PartialName )</code>找到了资源名对应的资源对象.
+所以<code>/Game/ThirdPersonCPP/Maps/UEDPIE_1_NewMap1</code>是全路径资源对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812144434346.png" /></p>
+<h2
+id="通过package找到其内部的object">通过Package找到其内部的Object</h2>
+<p>资源路径剩余字符串为<code>NewMap1..PersistentLevel.TestActor1_2</code>,
+根据分割规则(取<code>.</code>左边字符串)再次分割,
+提取字符串为<code>NewMap1</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812144838263.png" /></p>
+<p>使用函数<code>FindObject&lt;UObject&gt;</code>,
+根据<code>Out</code>和<code>PartialName</code>, 找到Outer中的对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812145345311.png" /></p>
+<p>堆栈:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812145553486.png" /></p>
+<p>最终, 根据Outer找到其内部的Obj(NewMap1). 所以,
+<code>NewMap1</code>为Package:<code>/Game/ThirdPersonCPP/Maps/UEDPIE_1_NewMap1</code>下的Obj.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812145714910.png" /></p>
+<h2 id="递归查找">递归查找</h2>
+<p>根据上述流程易知:</p>
+<ol type="1">
+<li>以<code>NewMap1</code>为Outer,
+根据SubObjectName:<code>PersistentLevel</code>, 找到SubObject对象.</li>
+<li>以<code>PersistentLevel</code>为Outer,
+根据SubObjectName:<code>TestActor1_2</code>, 找到SubObject对象.</li>
+</ol>
+<h1 id="总结">总结</h1>
+<h2 id="冒号的意思">冒号的意思</h2>
+<p>冒号作为SubObject分割符, 表示其后边的名字为SubObj名字,
+不会进行<code>FindScriptPackageName</code>查找.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812122343966.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812152401042.png" /></p>
+<h2 id="package路径">Package路径</h2>
+<p>资源名称,
+中Package路径<code>/Game/ThirdPersonCPP/Maps/UEDPIE_0_NewMap1</code></p>
+<h2 id="首个obj对象">首个Obj对象</h2>
+<p>第一个<code>.</code>后边的名称作为第一个对象<code>NewMap1</code></p>
+<h2 id="子对象">子对象</h2>
+<p><code>:</code>后的内容全部作为子对象, 用<code>.</code>分隔, 递归查找.
+<code>:PersistentLevel.TestActor1_2</code></p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/sin998/p/15501520.html">加载资源的方式</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/UE-SoftReference/" rel="tag"># UE SoftReference</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/" rel="prev" title="UE-TMap">
+                  <i class="fa fa-chevron-left"></i> UE-TMap
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/Pawn,Controller%E5%92%8CPawnMovementComponent%20Tick%E9%A1%BA%E5%BA%8F/" rel="next" title="Pawn,Controller和PawnMovementComponent Tick顺序">
+                  Pawn,Controller和PawnMovementComponent Tick顺序 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">32k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:55</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
