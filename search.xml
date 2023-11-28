@@ -44,6 +44,73 @@ A_j)}
       </tags>
   </entry>
   <entry>
+    <title>UE-TMap</title>
+    <url>/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/</url>
+    <content><![CDATA[<h1 id="概述">概述</h1>
+<p><span style="color:red;">先了解<code>TSet</code>,
+再看<code>TMap</code>. </span></p>
+<p><code>TMap</code>是继承自<code>TMapBase</code>,
+最终操作的也是其成员变量<code>ElementSetType Pairs</code>,
+即<code>TSet</code>类型.
+<code>TMap</code>将<code>Element</code>类型设置为<code>typedef TPair&lt;KeyType, ValueType&gt; ElementType;</code>,
+即Pair类型.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912193952646.png" /></p>
+<span id="more"></span>
+<p>重写<code>BaseKeyFuncs</code>, 实现<code>TDefaultMapKeyFuncs</code>,
+自定义关键函数<code>GetSetKey</code>和<code>Matches</code>,
+来进行获取<code>Key</code>和<code>KeyHash</code>以及比较等操作. 这样,
+其Element内容就和整个类解耦了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912194205939.png" /></p>
+<h1 id="关键变量">关键变量</h1>
+<p>从TMap的整体构建来看,
+其所有函数都是对<code>ElementSetType Pairs</code>进行操作,
+其实就是对<code>TSet</code>的封装.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> TPair&lt;KeyType, ValueType&gt; ElementType;</span><br><span class="line"><span class="keyword">typedef</span> TSet&lt;ElementType, KeyFuncs, SetAllocator&gt; ElementSetType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** A set of the key-value pairs in the map. */</span></span><br><span class="line">ElementSetType Pairs;</span><br></pre></td></tr></table></figure>
+<h2 id="find">Find</h2>
+<p>详见<code>TSet.Find</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195115734.png" /></p>
+<h2 id="findoradd">FindOrAdd</h2>
+<p>先进行<code>Find</code>, 如果没<code>Find</code>到,
+则进行<code>Add</code>, 返回<code>Add</code>结果.
+<code>Add</code>最终调用的是<code>TSet.EmplaceByHash</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195217492.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195251885.png" /></p>
+<p>从上述代码可以看出,
+<code>FindOrAdd</code>比<code>Find</code>+<code>Add</code>少算一次<code>KeyHash</code>,
+并且从使用方式上比<code>Find</code>+<code>Add</code>更简洁.
+所以推荐使用<code>FindOrAdd</code>.</p>
+<h2 id="contains">Contains</h2>
+<p>详见<code>TSet.Contains</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200401412.png" /></p>
+<h2 id="remove">Remove</h2>
+<p>详见<code>TSet.Remove</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200432209.png" /></p>
+<h2 id="operator">operator[]</h2>
+<p>其核心还是调用<code>TSet.Find</code>.
+查询到<code>Item.Value</code>并且返回其引用, 进而可以直接进行操作.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912191924488.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912192013741.png" /></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>Container</category>
+      </categories>
+      <tags>
+        <tag>UE</tag>
+        <tag>Container</tag>
+        <tag>TMap</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>PlayNetMode</title>
     <url>/2023/11/09/UE/%E5%85%B6%E4%BB%96/PlayNetMode/</url>
     <content><![CDATA[<p>定义:</p>
@@ -224,169 +291,919 @@ href="https://www.cnblogs.com/sin998/p/15501520.html">加载资源的方式</a><
       </tags>
   </entry>
   <entry>
-    <title>Channel的创建和销毁</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/</url>
-    <content><![CDATA[<p>客户端和DS通过Bunch.ChIndex相互映射关联.
-这样同一个Actor在每个端都会通过同一个Channel进行处理.</p>
-<h1 id="搭建测试用例">搭建测试用例</h1>
-<p>首先搭建一个能主动创建和销毁Channel的示例.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在DS端主动创建Character</span></span><br><span class="line"><span class="keyword">if</span> (ALSVCharacter==<span class="literal">nullptr</span> &amp;&amp; CreateCharacterFrameIndex ==<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex =<span class="number">1</span>;</span><br><span class="line">    FVector Loc = FVector::ZeroVector;</span><br><span class="line">    FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">    FActorSpawnParameters Par;</span><br><span class="line">    Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">    ALSVCharacter = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AALSVCharacter&gt;(AALSVCharacter::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在DS端主动销毁Character</span></span><br><span class="line"><span class="keyword">if</span> (CreateCharacterFrameIndex&gt;<span class="number">50</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex = <span class="number">-1</span>;</span><br><span class="line">    ALSVCharacter-&gt;<span class="built_in">Destroy</span>();</span><br><span class="line">    ALSVCharacter = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    <title>UE-TSet</title>
+    <url>/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TSet/</url>
+    <content><![CDATA[<h1 id="概述">概述</h1>
+<p>核心: <code>HashArray</code>+<code>ElementArray</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115416424.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911192653763.png"
+alt="关键流程" />
+<figcaption aria-hidden="true">关键流程</figcaption>
+</figure>
+<p>一般Hash的实现一般由以下步骤实现:</p>
+<ol type="1">
+<li>将Element映射成Hash.</li>
+<li>通过Hash值找到对应成员.</li>
+</ol>
+<p>具体实现:
+UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<code>TSet</code>,
+<code>HashArray</code>中存放着<code>ElementArray</code>的<code>Index</code>,
+<code>ElementArray</code>中存放着具体的值.</p>
+<ol type="1">
+<li>TSet将映射方式暴露给用户,
+由程序员自定义实现:<code>uint32 GetTypeHash(...)</code>,
+最终返回类型为<code>uint32</code>的<code>KeyHash</code>.</li>
+<li>TSet内部实现了通过<code>KeyHash</code>找到对应Element的方式:
+<ol type="1">
+<li>根据<code>HashIndex &amp; (HashSize - 1)</code>,
+计算<code>HashIndex</code>, 然后取出<code>HashElementValue</code>,
+此处<code>HashElementValue</code>代表<code>ElementArray</code>的<code>Index</code>.</li>
+<li>根据<code>Index</code>从<code>ElementArray</code>获取具体的<code>ElementValue</code>,
+如果发生冲突, 拉链法解决冲突.
+每个<code>Element</code>记录着<code>NextElementIndex</code>,
+如果该Element发生冲突,
+通过<code>NextElementIndex</code>寻找到下一个Element.</li>
+</ol></li>
+</ol>
 <span id="more"></span>
-<h1 id="打开">打开</h1>
-<h2 id="ds打开流程">DS打开流程</h2>
-<p>在DS端创建的Actor, 在属性同步时, 发现没有对应的Channel,
-会进行创建并分配ChannelIndex, 与Actor绑定.
-然后就能通过Channel进行通信了.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// DS Channel创建流程. 在SpawnActor后, 当Actor进行属性同步时, 发现缺少对应的Channel, 会进行创建.</span></span><br><span class="line">--UNetDriver.TickFlush</span><br><span class="line"> |--UNetDriver.ServerReplicateActors</span><br><span class="line"> | |--UNetDriver.ServerReplicateActors_ProcessPrioritizedActors</span><br><span class="line"> | | |--UNetConnection.CreateChannelByName</span><br><span class="line"> | | | |--GetFreeChannelIndex <span class="comment">// 获取Free ChannelIndex</span></span><br><span class="line"> | | | |--UActorChannel.Init</span><br><span class="line"> | | | | |--UChannel.Init</span><br><span class="line"> | | |--Channel-&gt;<span class="built_in">SetChannelActor</span>(Actor, ESetChannelActorFlags::None);</span><br><span class="line"> | | |--UActorChannel::ReplicateActor</span><br></pre></td></tr></table></figure>
-<p>可以看到, DS端Channel主动绑定Actor的:</p>
-<figure class="highlight rust"><table><tr><td class="code"><pre><span class="line">Channel<span class="punctuation">-&gt;</span><span class="title function_ invoke__">SetChannelActor</span>(Actor, ESetChannelActorFlags::<span class="literal">None</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="客户端打开流程">客户端打开流程</h2>
-<p>在解析DS发来的Bunch时,
-根据ChannelIndex在UNetConnection.Channels中直接索引,
-如果为空会进行创建:</p>
+<h1 id="实现细节">实现细节</h1>
+<h2 id="声明">声明</h2>
+<p><strong>前置声明</strong>,
+默认使用<code>DefaultKeyFuncs&lt;InElementType&gt;</code>作为<code>KeyFuncs</code>,
+使用<code>FDefaultSetAllocator</code>作为<code>Allocator</code></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707152204041.png" /></p>
-<p>创建Channel:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911161319485.png" /></p>
+<p><strong>真正实现:</strong>使用四个传入参数作为TSet的模板参数.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707152252606.png" /></p>
-<p>然后处理bunch中的数据.</p>
-<figure class="highlight gherkin"><table><tr><td class="code"><pre><span class="line">// 客户端创建Channel流程</span><br><span class="line">--UIpNetDriver.TickDispatch</span><br><span class="line"> |<span class="string">--UNetConnection.ReceivedRawPacket</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ReceivedNextBunch()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.ReceivedPacket</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.CreateChannelByName</span></span><br></pre></td></tr></table></figure>
-<p><strong>注意:</strong>Channel创建后,第一个Bunch不一定是SpawnActor,
-第一个bunch是需要该Index的Channel进行处理, 就创建了.
-比如第一个Bunch极有可能是ExportGUIDBunch,
-带有SpawnActor的Bunch在其后.</p>
-<h3 id="思考">思考</h3>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911193102258.png" /></p>
+<h2 id="add">Add</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911200700442.png" /></p>
+<h3 id="tset.add">TSet.Add</h3>
+<p>调用Add函数<code>TSet.Add</code>添加元素.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911162930925.png" /></p>
+<h3 id="tset.emplace">TSet.Emplace</h3>
+<p>进一步调用<code>TSet.Emplace</code>.
+在<code>Elements</code>中添加元素,
+然后根据参数进行初始化(<code>place new</code>).
+根据<code>ElementValue</code>获取<code>Hash</code>值.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911163039172.png" /></p>
+<p>根据Hash值,
+获取Hash数组中的索引<code>HashIndex &amp; (HashSize - 1)</code>,
+根据Hash索引, 取出Element</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911163632098.png"
+alt="image-20230911163632098" />
+<figcaption aria-hidden="true">image-20230911163632098</figcaption>
+</figure>
+<h3 id="tset.emplaceimpl">TSet.EmplaceImpl</h3>
+<p>调用<code>TSet.EmplaceImpl</code>, 实现真正Add.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911201128318.png" /></p>
+<p>讲解一下该函数中的<code>FindIdByHash</code>函数.
+通过<code>KeyHash</code>获取到<code>ElementArray</code>中指定元素.
+由于不同元素可能定位到同一个<code>ElementIndex</code>上,
+UE使用拉链方式解决冲突,
+它根据<code>TSetElementBase.HashNextId</code>构成一个链表, 进行存储.
+所以需要遍历这个链表, 比较每个元素是否真正相同. 如果真正相同,
+则返回其ElementIndex.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911201816846.png" /></p>
+<p>如果ElementArray存在对应的元素, 就覆盖, 否则,就添加新的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911202014254.png" /></p>
+<p>添加新元素时, 将新元素插入到链表首位.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911202129420.png" /></p>
+<p>注意: 在Add时候会返回之前元素是否已经存在.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911203633007.png" /></p>
+<h2 id="find">Find</h2>
+<p>首先根据Element生成KeyHash, 根据KeyHash找到HashArray中的Index,
+根据<code>ElementIndex(HashArray[HashIndex])</code>定位到<code>ElementArray</code>中的元素,
+即链表头, 然后遍历链表, 通过比较方式找到最终的对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115207933.png" /></p>
+<p>找到最终的Element元素索引.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115125157.png" /></p>
+<h2 id="contains">Contains</h2>
+<p>根据<code>Key(Element本身)</code>计算出<code>KeyHash</code>,
+通过<code>KeyHash&amp; (HashSize - 1)</code>得到<code>HashIndex</code>,
+取出<code>HashArrayItem(即ElementIndex)</code>,
+遍历<code>ElementArray</code>中的链表, 查看其是否真正存在.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195557175.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195622278.png" /></p>
+<h2 id="remove">Remove</h2>
+<p>调用<code>TSet.Remove</code>函数,
+使用<code>KeyFuncs::GetKeyHash(Key)</code>计算其<code>KeyHash</code>,
+并传入到<code>TSet.RemoveImpl</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911205738241.png" /></p>
+<p>在函数<code>TSet.RemoveImpl</code>中,
+使用函数<code>GetTypedHash(KeyHash)</code>计算其<code>ElementArrayIndex</code>,
+然后开始该遍历. 使用比较函数<code>KeyFuncs::Matches</code>, 如果相同,
+则直接删除, 如果<code>bAllowDuplicateKeys</code>为false, 则直接break,
+否则继续遍历.</p>
+<p><strong>注意一点, 当<code>bAllowDuplicateKeys</code>为true的时候,
+是删除了<code>NextElementId</code>指向的元素,
+<code>NextElementId</code>并没有删除,
+这就是为什么<code>NextElementId</code>使用指针的原因. 否则代码会非常乱,
+没有现在这么简洁</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911210335490.png" /></p>
+<p>使用<code>void Remove(FSetElementId ElementId)</code>函数,
+真正删除对应的元素.</p>
+<p>链表删除逻辑:</p>
 <ol type="1">
-<li>客户端Channel打开后会立即绑定Actor吗?</li>
+<li>存储next指针, 指向待处理元素.</li>
+<li>通过比较, 检测是否为待删除元素A, 如果是,
+则将Next指针的值设置为A的next, 并进行break; 否则继续遍历.</li>
+<li>删除元素A.</li>
 </ol>
-<p>答: 不会, channel的打开纯粹是依赖Bunch的ChannelIndex,
-而Channel和Actor的绑定则依赖Bunch中的SpawnActor,
-二者极有可能不在同一个bunch中. 例如DS先发来ExportGUIDBunch,
-然后才发来属性同步的bunch(里面带有SpawnActor).</p>
-<ol start="2" type="1">
-<li>如果客户端Channel还没有SpawnActor(与Actor绑定),
-就收到了属性同步的消息(在丢包的时候可能发生), 会怎么处理?</li>
-</ol>
-<p>答: 直接丢弃, 并报错:</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707154045316.png" /></p>
-<h1 id="关闭">关闭</h1>
-<h2 id="ds关闭channel">DS关闭Channel</h2>
-<h3 id="关闭channel">关闭Channel</h3>
-<p>关闭的同时会向客户端发送 CloseBunch. 注意观察,
-CloseBunch的bClose为true, 并且bReliable为1, 为Reliable的Close Bunch.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 堆栈: DS Channel Close流程, 注意:这里只是将Channel close掉, 还没有销毁</span></span><br><span class="line">--AActor.<span class="built_in">Destroy</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">NotifyActorDestroyed</span>()</span><br><span class="line"> | |--UActorChannel.<span class="built_in">Close</span>()</span><br><span class="line"> | | |--UChannel.<span class="built_in">Close</span>()</span><br><span class="line"> | | | |--SendCloseBunch</span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701144331989.png" /></p>
-<p>并将Channel设置为Closing状态:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145255639.png" /></p>
-<h3 id="回收channel">回收Channel</h3>
-<p>DS向客户端发送close包后, 由于Close包时Reliable, 需要等Ack,
-再接收到Ack后, 才能将Channel Close掉.</p>
-<p>DS收到CloseBunch的ACK. 然后将Channel Close掉.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160113507.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160206847.png" /></p>
-<p>Close时候是将Channel放入Pool中, 等待下次复用:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160254776.png" /></p>
-<h3 id="思考-1">思考</h3>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912095240012.png" /></p>
+<h2 id="rehash">Rehash</h2>
 <ol type="1">
-<li><strong>DS在Channel关闭, 但是还没有回收过程中,
-客户端发来消息会怎么处理呢?</strong></li>
+<li>释放HashArray所有元素</li>
+<li>重建HashArray</li>
+<li>将HashArray中元素设置为默认值.</li>
+<li>遍历ElementArray, 重建HashArray.</li>
 </ol>
-<p>根据上文已知DS将Channel关闭后会将UChannel.Closing 设置为true.
-在接收到Bunch时候, 会根据当前是否为Closing状态, 处理Bunch,
-如果在Closing状态, 又不是CloseBunch则直接丢弃.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705161117562.png" /></p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911212306750.png" /></p>
+<p><code>TSet.HashElement</code>核心逻辑, 如下代码可以理解为:
+对于任意新添加的元素Element, 重新计算其HashIndex,
+将<code>Element.Next</code>设置为<code>HashArray[HashIndex]</code>,
+即<code>Element.Next</code>指向旧的<code>ElementIndex</code>,
+然后更新<code>HashArray[HashIndex]</code>,
+将其设置为新的<code>ElementIndex</code>. 经过如上分析可知,</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911212557432.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911214905993.png" /></p>
+<p>如果将Element插入到自己所在链表中会造成什么样的结果呢? 死循环:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911215026124.png" /></p>
+<p>在TSet中, 不会将一个Element插入到自己链表头部. 所以不会有死循环.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911215125651.png" /></p>
+<h3 id="什么时候进行rehash呢">什么时候进行Rehash呢?</h3>
+<p>一般而言根据<code>Element</code>的数量计算是否需要<code>Rehash</code>.
+根据<code>Element</code>数量计算出目标数量(<code>RoundUpToPowerOfTwo</code>),
+如果目标数量大于当前Hash数量, 就进行扩容.</p>
+<ol type="1">
+<li><strong>添加新元素</strong></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103218293.png" /></p>
 <ol start="2" type="1">
-<li><strong>为什么不直接关闭, 反而要等客户端Ack呢?</strong></li>
+<li><strong>排序</strong></li>
 </ol>
-<p>如果直接关闭, 客户端可能还未接收到CloseBunch, 还会继续发送消息,
-这时候, DS会收到很客户端发来的消息. 这时候,
-Channel其实已经没了(Close时候会回收Channel), 会直接丢弃. 但是会报错.
-但是, 明显直接丢弃就好, 不需要报错, 所以要Ack确认后才关闭.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707160436569.png" /></p>
-<h3 id="总结">总结</h3>
-<p>DS关闭Channel分成两步, 首先将Channel Close掉,
-并向客户端发送CloseBunch,
-等待接收到CloseBunch的Ack才将Channel彻底清理并放入Pool中等待重复利用.</p>
-<h2 id="客户端关闭channel">客户端关闭Channel</h2>
-<h3
-id="收到close消息主动关闭channel并回收">收到Close消息主动关闭Channel并回收</h3>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 客户端Channel Close并销毁流程</span></span><br><span class="line">--UNetConnection.<span class="built_in">ReceivedPacket</span>()</span><br><span class="line"> |--UChannel.<span class="built_in">ReceivedRawBunch</span>() </span><br><span class="line"> | |--UChannel.<span class="built_in">ReceivedNextBunch</span>()</span><br><span class="line"> | | |--UChannel.<span class="built_in">ReceivedSequencedBunch</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">ConditionalCleanUp</span>()</span><br><span class="line"> | | | | |--UNetDriver.ActorChannelPool.<span class="built_in">Push</span>(Channel);</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">AddedToChannelPool</span>()<span class="comment">// 将channel添加到Pool池中.</span></span><br></pre></td></tr></table></figure>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103724574.png" /></p>
+<ol start="3" type="1">
+<li><strong>Empty</strong></li>
+</ol>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701144748951.png" /></p>
-<p>客户端收到CloseBunch之后, 直接关闭Channel, 并将Channel放入池中.</p>
-<p>销毁所有SubObj和Actor:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103820753.png" /></p>
+<ol start="4" type="1">
+<li><strong>Compact</strong></li>
+</ol>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145136303.png" /></p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103905355.png" /></p>
+<ol start="5" type="1">
+<li><strong>Reserve</strong></li>
+</ol>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145200734.png" /></p>
-<p>将Channel设置为Closing状态:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103948863.png" /></p>
+<h2 id="hasharray扩容">HashArray扩容</h2>
+<p><strong>Reserve时候会进行扩容.</strong></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145255639.png" /></p>
-<p>放入池中:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912103543864.png" /></p>
+<p><strong>在添加元素时, 会按需进行扩容.</strong></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145027283.png" /></p>
-<p>在放入Pool时, 需要重置属性:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912104908446.png" /></p>
+<p>扩容的时候, 要执行Rehash.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230704204701304.png" /></p>
-<p><strong>总结:</strong> 客户端会同时将Channel close和销毁掉,
-一帧先后执行.</p>
-<h3 id="思考-2">思考</h3>
-<h4 id="客户端能否主动destroyactor呢">客户端能否主动DestroyActor呢?</h4>
-<p>不能. 在UWorld.DestroyActor中,
-明确指出:只有DS才能Destroy网络Actor.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912105037405.png" /></p>
+<h2 id="elementarray扩容">ElementArray扩容</h2>
+<p><strong>Reserve时候会进行扩容.</strong></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701152748387.png" /></p>
-<p>仔细观察,仿佛还有一丝生机, 如果我传入了bNetForce为true呢?</p>
-<p>确实删除了, 但是, DS并不知情, DS和其他端的Actor还完好的存在,
-只是删除了本地Actor. 而且该Actor对应的Channel还在, 只是其Actor没了.
-这样就会造成:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912103509351.png" /></p>
+<p>每当添加元素时候, 会按需进行扩容.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701153342664.png" /></p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">LogNetTraffic: Error: UActorChannel::ProcessBunch: New actor channel received non-open packet. bOpen:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bClose:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bReliable:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartial:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartialInitial:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartialFinal:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">ChName:</span> <span class="string">Actor,</span> <span class="attr">ChIndex:</span> <span class="number">5</span><span class="string">,</span> <span class="attr">Closing:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">OpenedLocally:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">OpenAcked:</span> <span class="number">1</span><span class="string">,</span> <span class="attr">NetGUID:</span> <span class="number">20</span></span><br></pre></td></tr></table></figure>
-<p><strong>所以, 本地(非DS)销毁相当于销毁了个寂寞.</strong></p>
-<h4
-id="客户端收到后续该channel的包怎么处理">客户端收到后续该Channel的包怎么处理</h4>
-<p>由于DS先关闭的Channel, 关闭后就不会再发送数据包了,
-客户端后关闭Channel, 理论上不会收到该Channel的任何包了.
-所以如果再次收到该Channel的包, 直接丢弃就好.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912105340106.png" /></p>
+<h1 id="优化">优化</h1>
+<p>性能消耗点: 在Add时候, 会进行一次<code>GetTypeHash</code>计算,
+并与链表中元素进行比较. 假设<code>HashArray</code>大小为16,
+那么每次添加元素的Hash值恰好是16的倍数, 则会形成单链表,
+比较结果如下:</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707155310546.png" /></p>
-<p>可以看出, 当Channel没创建时, 对Bunch的判断非常严格.
-必须是Open并且Close/partial中的一种才可以, 否则直接丢弃.</p>
-<h2 id="思考-3">思考</h2>
-<h3
-id="如果客户端发送rpc的时候ds还没有创建channel-该怎么办">如果客户端发送RPC的时候DS还没有创建Channel,
-该怎么办?</h3>
-<p>答: 除了默认Channel, 客户端不能自主创建Channel(配置的除外),
-只能被动由DS通知创建. 其次一个Actor要想发送RPC,
-必须和DS对应Actor建立关联. 所以以上问题根本不存在.
-而且RPC必须由主端发送, 模拟端不能发送RPC. 客户端没有Channel,
-不可能发送RPC.</p>
-<h3
-id="创建channel的bunch时reliable吗">创建Channel的Bunch时Reliable吗?</h3>
-<p>Channel创建(第一次发包)的bunch都为Reliable</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912113418959.png" /></p>
+<p>那么我们怎么才能节省性能呢?</p>
+<p>可以将<code>GetTypeHash</code>生成的<code>KeyHash</code>存储在结构体内部,
+只生成一次, 每次比较时候优先比较<code>KeyHash</code>, 如果KeyHash相同,
+再比较具体内容. 如果我们能假定生成的<code>KeyHash</code>一定是唯一的,
+那么只要比较其<code>KeyHash</code>就可以了.
+但是尽量不要用<code>operator ==</code>,
+可以仿照<code>DefaultKeyFuncs</code>定制<code>BaseKeyFuncs</code>,
+最好进行前向声明, 这样大家就能直接用了.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230818212005025.png" /></p>
-<h3 id="closebunch是否为reliable">CloseBunch是否为Reliable?</h3>
-<p>是ReliableBunch.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912114550734.png" /></p>
+<p>前向声明参考:</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230818211655965.png" /></p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912114656002.png" /></p>
 ]]></content>
       <categories>
         <category>UE</category>
-        <category>UE网络</category>
+        <category>Container</category>
       </categories>
       <tags>
-        <tag>UE网络</tag>
-        <tag>Channel</tag>
+        <tag>UE</tag>
+        <tag>Container</tag>
+        <tag>TSet</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>UE4移动-MaintainHorizontalGroundVelocity</title>
+    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/MaintainHorizontalGroundVelocity/</url>
+    <content><![CDATA[<p><code>bMaintainHorizontalGroundVelocity</code>:</p>
+<ul>
+<li>为<code>true</code>, 则直接丢弃竖直方向速度, 使用水平方向速度.
+速度变小了</li>
+<li>为<code>false</code>, 则速度大小不变, 但是竖直方向速度设置为0.
+即将竖直方向的速度转移到水平方向, 速度大小不变,
+方向发生了变化(竖直方向被丢弃了).</li>
+</ul>
+<span id="more"></span>
+<p>定义:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * If true, walking movement always maintains horizontal velocity when moving up ramps, which causes movement up ramps to be faster parallel to the ramp surface.</span></span><br><span class="line"><span class="comment"> * If false, then walking movement maintains velocity magnitude parallel to the ramp surface.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>(Category=<span class="string">&quot;Character Movement: Walking&quot;</span>, EditAnywhere, BlueprintReadWrite)</span><br><span class="line">uint8 bMaintainHorizontalGroundVelocity:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>使用:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">UCharacterMovementComponent::MaintainHorizontalGroundVelocity</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (Velocity.Z != <span class="number">0.f</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (bMaintainHorizontalGroundVelocity)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// Ramp movement already maintained the velocity, so we just want to remove the vertical component.</span></span><br><span class="line">            Velocity.Z = <span class="number">0.f</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// Rescale velocity to be horizontal but maintain magnitude of last update.</span></span><br><span class="line">            Velocity = Velocity.<span class="built_in">GetSafeNormal2D</span>() * Velocity.<span class="built_in">Size</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码上很容易看出,
+<code>bMaintainHorizontalGroundVelocity</code>表示:是否保持水平速度.
+当开启<code>bMaintainHorizontalGroundVelocity</code>时,
+直接丢弃<code>z</code>轴方向速度, 保持水平方向速度.
+当关闭<code>bMaintainHorizontalGroundVelocity</code>时, 速度大小不变,
+但是将竖直方向速度转移到水平方向上, 并且速度的水平方向保持不变,
+数值方向为0.</p>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意: 无论是否开启<em>bMaintainHorizontalGroundVelocity</em>,
+竖直方向速度都会被清零, 并且速度方向并不是沿着某个表面的,
+而是与<em>xy</em>平面平行的.
+</td>
+</tr>
+</table>
+]]></content>
+      <categories>
+        <category>UE4</category>
+        <category>移动</category>
+        <category>速度</category>
+      </categories>
+      <tags>
+        <tag>UE4</tag>
+        <tag>移动</tag>
+        <tag>速度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Pawn,Controller和PawnMovementComponent Tick顺序</title>
+    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/Pawn,Controller%E5%92%8CPawnMovementComponent%20Tick%E9%A1%BA%E5%BA%8F/</url>
+    <content><![CDATA[<p>执行顺序:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231016110608952.png" /></p>
+<p>注意,
+<code>UMovementComponent.bTickBeforeOwner</code>默认为<code>true</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231016112629392.png" /></p>
+<span id="more"></span>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">AController::AddPawnTickDependency</span><span class="params">(APawn* NewPawn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (NewPawn != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">bool</span> bNeedsPawnPrereq = <span class="literal">true</span>;</span><br><span class="line">        UPawnMovementComponent* PawnMovement = NewPawn-&gt;<span class="built_in">GetMovementComponent</span>();</span><br><span class="line">        <span class="keyword">if</span> (PawnMovement &amp;&amp; PawnMovement-&gt;PrimaryComponentTick.bCanEverTick)</span><br><span class="line">        &#123;</span><br><span class="line">            PawnMovement-&gt;PrimaryComponentTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, <span class="keyword">this</span>-&gt;PrimaryActorTick);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Don&#x27;t need a prereq on the pawn if the movement component already sets up a prereq.</span></span><br><span class="line">            <span class="keyword">if</span> (PawnMovement-&gt;bTickBeforeOwner || NewPawn-&gt;PrimaryActorTick.<span class="built_in">GetPrerequisites</span>().<span class="built_in">Contains</span>(<span class="built_in">FTickPrerequisite</span>(PawnMovement, PawnMovement-&gt;PrimaryComponentTick)))</span><br><span class="line">            &#123;</span><br><span class="line">                bNeedsPawnPrereq = <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (bNeedsPawnPrereq)</span><br><span class="line">        &#123;</span><br><span class="line">            NewPawn-&gt;PrimaryActorTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, <span class="keyword">this</span>-&gt;PrimaryActorTick);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMovementComponent::RegisterComponentTickFunctions</span><span class="params">(<span class="type">bool</span> bRegister)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">RegisterComponentTickFunctions</span>(bRegister);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Super may start up the tick function when we don&#x27;t want to.</span></span><br><span class="line">    <span class="built_in">UpdateTickRegistration</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If the owner ticks, make sure we tick first</span></span><br><span class="line">    AActor* Owner = <span class="built_in">GetOwner</span>();</span><br><span class="line">    <span class="keyword">if</span> (bTickBeforeOwner &amp;&amp; bRegister &amp;&amp; PrimaryComponentTick.bCanEverTick &amp;&amp; Owner &amp;&amp; Owner-&gt;<span class="built_in">CanEverTick</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        Owner-&gt;PrimaryActorTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, PrimaryComponentTick);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码上可以看出,
+<code>Controller Tick</code>始终排在<code>PawnTick</code>和<code>PawnMovementTick</code>之前.
+如果<code>UMovementComponent.bTickBeforeOwner</code>为<code>true</code>,
+则先执行<code>PawnMovementTick</code>再执行<code>PawnTick</code>,
+否则<code>PawnTick</code>先执行,
+<code>PawnMovementTick</code>后执行.</p>
+<p><code>Actor</code>和<code>Component</code>的Tick注册顺序.
+当<code>UMovementComponent.bTickBeforeOwner</code>为<code>false</code>时,
+<code>PawnTick</code>先执行, <code>PawnMovementTick</code>后执行.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Pawn,Controller和PawnMovementComponent Tick顺序</span></span><br><span class="line">--AActor.BeginPlay</span><br><span class="line">|--<span class="comment">// 注册Actor自身tick</span></span><br><span class="line">|--AActor.<span class="built_in">RegisterAllActorTickFunctions</span>()</span><br><span class="line">| |--AActor.<span class="built_in">RegisterActorTickFunctions</span>()</span><br><span class="line">| | |--PrimaryActorTick.<span class="built_in">SetTickFunctionEnable</span>()</span><br><span class="line">| | |--PrimaryActorTick.<span class="built_in">RegisterTickFunction</span>()</span><br><span class="line">|--<span class="comment">// 针对所有Components, 都执行RegisterTick</span></span><br><span class="line">|--UActorComponent.<span class="built_in">RegisterAllComponentTickFunctions</span>()</span><br><span class="line">| |--UCharacterMovementComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | |--UMovementComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | | |--UActorComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | | | |--UActorComponent.<span class="built_in">SetupActorComponentTickFunction</span>()</span><br><span class="line">| | | | | |--TickFunction-&gt;<span class="built_in">SetTickFunctionEnable</span>()</span><br><span class="line">| | | | | |--TickFunction-&gt;<span class="built_in">RegisterTickFunction</span>()</span><br><span class="line">| |--Component-&gt;<span class="built_in">BeginPlay</span>();</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>UE4</category>
+        <category>Tick</category>
+      </categories>
+      <tags>
+        <tag>UE4</tag>
+        <tag>Tick</tag>
+        <tag>Pawn,Controller和PawnMovementComponent Tick顺序</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Geometry Queries(碰撞检测)--翻译</title>
+    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/</url>
+    <content><![CDATA[<p>原文链接<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html">Geometry
+Queries</a>.</p>
+<span id="more"></span>
+<h1 id="前言">前言</h1>
+<p><code>solid half-space</code>:
+我对<code>solid half-space</code>的理解是: 正常封闭型固体分成内部和外部,
+<code>half-space geometry</code>表示外部与外界相交,
+内部也能与外部相交的几何体.
+例如平面就可以被当做<code>solid half-space</code>.</p>
+<p><code>SPU</code>和<code>PPU</code>是什么? 解释:<a
+href="https://zhuanlan.zhihu.com/p/99446588">PS3中的处理器核心</a>.</p>
+<h1 id="序言">序言</h1>
+<p>这篇文章介绍使用PhysX处理独立几何体的碰撞和形状查询.
+碰撞和场景查询形成对比, 后者碰撞或者查询场景中所有的对象.
+有四种主要的几何<code>Geometry Query</code>:</p>
+<ul>
+<li><code>Raycasts(Raycast Queries)</code>: 射线是否与几何体相交</li>
+<li><code>Sweeps(Sweep Queries)</code>: 沿着直线移动一个几何体,
+找到与之相交的几何体的第一个点</li>
+<li><code>Overlaps(Overlap Queries)</code>: 决定两个结合体怎么相交.</li>
+<li>渗入深度计算(<code>minimal translational distance queries</code>,
+缩写<code>MTD</code>):
+查找能使两个<code>Overlap</code>的几何体分开的最小距离的方向.</li>
+</ul>
+<p>另外,
+<code>PhysX</code>提供一个<code>Geometry Object</code>的计算<code>AABB</code>的方法,
+以及计算一个点到<code>Geometry Object</code>的距离.</p>
+<p>以下所有函数中,
+<code>Geometry Object</code>都是以<code>PxGeometry structure</code>定义形状,
+以<code>PxTransform structure</code>定义姿势的.
+所有的<code>Transform</code>和<code>Vector</code>都被解释为在任意空间,
+并且返回该空间中的结果.</p>
+<h1 id="raycasts">Raycasts</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryRaycast-1696640665770-26.png" /></p>
+<p><code>Raycast Query</code>:沿着一条线段追踪一个点,
+并记录与几何体表面相交的信息.
+<code>PhysX</code>支持向所有几何体打射线.</p>
+<p>下面的代码举例说明如何使用<code>Raycast Query</code>:</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="title class_">PxRaycastHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxU32</span> maxHits = <span class="number">1</span>;</span><br><span class="line">bool anyHit = <span class="literal">false</span>;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eUV</span>;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:raycast</span>(origin, unitDir,</span><br><span class="line">                                          geom, pose,</span><br><span class="line">                                          maxDist,</span><br><span class="line">                                          hitFlags,</span><br><span class="line">                                          maxHits, &amp;hitInfo, anyHit);</span><br></pre></td></tr></table></figure>
+<p>对参数的解释如下:</p>
+<ul>
+<li><code>Origin</code>: 射线起始位置.</li>
+<li><code>unitDir</code>: 定义射线方向的单位向量.</li>
+<li><code>maxDist</code>: 沿射线搜寻的最大距离.
+<code>maxDist</code>必须在<span class="math inline">\([0,
+inf]\)</span>范围之内. 如果1<code>maxDist</code>为0,
+只有当射线起始点在图形内部才会返回一个<code>hit</code>,
+下面对每个几何体进行详细说明.</li>
+<li><code>geom</code>: 被测试的几何体.</li>
+<li><code>pose</code>: 被测试几何体的位置</li>
+<li><code>hitFlag</code>: 指定查询应返回的值, 以及处理查询的选项.</li>
+<li><code>maxHits</code>: 返回的最大<code>hit</code>数量.</li>
+<li><code>hitInfo</code>: 指定射线结果存储的地方,
+即<code>PxRaycastHit</code>结构体.</li>
+<li><code>anyHit</code>: 已废弃.
+它等价于<code>PxHitFlag::eMESH_ANY</code>.
+应该使用<code>PxHitFlag::eMESH_ANY</code>.</li>
+</ul>
+<p>返回结果为交互的数量. 每个交互的信息,
+都会用<code>PxRaycastHit</code>存储. 结构体属性如下:</p>
+<figure class="highlight mipsasm"><table><tr><td class="code"><pre><span class="line">PxRigidActor*   actor;</span><br><span class="line">PxShape*        <span class="keyword">shape;</span></span><br><span class="line"><span class="keyword"></span>PxVec3          position;</span><br><span class="line">PxVec3          <span class="keyword">normal;</span></span><br><span class="line"><span class="keyword"></span>PxF32           <span class="keyword">distance;</span></span><br><span class="line"><span class="keyword"></span>PxHitFlags      flags;</span><br><span class="line">PxU32           faceIndex;</span><br><span class="line">PxF32           u, v;</span><br></pre></td></tr></table></figure>
+<p>某些字段是可选的, <code>flag</code>字段指明哪些成员会被填充到结果中.
+如果在输入中设置了相应的字段, 该字段将被填充到输出结构中. 例如,
+如果<code>hitFlags</code>被设置成<code>PxHitFlag::ePOSITION</code>,
+查询将会填充<code>PxRaycastHit::position</code>字段,
+并且在<code>PxRaycastHit::flags</code>中填充<code>PxRaycastHit::position</code>值.
+如果<code>Input Flag</code>中没有设置指定的成员,
+输出结果中不一定会包含相应成员的数据.
+如果输入中不包含<code>eNormal</code>和<code>ePosition</code>标记,
+查询会更快.</p>
+<p>对于那些最初不与几何体相交的射线,
+字段填充如下(可选字段和控制它们的标记列在一起):</p>
+<ul>
+<li><p><code>actor</code>和<code>shape</code>不会被填充(这些字段只在<code>scene-level raycast</code>中被使用,
+详情:<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scene-queries">Scene
+Queries</a>).</p></li>
+<li><p><code>position (PxHitFlag::ePOSITION)</code>:相交的位置.</p></li>
+<li><p><code>normal (PxHitFlag::eNORMAL)</code>:交点的表面法线.</p></li>
+<li><p><code>distance (PxHitFlag::eDISTANCE)</code>:
+射线上找到交点的距离.</p></li>
+<li><p><code>flag</code>指明了结构体中哪些字段是可用的.</p></li>
+<li><p><code>faceIndex</code>:射线<code>hit</code>到的<code>face</code>的<code>index</code>.
+对于<code>三角形网格(triangle mesh)</code>和<code>高度场(height field)</code>相交,
+它表示三角形索引. 对于<code>凸多边形(convex mesh)</code>相交,
+它是多边形的索引. 对于其他形状,
+它永远是<code>0xFFFFFFFF</code>.</p></li>
+<li><p><code>u</code>和<code>v</code>(<code>PxHitFlag::eUV</code>)是交点的重心坐标系.
+这些字段(以及标记)只支持<code>mesh</code>(不支持<code>高度场(height field)</code>).</p></li>
+</ul>
+<p><code>Position</code>字段和重心坐标系相关, 公式如下,
+其中<code>v0</code>,
+<code>v1</code>和<code>v2</code>是被<code>hit</code>的三角形的顶点.</p>
+<blockquote>
+<p>position = (1 - u - v)<em>v0 + u</em>v1 + v*v2;</p>
+</blockquote>
+<p>如何在<code>triangle mesh</code>中检索面和顶点数据,
+在<code>凸多边形mesh(convex mesh)</code>和<code>高度场(height field)</code>中使用面和顶点索引,
+详情请查询<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/Geometry.html#geometry">Geometry</a>.</p>
+<p>当射线起点在几何体内部时, 除了应用上面的行为,
+对于某些字段<code>PhysX</code>可能无法计算出有意义的值. 这种情况下,
+这些字段不会发生更改, 并且对应的标记也不会被设置.
+具体细节因几何类型而异, 如下所述.</p>
+<p>射线交点的具体情况如下:</p>
+<h2
+id="向spheres-capsules-boxs-convex-meshes打射线">向<code>Spheres</code>
+<code>Capsules</code> <code>Boxs</code>
+<code>Convex Meshes</code>打射线</h2>
+<p>当射线原点在固体对象(<code>Spheres</code>, <code>Capsules</code>
+<code>Boxs</code>
+<code>Convex Meshes</code>)内部时,最多返回一个结果:</p>
+<ul>
+<li><code>PxHitFlag::eDISTANCE</code>被设置,
+并且<code>distance</code>为0.</li>
+<li><code>PxHitFlag::eNORMAL</code>被设置,
+并且交点法线方向与射线方向相反.</li>
+<li><code>PxHitFlag::ePOSITION</code>被设置,
+并且<code>position (impact point)</code>设置为射线原点.</li>
+</ul>
+<p>如果射线的起点和终点与物体表面非常近,
+它有可能被看做成<code>surface</code>的任何一边(<code>side</code>).</p>
+<h2 id="向平面打射线">向平面打射线</h2>
+<p>对于射线检测,
+会把平面当做只有半个空间(<code>half-space</code>)的固体,
+(和<code>overlap</code>不同, <strong>为什么不同?</strong>).
+大多数情况下会返回一个结果, 如果射线原点在平面的后边,
+即使射线和平面相交, 也不会有<code>hit</code>点.</p>
+<p>如果射线的起始和结束点与平面非常接近,
+它可能会被当做平面的任何一边.</p>
+<h2
+id="向triangle-meshes打射线">向<code>Triangle meshes</code>打射线</h2>
+<p>把<code>triangle meshes</code>当做非常薄的三角形面而不是固体对象.
+可以通过配置返回一个任意<code>hit</code>点,
+或者很多个<code>hit</code>点.</p>
+<ul>
+<li>如果<code>maxHits</code>为1,
+并且没有设置<code>PxHitFlag::eMESH_ANY</code>(或者<code>anyHit</code>为<code>true</code>),
+查询将会返回最近的交点.</li>
+<li>如果<code>maxHits</code>为1,
+并设置了<code>PxHitFlag::eMESH_ANY</code>(并且<code>anyHit</code>为<code>false</code>),
+查询将会返回任意<code>hit</code>点.
+对于<code>line of sight</code>或者<code>shadow ray</code>而言,
+使用它就可以完全可以知道射线是否<code>hit</code>到<code>mesh</code>.</li>
+<li>如果如果<code>maxHit</code>大于1, 查询将会返回多个交点,
+最多为<code>maxHits</code>个. 如果交点个数超过<code>maxHits</code>,
+无法保证结果中包含最近的<code>hit</code>. 使用示例:
+击中多个三角行的穿墙(<code>wall-piercing</code>)子弹,
+或者要求特定的过滤. 注意,
+在这些例子中必须使用<code>PxHitFlag::eMESH_MULTIPLE</code>.
+还要注意如果<code>hit</code>点彼此非常接近,
+<code>SDK</code>默认返回第一个<code>found</code>到的<code>hit</code>结果.</li>
+</ul>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+<span style="color:red;">通常<em>any hit</em> 比<em>closest hit</em>
+更快, <em>closest hit</em> 比<em>multiple hits</em>更快, 即:<em>any
+hit</em> 快于<em>closest hit</em> 快于<em>multiple hits</em>.
+</span><br>
+</td>
+</tr>
+</table>
+<p>默认情况下, 背面<code>hits</code>(<code>back face hits</code>,
+三角形外向法线和射线的点乘(<code>dot</code>)结果为负)会被剔除,
+<del>所以对于任何命中上述法线的三角形, 与射线方向的点乘结果都为负</del>
+如果三角形正面法线(<code>outward-face-normal</code>)与射线的点乘为负,
+则<code>hit</code>点被剔除.</p>
+<ul>
+<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>或者<code>PxHitFlag::eMESH_BOTH_SIDES</code>被设置,
+则禁止剔除.</li>
+<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>被设置,
+<code>back face hit</code>将会把最终结果的法线反转.</li>
+</ul>
+<p>这句话太难翻译直接贴原文了(<code>reported-normal</code>不知道怎么翻译):</p>
+<blockquote>
+<p>For example a transparent glass window could be modeled as a
+double-sided mesh, so that a ray would hit either side with the reported
+normal facing opposite to the ray direction. A raycast tracing the path
+of a bullet that may penetrate the front side of a mesh and emerge from
+the back could use <em>eMESH_BOTH_SIDES</em> to find both front and back
+facing triangles even when the mesh is single-sided.</p>
+<p>例如一个类型为<code>double-sided mesh</code>的玻璃窗, so that a ray
+would hit either side with the reported normal facing opposite to the
+ray direction. 有些子弹可以击穿mesh, 模拟这类子弹路径的射线,
+可以使用<code>eMESH_BOTH_SIDES</code>来找正面和背面的三角形,
+即使该mesh是<code>single-side</code>.</p>
+</blockquote>
+<p>下图展示了当单一射线和一个mesh在几个不同的地方相交时,
+不同<code>flag</code>会发生什么.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/RayMeshDS_Permutations-1696640665770-28.png" /></p>
+<p>只针对某些<code>mesh</code>使用<code>PxHitFlag::eMESH_BOTH_SIDES</code>标志位,
+并且该<code>flag</code>在<code>PxQueryFilterCallback</code>中设置.</p>
+<p>如果射线开始和结束的点和三角面非常接近,
+可能会被当成三角形的任何一边(正面/背面).</p>
+<h2 id="向heightfields打射线">向<code>Heightfields</code>打射线</h2>
+<ul>
+<li>处理<code>Heightfields</code>和<code>triangle meshes</code>不同,
+<code>heightfields</code>会一直被当做<code>double side</code>,
+意味着无论射线原点在<code>heightfileds surface</code>的上面或者下面,
+最终的<code>hits</code>都会被注册.</li>
+<li><code>hit normal</code>一直是<code>triangle hit</code>的法线,
+当<code>thickness</code> <span class="math inline">\(&lt;=\)</span> 0,
+朝向(在<code>heightfields</code>空间)<span
+class="math inline">\(+y\)</span>方向; 当<code>thickness</code>大于0,
+朝向(在<code>heightfields</code>空间)<span
+class="math inline">\(-y\)</span>方向.</li>
+<li>除了上述情况,
+<code>heightfields thickness</code>对其他方面没有任何影响. 特殊的,
+固体的<code>heightfield</code>部分不会生成<code>hit</code>.</li>
+<li>当射线<code>hit</code> <code>heightfield</code>时候,
+<code>UVs</code>不会被设置,
+<code>PxHitFlag::eUV</code>标记也不会被设置.</li>
+</ul>
+<h1 id="overlap">overlap</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryOverlap-1696640665770-30.png" /></p>
+<p><code>overlap</code>查询只是简单的查询两个几何体是否重叠了.
+其中一个几何体必须是<code>box</code>,<code>sphere</code>,<code>capsule</code>或者<code>凸多边形</code>,
+另一个几何体可以使任意类型.</p>
+<p>下面代码说明了如何使用<code>overlap</code>查询:</p>
+<figure class="highlight ebnf"><table><tr><td class="code"><pre><span class="line"><span class="attribute">bool isOverlapping</span> = overlap(geom0, pose0, geom1, pose1);</span><br></pre></td></tr></table></figure>
+<p><code>overlap</code>不支持<code>hit flag</code>,
+只是返回一个<code>bool</code>类型的结果.</p>
+<ul>
+<li>平面被当做<code>solid half-space</code>:
+任何处于平面下的都被当做<code>volume</code>的一部分.</li>
+<li><code>triangle mesh</code>被当做非常薄的三角形表面,
+而不是固体对象.</li>
+<li><code>heightfield</code>被当做由其厚度挤压成的三角形表面.
+<code>overlap</code>几何体不会与<code>heightfield</code>相交,
+但是挤压空间将会上报<code>hit</code></li>
+</ul>
+<p>如果对于<code>triagnle mesh</code>和<code>heightfield</code>类型不仅仅需要一个<code>bool</code>结果,
+使用<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>
+API.</p>
+<h1 id="penetration-depth">Penetration Depth</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPenetration-1696853091899-1.png" /></p>
+<p>当两个对象相交,
+<code>PhysX</code>能够计算通过平移将二者分开的最小距离和方向(分开的量涉及到<code>MTD</code>,
+即: <code>最小平移距离(minimum translational distance)</code>,
+通过平移将二者分开的长度最小的向量).
+其中一个几何体必须是<code>box</code>, <code>sphere</code>,
+<code>capsule</code>, 或者<code>convex mesh</code>,
+另一个可以是任意类型.</p>
+<p>如下代码阐述了如何使用<code>penetration depth</code>的查询:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">bool</span> isPenetrating = PxGeometryQuery::<span class="built_in">computePenetration</span>(direction, depth,</span><br><span class="line">                                                         geom0, pose0,</span><br><span class="line">                                                         geom1, pose1);</span><br></pre></td></tr></table></figure>
+<p>参数解释如下:</p>
+<ul>
+<li><code>direction</code>:
+第一个对象通过平移从第二个对象中脱离(<code>depenetrate</code>)出来的方向.</li>
+<li><code>distance</code>:
+第一个对象从第二个对象中脱离(<code>depenetrate</code>)出来的距离.</li>
+<li><code>geom0</code>: 第一个几何体.</li>
+<li><code>pos0</code>: 第一个几何体的<code>transform</code>.</li>
+<li><code>geom1</code>:第二个几何体.</li>
+<li><code>pos1</code>: 第二个几个题的<code>transform</code>.</li>
+</ul>
+<p>如果对象有渗入, 则返回<code>true</code>, 这种情况下,
+会设置其方向和深度字段. 通过平移向量(<span
+class="math inline">\(\vec{D}=\vec{Direction}*depth\)</span>)将二者分离开来.
+如果函数返回<code>true</code>, <code>depth</code>一定<span
+class="math inline">\(&gt;=0\)</span>.
+如果几何体没有<code>overlap</code>, 函数返回<code>false</code>,
+<code>direction</code>和<code>depth</code>都不会进行设置.</p>
+<p>对于简单(<code>convex</code>)的形状, 返回结果是精确的.</p>
+<p>对于<code>mesh</code>和<code>heightfields</code>,
+在<code>PxExtensions</code>中, 将使用的循环算法和专用函数暴露出来了.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxVec3 direction = <span class="built_in">PxComputeMeshPenetration</span>(maxIter,</span><br><span class="line">                                            geom, geomPose,</span><br><span class="line">                                            meshGeom, meshPose,</span><br><span class="line">                                            nb);</span><br><span class="line"></span><br><span class="line">PxVec3 direction = <span class="built_in">PxComputeHeightFieldPenetration</span>(maxIter,</span><br><span class="line">                                                   geom, geomPose,</span><br><span class="line">                                                   heightFieldGeom, heightFieldPose,</span><br><span class="line">                                                   nb);</span><br></pre></td></tr></table></figure>
+<p>这里, <code>maxIter</code>是算法的最大循环次数,
+并且<code>nb</code>是真正的循环执行数量,
+并且作为<code>output</code>变量输出出来.
+如果检测没有<code>overlap</code>, <code>nb</code>将会被设置成0.
+代码尝试至多<code>maxIter</code>此循环,
+但是如果找到<code>depenetration</code>向量, 可能会提前返回. 通常,
+<code>maxIter = 4</code>就会得出一个不错的结果.</p>
+<p>这些函数只会计算出一个近似的<code>depenetration</code>向量,
+当在几何体和<code>mesh/heightfield</code>之间的<code>overlap</code>数量比较小的时候,
+会工作良好. 特别的, 当对象中心在三角形背面时, 将会忽略与三角形的交互.
+如果所有相交的三角形都符合上述条件,
+该函数将不会计算<code>MTD</code>向量.</p>
+<h1 id="sweeps">Sweeps</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQuerySweep-1696640665770-34.png" /></p>
+<p><code>sweep query</code>追踪一个对象横穿空间的过程,
+并找到在这个过程中与第二个几何体碰撞的点. 并且上报关于碰撞点的信息.
+<code>PhysX</code>只支持第一个对象(贯穿空间的那个对象)为<code>sphere</code>,
+<code>box</code>, <code>capsule</code>, 或者<code>convex</code>几何体,
+第二个对象可以是任何类型.</p>
+<p>下面的代码举例说明如何使用<code>sweep query</code>:</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="title class_">PxSweepHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE</span>;</span><br><span class="line"><span class="title class_">PxReal</span> inflation = <span class="number">0</span>.0f;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:sweep</span>(unitDir, maxDist,</span><br><span class="line">                                        geomToSweep, poseToSweep,</span><br><span class="line">                                        geomSweptAgainst, poseSweptAgainst,</span><br><span class="line">                                        hitInfo,</span><br><span class="line">                                        hitFlags,</span><br><span class="line">                                        inflation);</span><br></pre></td></tr></table></figure>
+<p>这些参数解释如下:</p>
+<ul>
+<li><code>unitDir</code>: 定义<code>sweep</code>的单位向量.</li>
+<li><code>maxDist</code>: 定义了沿着<code>sweep</code>查询的最大距离.
+它必须在<span class="math inline">\([0, inf)\)</span>之间,
+并且通过SDK会被限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.
+当<code>sweep</code>距离为0时, 等价于<code>overlap</code>检测.</li>
+<li><code>geomToSweep</code>: 将要<code>sweep</code>的几何体,
+支持<code>box</code>, <code>sphere</code>, <code>capsule</code>,
+或者<code>convex mesh</code>类型.</li>
+<li><code>PosToSweep</code>:
+用于<code>sweep</code>几何体的初始位置.</li>
+<li><code>geomSweptAgainst</code>:
+<code>sweep against</code>的几何体.</li>
+<li><code>hitInfo</code>: 最终返回的结果.
+一个<code>sweep</code>最多返回一个<code>hit</code>.</li>
+<li><code>hitFlags</code>: 决定<code>sweep</code>将被如何处理,
+如果发现<code>impact</code>点, 会返回对应的数据.</li>
+<li><code>inflation</code>: 以对象表面向外扩展的方式膨胀第一个几何体,
+并将所有角都做成圆角.
+当使用<code>sweep</code>来测试<code>movement</code>是否可用时,
+它用来保证几何体最小的空间边界.</li>
+</ul>
+<p>正如射线检测一样,
+如果某个<code>flag</code>在<code>hitFlags</code>中设置,
+在输出结构体对应的字段会被填充. <code>PxSweepHit</code>的字段如下:</p>
+<figure class="highlight abnf"><table><tr><td class="code"><pre><span class="line">PxRigidActor*   actor<span class="comment">;</span></span><br><span class="line">PxShape*        shape<span class="comment">;</span></span><br><span class="line">PxVec3          position<span class="comment">;</span></span><br><span class="line">PxVec3          normal<span class="comment">;</span></span><br><span class="line">PxF32           distance<span class="comment">;</span></span><br><span class="line">PxHitFlags      flags<span class="comment">;</span></span><br><span class="line">PxU32           faceIndex<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>actor</code>和<code>shape</code>:
+<code>actor</code>和<code>shape</code>不会被设置(这些字段只有在<code>scene-level sweep</code>中才会被使用,
+详见: <a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scenequeries"><em>Scene
+Queries</em></a>).</li>
+<li><code>position</code>(<code>PxHitFlag::ePOSITION</code>):
+交点的位置. 当有多个<code>impact</code>点时, 例如两个<code>box</code>,
+面和面相撞, <code>physX</code>将任意选择一个点.
+针对<code>meshes</code>或者<code>height fields</code>类型, 使用函数<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>获取详细信息.</li>
+<li><code>normal</code>(<code>PxHitFlag::eNORMAL</code>):<code>impact</code>点的表面法线.
+他是一个单位向量, 指向被击中对象的外侧, 与<code>sweep</code>方向相反(即:
+<code>sweep</code>方向和<code>impact</code>法线的点乘是负数.).</li>
+<li><code>distance</code>(<code>PxHitFlag::eDISTANCE</code>):沿着射线方向,
+物体与碰撞点的距离.</li>
+<li><code>flag</code>: 指定结构体的哪些字段是可用的.</li>
+<li><code>faceIndex</code>: <code>sweep hit</code>的面索引.
+这个是被击中对象的面, 而不是<code>sweep</code>对象.
+对于和<code>triangle mesh</code>和<code>heightfield</code>的<code>sweep</code>交点,
+它是三角形顶点索引, 与<code>convex mesh</code>的交点,
+它是多边形顶点索引. 对于其他类型, 它是0xffffffff.</li>
+</ul>
+<p>当<code>sweep</code>
+<code>hit</code>到<code>triangle mesh</code>或者<code>convex mesh</code>,
+返回的被选择的三角形如下:</p>
+<ul>
+<li>对于<code>convex</code>和<code>box</code> <code>sweep</code>,
+选择距离最短的三角形.</li>
+<li>对于<code>capsule</code>和<code>sphere</code>,
+最短距离的三角形不一定会被选择, 最短距离在<span
+class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
+选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
+如果这些三角形法线相同, 会随机选择他们中的一个然后返回.</li>
+</ul>
+<p>这些例子中, <code>hit</code>点, 位置(<span
+style="color:red;">例如两个<em>box</em>的面和面<code>sweep</code>会随机选择其中一个点</span>),
+法线(<span
+style="color:red;">对于<code>capsule</code>和<code>sphere</code>,
+最短距离的三角形不一定会被选择, 最短距离在<span
+class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
+选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
+如果这些三角形法线相同,
+会随机选择他们中的一个然后返回.</span>),都会影响最终选择哪个三角形.</p>
+<p>与<code>raycast</code>不同, <code>sweep</code>不支持<code>u</code>,
+<code>v</code>坐标.</p>
+<p>对于几何对象的<code>sweep against</code>:</p>
+<ul>
+<li>平面被当做半个空间的固体,
+也就是说任何在平面后面的物体多会被当做<code>volume</code>的一部分进行<code>sweep against</code>.</li>
+<li>相同的背面剔除规则(应用在<code>raycast</code>上的)也会应用到<code>sweep</code>上,
+需要注意的是,
+不支持<code>eMESH_MULTIPLE</code>和<code>eMESH_BOTH_SIDES</code>.</li>
+</ul>
+<h2 id="initial-overlaps">Initial Overlaps</h2>
+<p>和射线检测相似, 开始就在对象内部,
+两个几何体<code>sweep</code>时候可能就已经相交了. 默认情况下,
+<code>PhysX</code>会检测并上报<code>overlap</code>.
+使用<code>PxSweepHit::hadInitialOverlap()</code>来查看<code>hit</code>是否是<code>initial overlap</code>生成的.</p>
+<p>对于<code>triangle mesh</code>和<code>height field</code>,
+背面剔除在<code>overlap check</code>之前执行,
+因为如果<code>triangle</code>被剔除了,
+就不会上报<code>overlap</code>事件了.</p>
+<p><code>PhysX</code>是否计算<code>MTD</code>由<code>PxHitFlag::eMTD</code>决定.
+如果<code>PxHitFlag::eMTD</code>没有被设置:</p>
+<ul>
+<li><code>distance</code>将被设置成0,
+<code>PxHitFlag::eDISTANCE</code>也会在<code>PxSweepHit</code>结构体中设置.</li>
+<li><code>normal</code>和<code>sweep</code>方向相反,
+并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::eNORMAL</code>会被设置.</li>
+<li><code>position</code>不会被定义,
+并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::ePOSITION</code>不会被设置.</li>
+<li><code>faceIndex</code>是第二个几何对象的面.
+对于<code>heightfield</code>和<code>triangle mesh</code>,
+他是第一个被发现的<code>overlap triangle</code>的索引. 对于其他几何类型,
+将设置为<code>0xffffffff</code>.</li>
+</ul>
+<p>如果<code>PxHitFlag::eMTD</code>被设置,
+<code>hit</code>结果的定义如下:</p>
+<ul>
+<li><code>distance</code>被设置成<code>penetrate</code>的深度,
+<code>PxSweepHit</code>
+中的<code>PxHitFlag::eDISTANCE</code>被设置.</li>
+<li><code>normal</code>被设置成<code>penetrate</code>的方向,
+<code>PxSweepHit</code>中的<code>PxHitFlag::eNORMAL</code>被设置.</li>
+<li><code>position</code>为<code>sweep</code>几何对象上的一个点(即:第一个几何对象参数),
+并且<code>PxSweepHit</code>中的<code>PxHitFlag::ePOSITION</code>会被设置.</li>
+<li><code>faceIndex</code>是第二个几何对象上的面.
+<ul>
+<li>对于<code>convex mesh</code>, 它是最小<code>penetrate</code>的面.
+如果<code>MTD</code>可以通过<code>edge</code>或者<code>convex</code>顶点分离对象,
+将选择法线(面的法线)最接近分开方向的面.</li>
+<li>对于<code>triangle mesh</code>和<code>heightfield</code>,
+它是在<code>depenetration</code>算法最后一次循环中查找到的最后一个<code>penetrate</code>三角形.</li>
+<li>对于其他几何类型,
+<code>faceIndex</code>将会被设置成<code>0xffffffff</code>.</li>
+</ul></li>
+</ul>
+<p>在<code>initial overlap</code>中, 这个标志将会带来额外负担的处理操作.
+另外, 会启用如下限制:</p>
+<ul>
+<li><code>PxHitFlag::eMTD</code>与<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>(见下文)不兼容.
+<code>PxHitFlag::eMTD</code>与他们中的任何一个组合使用都会报错,
+并且与<code>PxHitFlag::eMTD</code>不兼容的标志将被忽略.</li>
+<li>在<code>PS3</code>中,
+<code>PxHitFlag::eMTD</code>不支持<code>SPU(Power Processing Element) sweep</code>.
+如果在<code>SPU sweep</code>中包含了<code>PxHitFlag::eMTD</code>,
+将会报错.
+<code>PPU(Synergistic Processing Elements)</code>完全支持<code>PxHitFlag::eMTD</code>.</li>
+</ul>
+<p>有时使用定制的代码路径测试<code>initial overlap</code>会带来性能消耗.
+有必要保证几何对象不是<code>initially overlapping</code>,
+<code>overlap</code>支持使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>进行检测.
+有一些使用该<code>flag</code>的限制, 详见:<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#sweep-pitfalls"><em>Pitfalls</em></a>.</p>
+<ul>
+<li>当<code>initial overlap</code>几何体处理未定义行为时,
+会使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>标志.</li>
+<li><code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>与<code>zero sweep distance</code>组合使用会导致<code>warning</code>和<code>undefined behavior</code>.</li>
+</ul>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 具有<em>PxHitFlag::eMTD</em>
+flag的<em>sweep</em>使用两种针对三角形的背面剔除. 首先,
+在<em>Sweep</em>方向上被剔除的三角形决定这是否是一个<em>overlap</em>.
+如果检测到<em>overlap</em>,
+他们会进一步检测<em>centroid(面心)</em>是否在三角形后面,
+如果没找到三角形, <em>direction</em>将设置为<em>sweep
+diection</em>的反方向, <em>distance</em>设置为0.
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 大多数情况下, 将第一个几何体平移<em>-normal*distance</em>距离,
+会将对象分开. 尽管可以使用循环<em>depenetration</em>算法找到<em>triangle
+mesh</em>和<em>height field</em>的<em>MTD</em>,
+但是有些情况下<em>MTD</em>可能不会将mesh完全分离开. 这种情况下,
+在应用平移后, 要调用第二次查询.
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+注意:<br> 在<em>PhysX
+3.3</em>中一个已知的问题是当<em>eMTD</em>没有设置时, <em>sweep against
+convex mesh</em>的<em>face index</em>是<em>undefined</em>
+</td>
+</tr>
+</table>
+<h2 id="precise-sweeps">Precise Sweeps</h2>
+<p><code>PxHitFlag::ePRECISE_SWEEP</code>允许更加精确的<code>sweep</code>代码(默认情况下使用更快的但是精度不高的解决方案).
+<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>inflation</code>和<code>PxHitFlag::eMTD</code>不兼容.</p>
+<h2 id="sweeps-against-height-fields">Sweeps against Height Fields</h2>
+<ul>
+<li><code>Height field</code>被当做很薄的三角形面, 而不是固体对象.</li>
+<li>厚度不会影响<code>initial overlap</code>检测和点的碰撞.</li>
+<li>对于<code>single height field</code>, 如果厚度小于0,
+<code>hit</code>的法线方向为本地坐标系中的<code>+Y</code>方向,
+如果厚度大于0,
+<code>hit</code>的法线方向为本地坐标系中的<code>-Y</code>方向.</li>
+<li>如果设置了<code>eDOUBLE_SIDED</code>或者<code>eMESH_BOTH_SIDES</code>,
+<code>height field</code>将被认为是双面的.
+<ul>
+<li>返回的<code>hit</code>会一直朝向<code>sweep</code>方向.</li>
+</ul></li>
+<li><code>eMESH_ANY</code>不起作用.</li>
+<li><code>ePRECISE_SWEEP</code>不起作用.</li>
+</ul>
+<h2 id="pitfalls">Pitfalls</h2>
+<p>在使用<code>sweep</code>时候需要注意一些隐患:</p>
+<ul>
+<li>由于精度问题, 当两个对象有非常巨大的大小差异, 会返回错误的结果.</li>
+<li>由于算法不同,
+<code>sweep query</code>可能不仅仅检测到一个<code>overlap</code>查询,
+而是会检测一个不同的<code>overlapping</code>形状的初始化集合.
+执行一个<code>overlap check</code>还不足以判定<code>PxHitFlag::eIGNORE_INITIAL_OVERLAP</code>标志位的安全性,
+需要一系列的<code>overlap/sweep/penetration depth</code>信息的应用程序应该使用带有<code>initial overlap testing</code>和<code>PxHitFlag::eMTD</code>标志的<code>sweep check</code>.</li>
+</ul>
+<h1 id="additional-pxgeometryquery-functions">Additional PxGeometryQuery
+functions</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPointDistance-1696643163649-41.png" /></p>
+<p>下面的函数计算点和几何体之间的距离. 只支持<code>box</code>,
+<code>sphere</code>,
+<code>capsule</code>和<code>convex shape</code>.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxReal dist = PxGeometryQuery::<span class="built_in">pointDistance</span>(point, geom, pose, closestPoint);</span><br></pre></td></tr></table></figure>
+<p><code>closestPoint</code>是一个可选地输出参数, 它返回最近的点.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryWorldBounds-1696643311796-44.png" /></p>
+<p>下面的函数计算几何体轴对齐的包围盒(<code>AABB</code>),
+并返回它的姿态.</p>
+<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line">PxBounds3 bounds = PxGeometryQuery::get<span class="constructor">WorldBounds(<span class="params">geom</span>, <span class="params">pose</span>, <span class="params">inflation</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>AABB</code>包围盒被<code>inflation</code>缩放,
+如果没有显式指定, 它的值为`<code>1.01f</code>.</p>
+<h1 id="pxmeshquery">PxMeshQuery</h1>
+<p>对于<code>triangle mesh</code>, <code>height field overlap</code>,
+以及对<code>triangle</code>数组的<code>sweep</code>,
+<code>PhysX</code>提供额外的函数可以获得多个结果.
+只有<code>boxes</code>, <code>spheres</code>,
+<code>capsules</code>与<code>mesh</code>或<code>heightFields</code>被测试的时候使用这些函数.</p>
+<h2 id="mesh-overlaps">Mesh Overlaps</h2>
+<p>下面的代码举例说明了如何处理<code>mesh triangle</code>与给定球状体积:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxU32 triangleIndexBuffer[bufferSize];</span><br><span class="line">PxU32 startIndex = <span class="number">0</span>;</span><br><span class="line"><span class="type">bool</span> bufferOverflowOccured = <span class="literal">false</span>;</span><br><span class="line">PxU32 nbTriangles = PxMeshQuery::<span class="built_in">findOverlapTriangleMesh</span>(sphereGeom, spherePose,</span><br><span class="line">                                                         meshGeom, meshPose,</span><br><span class="line">                                                         triangleIndexBuffer, bufferSize,</span><br><span class="line">                                                         startIndex, bufferOverflowOccured);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(PxU32 i=<span class="number">0</span>; i &lt; nbTriangles; i++)</span><br><span class="line">&#123;</span><br><span class="line">    PxTriangle tri;</span><br><span class="line">    PxU32 vertexIndices[<span class="number">3</span>];</span><br><span class="line">    PxMeshQuery::<span class="built_in">getTriangle</span>(meshGeom, meshPose, triangleIndexBuffer[i], tri, vertexIndices);</span><br><span class="line"></span><br><span class="line">     ...  <span class="comment">// process triangle info</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>findOverlapTriangleMesh</code>函数用于额外提取三角形索引.</p>
+<ul>
+<li><code>sphereGeom</code>和<code>spherePose</code>指定<code>overlap</code>的区域.</li>
+<li><code>meshGeom</code>和<code>meshPose</code>指定<code>mesh</code>和它的姿态.</li>
+<li><code>triangleIndexBuffer</code>和<code>triangleSize</code>指定<code>buffer</code>以及<code>buffer</code>的大小.</li>
+<li>当<code>buffer</code>溢出时,
+<code>startIndex</code>用于重新启动查询. 在这里例子中,
+为了查询更多的三角形集合, 将该参数设置为目前已检索的数量.</li>
+<li>当查询的结果超过<code>buffer</code>的大小,
+会设置<code>bufferOverflowOccured</code>标志位.</li>
+</ul>
+<p><code>height field</code>也存在类似的查询函数.</p>
+<h2 id="sweeps-against-triangles">Sweeps against Triangles</h2>
+<p>有时候, 例如, 当使用<code>mesh overlap API</code>时,
+它会很方便的与一组三角形进行<code>sweep</code>. 为此,
+<code>PhysX</code>提供指定的函数. 函数签名如下:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">sweep</span><span class="params">(<span class="type">const</span> PxVec3&amp; unitDir,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal distance,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxGeometry&amp; geom,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTransform&amp; pose,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxU32 triangleCount,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTriangle* triangles,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxSweepHit&amp; sweepHit,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxHitFlags hitFlags = PxHitFlag::eDEFAULT,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxU32* cachedIndex = <span class="literal">NULL</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal inflation = <span class="number">0.0f</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">bool</span> doubleSided = <span class="literal">false</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数解释如下:</p>
+<ul>
+<li><code>unitDir</code>, <code>distance</code>,
+<code>geom</code>和<code>pose</code>与<code>PxGeometryQuery::sweep()</code>函数头四个参数一样.
+<code>distance</code>的范围限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.</li>
+<li><code>triangleCount</code>为包含在<code>buffer</code>中的三角形数量.</li>
+<li><code>triangles</code>为三角形的<code>buffer</code>.</li>
+<li><code>hitFlags</code>指定输出所需信息.</li>
+<li><code>cachedIndex</code>, 如果设置了,
+则该值表示第一个测试的三角形索引.
+当重复的与三角形集合<code>sweep</code>时, 它非常有用.</li>
+<li><code>inflation</code>与函数<code>PxGeometryQuery::sweep()</code>中的<code>inflation</code>参数一致.</li>
+<li><code>doubleSided</code>表示输入的三角形是否为<code>double-side</code>.
+它和<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>标志是等价的.
+它支持背面剔除, 对于任何<code>hit</code>,
+返回的面法线与<code>sweep</code>方向相反(详见:<a
+href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#raycasts-vs-meshes"><em>Raycasts
+against Triangle Meshes</em></a>).</li>
+</ul>
+<p>与其他查询相比, 该函数有额外的限制:</p>
+<ul>
+<li>几何体类型必须是<code>sphere</code>,
+<code>capsule</code>或者<code>box</code>.
+不支持<code>convex</code>几何体.</li>
+<li>该函数返回单一<code>hit</code>.
+不支持<code>multiple hits</code>(尤其是<code>PxHitFlag::eMESH_MULTIPLE</code>).</li>
+<li>该函数总是返回最近的点.</li>
+<li>只支持 <code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>,
+<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eMESH_BOTH_SIDES</code>.</li>
+<li>在返回的<code>PxSweepHit</code>结构体中,
+不会设置有效标志位(<code>PxHitFlag::ePOSITION</code>,
+<code>PxHitFlag::eNORMAL</code>, <code>PxHitFlag::eDISTANCE</code>,
+<code>PxHitFlag::eUV</code>)</li>
+</ul>
+]]></content>
+      <categories>
+        <category>翻译</category>
+        <category>PhysX</category>
+        <category>Geometry Queries</category>
+      </categories>
+      <tags>
+        <tag>翻译</tag>
+        <tag>PhysX</tag>
+        <tag>Geometry Queries</tag>
       </tags>
   </entry>
   <entry>
@@ -1139,6 +1956,172 @@ DS和客户端的Obj是怎么关联起来的?</p>
       </tags>
   </entry>
   <entry>
+    <title>Channel的创建和销毁</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/</url>
+    <content><![CDATA[<p>客户端和DS通过Bunch.ChIndex相互映射关联.
+这样同一个Actor在每个端都会通过同一个Channel进行处理.</p>
+<h1 id="搭建测试用例">搭建测试用例</h1>
+<p>首先搭建一个能主动创建和销毁Channel的示例.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在DS端主动创建Character</span></span><br><span class="line"><span class="keyword">if</span> (ALSVCharacter==<span class="literal">nullptr</span> &amp;&amp; CreateCharacterFrameIndex ==<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex =<span class="number">1</span>;</span><br><span class="line">    FVector Loc = FVector::ZeroVector;</span><br><span class="line">    FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">    FActorSpawnParameters Par;</span><br><span class="line">    Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">    ALSVCharacter = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AALSVCharacter&gt;(AALSVCharacter::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在DS端主动销毁Character</span></span><br><span class="line"><span class="keyword">if</span> (CreateCharacterFrameIndex&gt;<span class="number">50</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex = <span class="number">-1</span>;</span><br><span class="line">    ALSVCharacter-&gt;<span class="built_in">Destroy</span>();</span><br><span class="line">    ALSVCharacter = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<h1 id="打开">打开</h1>
+<h2 id="ds打开流程">DS打开流程</h2>
+<p>在DS端创建的Actor, 在属性同步时, 发现没有对应的Channel,
+会进行创建并分配ChannelIndex, 与Actor绑定.
+然后就能通过Channel进行通信了.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// DS Channel创建流程. 在SpawnActor后, 当Actor进行属性同步时, 发现缺少对应的Channel, 会进行创建.</span></span><br><span class="line">--UNetDriver.TickFlush</span><br><span class="line"> |--UNetDriver.ServerReplicateActors</span><br><span class="line"> | |--UNetDriver.ServerReplicateActors_ProcessPrioritizedActors</span><br><span class="line"> | | |--UNetConnection.CreateChannelByName</span><br><span class="line"> | | | |--GetFreeChannelIndex <span class="comment">// 获取Free ChannelIndex</span></span><br><span class="line"> | | | |--UActorChannel.Init</span><br><span class="line"> | | | | |--UChannel.Init</span><br><span class="line"> | | |--Channel-&gt;<span class="built_in">SetChannelActor</span>(Actor, ESetChannelActorFlags::None);</span><br><span class="line"> | | |--UActorChannel::ReplicateActor</span><br></pre></td></tr></table></figure>
+<p>可以看到, DS端Channel主动绑定Actor的:</p>
+<figure class="highlight rust"><table><tr><td class="code"><pre><span class="line">Channel<span class="punctuation">-&gt;</span><span class="title function_ invoke__">SetChannelActor</span>(Actor, ESetChannelActorFlags::<span class="literal">None</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="客户端打开流程">客户端打开流程</h2>
+<p>在解析DS发来的Bunch时,
+根据ChannelIndex在UNetConnection.Channels中直接索引,
+如果为空会进行创建:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707152204041.png" /></p>
+<p>创建Channel:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707152252606.png" /></p>
+<p>然后处理bunch中的数据.</p>
+<figure class="highlight gherkin"><table><tr><td class="code"><pre><span class="line">// 客户端创建Channel流程</span><br><span class="line">--UIpNetDriver.TickDispatch</span><br><span class="line"> |<span class="string">--UNetConnection.ReceivedRawPacket</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ReceivedNextBunch()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.ReceivedPacket</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.CreateChannelByName</span></span><br></pre></td></tr></table></figure>
+<p><strong>注意:</strong>Channel创建后,第一个Bunch不一定是SpawnActor,
+第一个bunch是需要该Index的Channel进行处理, 就创建了.
+比如第一个Bunch极有可能是ExportGUIDBunch,
+带有SpawnActor的Bunch在其后.</p>
+<h3 id="思考">思考</h3>
+<ol type="1">
+<li>客户端Channel打开后会立即绑定Actor吗?</li>
+</ol>
+<p>答: 不会, channel的打开纯粹是依赖Bunch的ChannelIndex,
+而Channel和Actor的绑定则依赖Bunch中的SpawnActor,
+二者极有可能不在同一个bunch中. 例如DS先发来ExportGUIDBunch,
+然后才发来属性同步的bunch(里面带有SpawnActor).</p>
+<ol start="2" type="1">
+<li>如果客户端Channel还没有SpawnActor(与Actor绑定),
+就收到了属性同步的消息(在丢包的时候可能发生), 会怎么处理?</li>
+</ol>
+<p>答: 直接丢弃, 并报错:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707154045316.png" /></p>
+<h1 id="关闭">关闭</h1>
+<h2 id="ds关闭channel">DS关闭Channel</h2>
+<h3 id="关闭channel">关闭Channel</h3>
+<p>关闭的同时会向客户端发送 CloseBunch. 注意观察,
+CloseBunch的bClose为true, 并且bReliable为1, 为Reliable的Close Bunch.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 堆栈: DS Channel Close流程, 注意:这里只是将Channel close掉, 还没有销毁</span></span><br><span class="line">--AActor.<span class="built_in">Destroy</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">NotifyActorDestroyed</span>()</span><br><span class="line"> | |--UActorChannel.<span class="built_in">Close</span>()</span><br><span class="line"> | | |--UChannel.<span class="built_in">Close</span>()</span><br><span class="line"> | | | |--SendCloseBunch</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701144331989.png" /></p>
+<p>并将Channel设置为Closing状态:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145255639.png" /></p>
+<h3 id="回收channel">回收Channel</h3>
+<p>DS向客户端发送close包后, 由于Close包时Reliable, 需要等Ack,
+再接收到Ack后, 才能将Channel Close掉.</p>
+<p>DS收到CloseBunch的ACK. 然后将Channel Close掉.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160113507.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160206847.png" /></p>
+<p>Close时候是将Channel放入Pool中, 等待下次复用:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705160254776.png" /></p>
+<h3 id="思考-1">思考</h3>
+<ol type="1">
+<li><strong>DS在Channel关闭, 但是还没有回收过程中,
+客户端发来消息会怎么处理呢?</strong></li>
+</ol>
+<p>根据上文已知DS将Channel关闭后会将UChannel.Closing 设置为true.
+在接收到Bunch时候, 会根据当前是否为Closing状态, 处理Bunch,
+如果在Closing状态, 又不是CloseBunch则直接丢弃.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230705161117562.png" /></p>
+<ol start="2" type="1">
+<li><strong>为什么不直接关闭, 反而要等客户端Ack呢?</strong></li>
+</ol>
+<p>如果直接关闭, 客户端可能还未接收到CloseBunch, 还会继续发送消息,
+这时候, DS会收到很客户端发来的消息. 这时候,
+Channel其实已经没了(Close时候会回收Channel), 会直接丢弃. 但是会报错.
+但是, 明显直接丢弃就好, 不需要报错, 所以要Ack确认后才关闭.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707160436569.png" /></p>
+<h3 id="总结">总结</h3>
+<p>DS关闭Channel分成两步, 首先将Channel Close掉,
+并向客户端发送CloseBunch,
+等待接收到CloseBunch的Ack才将Channel彻底清理并放入Pool中等待重复利用.</p>
+<h2 id="客户端关闭channel">客户端关闭Channel</h2>
+<h3
+id="收到close消息主动关闭channel并回收">收到Close消息主动关闭Channel并回收</h3>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 客户端Channel Close并销毁流程</span></span><br><span class="line">--UNetConnection.<span class="built_in">ReceivedPacket</span>()</span><br><span class="line"> |--UChannel.<span class="built_in">ReceivedRawBunch</span>() </span><br><span class="line"> | |--UChannel.<span class="built_in">ReceivedNextBunch</span>()</span><br><span class="line"> | | |--UChannel.<span class="built_in">ReceivedSequencedBunch</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">ConditionalCleanUp</span>()</span><br><span class="line"> | | | | |--UNetDriver.ActorChannelPool.<span class="built_in">Push</span>(Channel);</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">AddedToChannelPool</span>()<span class="comment">// 将channel添加到Pool池中.</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701144748951.png" /></p>
+<p>客户端收到CloseBunch之后, 直接关闭Channel, 并将Channel放入池中.</p>
+<p>销毁所有SubObj和Actor:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145136303.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145200734.png" /></p>
+<p>将Channel设置为Closing状态:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145255639.png" /></p>
+<p>放入池中:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701145027283.png" /></p>
+<p>在放入Pool时, 需要重置属性:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230704204701304.png" /></p>
+<p><strong>总结:</strong> 客户端会同时将Channel close和销毁掉,
+一帧先后执行.</p>
+<h3 id="思考-2">思考</h3>
+<h4 id="客户端能否主动destroyactor呢">客户端能否主动DestroyActor呢?</h4>
+<p>不能. 在UWorld.DestroyActor中,
+明确指出:只有DS才能Destroy网络Actor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701152748387.png" /></p>
+<p>仔细观察,仿佛还有一丝生机, 如果我传入了bNetForce为true呢?</p>
+<p>确实删除了, 但是, DS并不知情, DS和其他端的Actor还完好的存在,
+只是删除了本地Actor. 而且该Actor对应的Channel还在, 只是其Actor没了.
+这样就会造成:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230701153342664.png" /></p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">LogNetTraffic: Error: UActorChannel::ProcessBunch: New actor channel received non-open packet. bOpen:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bClose:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bReliable:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartial:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartialInitial:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">bPartialFinal:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">ChName:</span> <span class="string">Actor,</span> <span class="attr">ChIndex:</span> <span class="number">5</span><span class="string">,</span> <span class="attr">Closing:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">OpenedLocally:</span> <span class="number">0</span><span class="string">,</span> <span class="attr">OpenAcked:</span> <span class="number">1</span><span class="string">,</span> <span class="attr">NetGUID:</span> <span class="number">20</span></span><br></pre></td></tr></table></figure>
+<p><strong>所以, 本地(非DS)销毁相当于销毁了个寂寞.</strong></p>
+<h4
+id="客户端收到后续该channel的包怎么处理">客户端收到后续该Channel的包怎么处理</h4>
+<p>由于DS先关闭的Channel, 关闭后就不会再发送数据包了,
+客户端后关闭Channel, 理论上不会收到该Channel的任何包了.
+所以如果再次收到该Channel的包, 直接丢弃就好.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230707155310546.png" /></p>
+<p>可以看出, 当Channel没创建时, 对Bunch的判断非常严格.
+必须是Open并且Close/partial中的一种才可以, 否则直接丢弃.</p>
+<h2 id="思考-3">思考</h2>
+<h3
+id="如果客户端发送rpc的时候ds还没有创建channel-该怎么办">如果客户端发送RPC的时候DS还没有创建Channel,
+该怎么办?</h3>
+<p>答: 除了默认Channel, 客户端不能自主创建Channel(配置的除外),
+只能被动由DS通知创建. 其次一个Actor要想发送RPC,
+必须和DS对应Actor建立关联. 所以以上问题根本不存在.
+而且RPC必须由主端发送, 模拟端不能发送RPC. 客户端没有Channel,
+不可能发送RPC.</p>
+<h3
+id="创建channel的bunch时reliable吗">创建Channel的Bunch时Reliable吗?</h3>
+<p>Channel创建(第一次发包)的bunch都为Reliable</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230818212005025.png" /></p>
+<h3 id="closebunch是否为reliable">CloseBunch是否为Reliable?</h3>
+<p>是ReliableBunch.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230818211655965.png" /></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>Channel</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>InitOnly RPC MulticastRPC(Reliable+Unreliable) BeginPlay的执行顺序</title>
     <url>/2023/11/11/UE/%E7%BD%91%E7%BB%9C/InitOnly%20RPC%20MulticastRPC%20BeginPlay%E7%9A%84%E9%A1%BA%E5%BA%8F/</url>
     <content><![CDATA[<figure>
@@ -1538,103 +2521,6 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311132129
       </tags>
   </entry>
   <entry>
-    <title>GUID延迟绑定</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/</url>
-    <content><![CDATA[<h1 id="延迟绑定">延迟绑定</h1>
-<p>UE对UObject指针的映射是通过GUID进行的,
-例如当客户端ABasePlayerController.TestReplicationComp2需要根据DS传来的新数据进行赋值,
-这个值就是GUID其代表一个对象.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628172027340.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387.png" /></p>
-<span id="more"></span>
-<p>首先需要了解到, UE序列化是有顺序的,
-ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623173331842-1687770871870-7-1687942299803-23.png" /></p>
-<p>当属性的赋值在GUID对象创建之前, 因为指针对象还没有创建,
-那么指针就不可能指向正确的地址. 这种情况该怎么处理呢?
-例如当客户端ABasePlayerController.TestReplicationComp2需要反序列化的时候,
-发现该GUID表示的对象还不存在, 这时候怎么办?</p>
-<p>U根据UE处理属性同步的顺序(ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties),
-先反序列化属性变量, 发现没有找到GUID对应的UObj,
-将其放入临时存储变量UPackageMap.TrackedUnmappedNetGuids中(<strong>详见特殊说明1</strong>).</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200757905.png" /></p>
-<p>并将结果添加到FReceivingRepState.GuidReferencesMap中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201728804.png" /></p>
-<p>并且如果检测到有Unmapped数据,
-还要将其添加到UNetDriver.UnmappedReplicators中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628202112682.png" /></p>
-<p>在每帧末尾会处理UNetDriver.UnmappedReplicators中未处理的UnmappedGUID.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201922955.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17.png" /></p>
-<p>通过以上逻辑,
-就可以将ABasePlayerController.TestReplicationComp2指向对应的Obj了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387-1687955124036-34.png" /></p>
-<p><strong>思考:</strong></p>
-<p>如果在反序列化属性时, GUID没有找到, 那么该属性会更改吗?</p>
-<p>在序列化TestReplicationComp2时, 可以看出,
-当没有解析出GUID对应的Object时, Obj会设置成nullptr,
-然后将nullptr设置到TestReplicationComp2中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205526440.png" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205408507.png"
-alt="image-20230628205408507" />
-<figcaption aria-hidden="true">image-20230628205408507</figcaption>
-</figure>
-<p>但是这种情况只是短暂存在的,
-即在UNetDriver.TickFlush结尾就已经将TestReplicationComp2设置成正确的值了.</p>
-<p><strong>进一步思考</strong>, 在属性同步的时候,
-是否会发生将TestReplicationComp2设置成nullptr,
-过了几帧才将TestReplicationComp2设置成正确的值呢?
-这种情况发生的条件为GUID同步过来了, 但是其真正的对象在后续才创建.
-针对Owner为Actor本身的Component不可能出现, 当一个属性发生变化,
-如果查找到该GUID对象的Obj, 则直接设置,
-否则后续一定会紧跟着GUID对应Obj的创建. 但是针对一个指针,
-指向别的Actor/UObject, 是可能出现: GUID有了, 但是Actor/UObject还没</p>
-<h1 id="特殊说明">特殊说明</h1>
-<h2
-id="unmappednetguids和mappeddynamicnetguids临时存储">UnmappedNetGuids和MappedDynamicNetGuids临时存储</h2>
-<p>UPackageMap.TrackedUnmappedNetGuids和UPackageMap.TrackedMappedDynamicNetGuids都是临时存储数据用的,
-用完即清理.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201131153.png" /></p>
-<h2 id="unmappednetguids用途">UnmappedNetGuids用途</h2>
-<p>针对UnmappedGUID主要是用于延迟绑定. 绑定后, 如果GUID为Dynamic,
-则将其放入MappedDynamic</p>
-<p>每帧处理UnmappedGUID.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17-1687958346817-37.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212016071.png" /></p>
-<h2 id="mappeddynamic用途">MappedDynamic用途</h2>
-<p>收集UnmappedGUID和MappedGUID, 填充UNetDriver.GuidToReplicatorMap数据,
-供后续使用.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212205753.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212318266.png" /></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-        <category>NetworkGUID</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>NetworkGUID</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>NetDormancy</title>
     <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/</url>
     <content><![CDATA[<h1 id="dormancy定义">Dormancy定义</h1>
@@ -1881,6 +2767,103 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202307291649
       <tags>
         <tag>UE网络</tag>
         <tag>NetDormancy</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>GUID延迟绑定</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/</url>
+    <content><![CDATA[<h1 id="延迟绑定">延迟绑定</h1>
+<p>UE对UObject指针的映射是通过GUID进行的,
+例如当客户端ABasePlayerController.TestReplicationComp2需要根据DS传来的新数据进行赋值,
+这个值就是GUID其代表一个对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628172027340.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387.png" /></p>
+<span id="more"></span>
+<p>首先需要了解到, UE序列化是有顺序的,
+ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623173331842-1687770871870-7-1687942299803-23.png" /></p>
+<p>当属性的赋值在GUID对象创建之前, 因为指针对象还没有创建,
+那么指针就不可能指向正确的地址. 这种情况该怎么处理呢?
+例如当客户端ABasePlayerController.TestReplicationComp2需要反序列化的时候,
+发现该GUID表示的对象还不存在, 这时候怎么办?</p>
+<p>U根据UE处理属性同步的顺序(ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties),
+先反序列化属性变量, 发现没有找到GUID对应的UObj,
+将其放入临时存储变量UPackageMap.TrackedUnmappedNetGuids中(<strong>详见特殊说明1</strong>).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200757905.png" /></p>
+<p>并将结果添加到FReceivingRepState.GuidReferencesMap中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201728804.png" /></p>
+<p>并且如果检测到有Unmapped数据,
+还要将其添加到UNetDriver.UnmappedReplicators中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628202112682.png" /></p>
+<p>在每帧末尾会处理UNetDriver.UnmappedReplicators中未处理的UnmappedGUID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201922955.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17.png" /></p>
+<p>通过以上逻辑,
+就可以将ABasePlayerController.TestReplicationComp2指向对应的Obj了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387-1687955124036-34.png" /></p>
+<p><strong>思考:</strong></p>
+<p>如果在反序列化属性时, GUID没有找到, 那么该属性会更改吗?</p>
+<p>在序列化TestReplicationComp2时, 可以看出,
+当没有解析出GUID对应的Object时, Obj会设置成nullptr,
+然后将nullptr设置到TestReplicationComp2中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205526440.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205408507.png"
+alt="image-20230628205408507" />
+<figcaption aria-hidden="true">image-20230628205408507</figcaption>
+</figure>
+<p>但是这种情况只是短暂存在的,
+即在UNetDriver.TickFlush结尾就已经将TestReplicationComp2设置成正确的值了.</p>
+<p><strong>进一步思考</strong>, 在属性同步的时候,
+是否会发生将TestReplicationComp2设置成nullptr,
+过了几帧才将TestReplicationComp2设置成正确的值呢?
+这种情况发生的条件为GUID同步过来了, 但是其真正的对象在后续才创建.
+针对Owner为Actor本身的Component不可能出现, 当一个属性发生变化,
+如果查找到该GUID对象的Obj, 则直接设置,
+否则后续一定会紧跟着GUID对应Obj的创建. 但是针对一个指针,
+指向别的Actor/UObject, 是可能出现: GUID有了, 但是Actor/UObject还没</p>
+<h1 id="特殊说明">特殊说明</h1>
+<h2
+id="unmappednetguids和mappeddynamicnetguids临时存储">UnmappedNetGuids和MappedDynamicNetGuids临时存储</h2>
+<p>UPackageMap.TrackedUnmappedNetGuids和UPackageMap.TrackedMappedDynamicNetGuids都是临时存储数据用的,
+用完即清理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201131153.png" /></p>
+<h2 id="unmappednetguids用途">UnmappedNetGuids用途</h2>
+<p>针对UnmappedGUID主要是用于延迟绑定. 绑定后, 如果GUID为Dynamic,
+则将其放入MappedDynamic</p>
+<p>每帧处理UnmappedGUID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17-1687958346817-37.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212016071.png" /></p>
+<h2 id="mappeddynamic用途">MappedDynamic用途</h2>
+<p>收集UnmappedGUID和MappedGUID, 填充UNetDriver.GuidToReplicatorMap数据,
+供后续使用.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212205753.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212318266.png" /></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>NetworkGUID</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>NetworkGUID</tag>
       </tags>
   </entry>
   <entry>
@@ -2140,25 +3123,6 @@ DS直接踢掉该Connection.</li>
       </tags>
   </entry>
   <entry>
-    <title>UE4消息结构</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/</url>
-    <content><![CDATA[<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png"
-alt="BunchArchetype" />
-<figcaption aria-hidden="true">BunchArchetype</figcaption>
-</figure>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>UE4消息结构</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ReliableBunch溢出处理</title>
     <url>/2023/11/27/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/</url>
     <content><![CDATA[<h1 id="什么是reliablebunch溢出">什么是ReliableBunch溢出</h1>
@@ -2213,11 +3177,8 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311271150
 <h3 id="分包时候填充">分包时候填充</h3>
 <p><code>UChannel.SendBunch</code></p>
 <figure class="highlight avrasm"><table><tr><td class="code"><pre><span class="line">日志:</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">1</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">2</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">3</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">4</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">5</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">6</span>]: <span class="number">2.28</span> RPC: ...</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="./assets/image-20231128170608865.png"
-alt="image-20231128170608865" />
-<figcaption aria-hidden="true">image-20231128170608865</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128170608865.png" /></p>
 <h2 id="溢出时-输出信息">溢出时, 输出信息</h2>
 <p>当ReliableBunch超过<code>RELIABLE_BUFFER</code>(256)时,
 会将Connection关闭.</p>
@@ -2400,6 +3361,25 @@ UE可以自动合并.</li>
       <tags>
         <tag>UE网络</tag>
         <tag>ReliableBunch溢出</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>UE4消息结构</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png"
+alt="BunchArchetype" />
+<figcaption aria-hidden="true">BunchArchetype</figcaption>
+</figure>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>UE4消息结构</tag>
       </tags>
   </entry>
   <entry>
@@ -3602,6 +4582,91 @@ id="freplayoutcmd.relativehandle和changelist中的handle是一个吗"><code>FRe
       </tags>
   </entry>
   <entry>
+    <title>网络日志,丢包,延迟等相关命令</title>
+    <url>/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<h1 id="网络相关日志">网络相关日志</h1>
+<p>开启网络相关日志:</p>
+<figure class="highlight 1c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line"><span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
+<p>关闭网络相关日志:</p>
+<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">log</span> LogNetTraffic <span class="keyword">off</span></span><br><span class="line"><span class="keyword">log</span> LogNetPackageMap <span class="keyword">off</span></span><br></pre></td></tr></table></figure>
+<p>开启DS端络相关日志:</p>
+<figure class="highlight 1c"><table><tr><td class="code"><pre><span class="line">ServerExec <span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line">ServerExec <span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
+<h1 id="丢包延迟">丢包/延迟</h1>
+<p>注意, 一下命令等号两端不能有空格</p>
+<ol type="1">
+<li>Net pktLag=，模拟延迟，单位是毫秒</li>
+<li>Net
+PktLagVariance=300，在模拟延迟的基础上，再上下浮动300毫秒。加上这个就会出现移动瞬移卡顿的效果</li>
+<li>Net PKtLoss=，丢包，单位是百分比，Net
+PKtLoss=90就是90%会丢包，也会出现移动瞬移卡顿</li>
+<li>Net PktOrder=1，乱序发包，会出现一定的移动瞬移，但不太明显</li>
+<li>Net PktDup=，重复发包，单位是百分比，Net
+PktDup=20表示20%会出现重复发包。</li>
+</ol>
+<p>[<a
+href="https://www.cnblogs.com/timy/p/9895354.html"><strong>[UE4]模拟网络延迟和丢包</strong>](https://www.cnblogs.com/timy/p/9895354.html)</a></p>
+<h1 id="serverexec">ServerExec</h1>
+<p>ServerExe相关实现:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114630407.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114709854.png" /></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>日志</category>
+        <category>丢包</category>
+        <category>延迟</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>日志</tag>
+        <tag>丢包</tag>
+        <tag>延迟</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>自定义UObject进行Replicate</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/</url>
+    <content><![CDATA[<p>UE本身有一套自创的网络框架,
+在这个框架里UObject类型默认是无法进行属性同步的.
+如果想要UObject进行属性同步就必须进行一系列重写.</p>
+<span id="more"></span>
+<h1 id="示例代码">示例代码</h1>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// .h</span></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UMyTestObject</span> : <span class="keyword">public</span> UObject</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer = FObjectInitializer::<span class="built_in">Get</span>());</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Allows the Object to get a valid UWorld from it&#x27;s outer.</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> UWorld* <span class="title">GetWorld</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow replicate data</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow rpc</span></span><br><span class="line">    <span class="function">int32 <span class="title">GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    uint32 bReplicatedFlag : <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// .cpp</span></span><br><span class="line">UMyTestObject::<span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer <span class="comment">/*= FObjectInitializer::Get()*/</span>)</span><br><span class="line">    :<span class="built_in">UObject</span>(ObjectInitializer)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">UWorld* <span class="title">UMyTestObject::GetWorld</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="type">const</span> UObject* MyOuter = <span class="built_in">GetOuter</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> MyOuter-&gt;<span class="built_in">GetWorld</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMyTestObject::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(UMyTestObject, bReplicatedFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        UNetDriver* NetDriver = OuterActor-&gt;<span class="built_in">GetNetDriver</span>();</span><br><span class="line">        <span class="keyword">if</span> (NetDriver)</span><br><span class="line">        &#123;</span><br><span class="line">            NetDriver-&gt;<span class="built_in">ProcessRemoteFunction</span>(OuterActor, Function, Parameters, OutParams, Stack, <span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">int32 <span class="title">UMyTestObject::GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> OuterActor-&gt;<span class="built_in">GetFunctionCallspace</span>(Function, Stack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> FunctionCallspace::Local;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在BasePlayerController.h中添加:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105137222.png" /></p>
+<p>由于Replicated, 需要将pTestObj添加到GetLifetimeReplicatedProps中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623111940690.png" /></p>
+<p>重写ABasePlayerController::ReplicateSubobjects函数,
+将pTestObj添加到ABasePlayerController列表中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105331465.png" /></p>
+<p>在BasePlayerController.cpp中动态创建:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105258155.png" /></p>
+<p>经过上述步骤, 可以将自定义UMyTestObject进行属性同步.</p>
+<h1 id="ue-replicate流程">UE Replicate流程</h1>
+<p>UE在进行属性同步时候, 首先进行Actor自身的属性同步, 然后同步SubObject,
+最后才同步自定义UObject.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义UObject属性同步流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UNetDriver.<span class="built_in">ServerReplicateActors_ProcessPrioritizedActors</span>()</span><br><span class="line"> | | |--UActorChannel.<span class="built_in">ReplicateActor</span>()</span><br><span class="line"> | | | |--<span class="comment">// 同步该Actor自身属性</span></span><br><span class="line"> | | | |--FObjectReplicator.<span class="built_in">ReplicateProperties</span>()</span><br><span class="line"> | | | |--AActor.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 同步Actor中所有需要Replicated的ActorComponent</span></span><br><span class="line"> | | | | |--UActorComponent.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 自定义UObject进行属性同步</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br></pre></td></tr></table></figure>
+<p>引用:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" title="RPC浅析">RPC浅析</a></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>属性同步</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>属性同步</tag>
+        <tag>自定义UObject属性同步</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>开启Replicate</title>
     <url>/2023/11/13/UE/%E7%BD%91%E7%BB%9C/%E5%BC%80%E5%90%AFReplicate/</url>
     <content><![CDATA[<h1
@@ -3689,91 +4754,6 @@ id="自定义uobject开启replicate">自定义<code>UObject</code>开启<code>Re
         <tag>UE网络</tag>
         <tag>NetworkGUID</tag>
         <tag>SpawnActor</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>网络日志,丢包,延迟等相关命令</title>
-    <url>/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<h1 id="网络相关日志">网络相关日志</h1>
-<p>开启网络相关日志:</p>
-<figure class="highlight 1c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line"><span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
-<p>关闭网络相关日志:</p>
-<figure class="highlight pgsql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">log</span> LogNetTraffic <span class="keyword">off</span></span><br><span class="line"><span class="keyword">log</span> LogNetPackageMap <span class="keyword">off</span></span><br></pre></td></tr></table></figure>
-<p>开启DS端络相关日志:</p>
-<figure class="highlight 1c"><table><tr><td class="code"><pre><span class="line">ServerExec <span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line">ServerExec <span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
-<h1 id="丢包延迟">丢包/延迟</h1>
-<p>注意, 一下命令等号两端不能有空格</p>
-<ol type="1">
-<li>Net pktLag=，模拟延迟，单位是毫秒</li>
-<li>Net
-PktLagVariance=300，在模拟延迟的基础上，再上下浮动300毫秒。加上这个就会出现移动瞬移卡顿的效果</li>
-<li>Net PKtLoss=，丢包，单位是百分比，Net
-PKtLoss=90就是90%会丢包，也会出现移动瞬移卡顿</li>
-<li>Net PktOrder=1，乱序发包，会出现一定的移动瞬移，但不太明显</li>
-<li>Net PktDup=，重复发包，单位是百分比，Net
-PktDup=20表示20%会出现重复发包。</li>
-</ol>
-<p>[<a
-href="https://www.cnblogs.com/timy/p/9895354.html"><strong>[UE4]模拟网络延迟和丢包</strong>](https://www.cnblogs.com/timy/p/9895354.html)</a></p>
-<h1 id="serverexec">ServerExec</h1>
-<p>ServerExe相关实现:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114630407.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114709854.png" /></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-        <category>日志</category>
-        <category>丢包</category>
-        <category>延迟</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>日志</tag>
-        <tag>丢包</tag>
-        <tag>延迟</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>自定义UObject进行Replicate</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/</url>
-    <content><![CDATA[<p>UE本身有一套自创的网络框架,
-在这个框架里UObject类型默认是无法进行属性同步的.
-如果想要UObject进行属性同步就必须进行一系列重写.</p>
-<span id="more"></span>
-<h1 id="示例代码">示例代码</h1>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// .h</span></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UMyTestObject</span> : <span class="keyword">public</span> UObject</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer = FObjectInitializer::<span class="built_in">Get</span>());</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Allows the Object to get a valid UWorld from it&#x27;s outer.</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> UWorld* <span class="title">GetWorld</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow replicate data</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow rpc</span></span><br><span class="line">    <span class="function">int32 <span class="title">GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    uint32 bReplicatedFlag : <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// .cpp</span></span><br><span class="line">UMyTestObject::<span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer <span class="comment">/*= FObjectInitializer::Get()*/</span>)</span><br><span class="line">    :<span class="built_in">UObject</span>(ObjectInitializer)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">UWorld* <span class="title">UMyTestObject::GetWorld</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="type">const</span> UObject* MyOuter = <span class="built_in">GetOuter</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> MyOuter-&gt;<span class="built_in">GetWorld</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMyTestObject::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(UMyTestObject, bReplicatedFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        UNetDriver* NetDriver = OuterActor-&gt;<span class="built_in">GetNetDriver</span>();</span><br><span class="line">        <span class="keyword">if</span> (NetDriver)</span><br><span class="line">        &#123;</span><br><span class="line">            NetDriver-&gt;<span class="built_in">ProcessRemoteFunction</span>(OuterActor, Function, Parameters, OutParams, Stack, <span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">int32 <span class="title">UMyTestObject::GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> OuterActor-&gt;<span class="built_in">GetFunctionCallspace</span>(Function, Stack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> FunctionCallspace::Local;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在BasePlayerController.h中添加:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105137222.png" /></p>
-<p>由于Replicated, 需要将pTestObj添加到GetLifetimeReplicatedProps中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623111940690.png" /></p>
-<p>重写ABasePlayerController::ReplicateSubobjects函数,
-将pTestObj添加到ABasePlayerController列表中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105331465.png" /></p>
-<p>在BasePlayerController.cpp中动态创建:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105258155.png" /></p>
-<p>经过上述步骤, 可以将自定义UMyTestObject进行属性同步.</p>
-<h1 id="ue-replicate流程">UE Replicate流程</h1>
-<p>UE在进行属性同步时候, 首先进行Actor自身的属性同步, 然后同步SubObject,
-最后才同步自定义UObject.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义UObject属性同步流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UNetDriver.<span class="built_in">ServerReplicateActors_ProcessPrioritizedActors</span>()</span><br><span class="line"> | | |--UActorChannel.<span class="built_in">ReplicateActor</span>()</span><br><span class="line"> | | | |--<span class="comment">// 同步该Actor自身属性</span></span><br><span class="line"> | | | |--FObjectReplicator.<span class="built_in">ReplicateProperties</span>()</span><br><span class="line"> | | | |--AActor.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 同步Actor中所有需要Replicated的ActorComponent</span></span><br><span class="line"> | | | | |--UActorComponent.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 自定义UObject进行属性同步</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br></pre></td></tr></table></figure>
-<p>引用:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" title="RPC浅析">RPC浅析</a></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-        <category>属性同步</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>属性同步</tag>
-        <tag>自定义UObject属性同步</tag>
       </tags>
   </entry>
   <entry>
@@ -3997,989 +4977,6 @@ DS会将MustedMappedGUID放入Bunch(非ExportGUIDBunch)头部,
       <tags>
         <tag>UE网络</tag>
         <tag>Package异步加载</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>UE4移动-MaintainHorizontalGroundVelocity</title>
-    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/MaintainHorizontalGroundVelocity/</url>
-    <content><![CDATA[<p><code>bMaintainHorizontalGroundVelocity</code>:</p>
-<ul>
-<li>为<code>true</code>, 则直接丢弃竖直方向速度, 使用水平方向速度.
-速度变小了</li>
-<li>为<code>false</code>, 则速度大小不变, 但是竖直方向速度设置为0.
-即将竖直方向的速度转移到水平方向, 速度大小不变,
-方向发生了变化(竖直方向被丢弃了).</li>
-</ul>
-<span id="more"></span>
-<p>定义:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * If true, walking movement always maintains horizontal velocity when moving up ramps, which causes movement up ramps to be faster parallel to the ramp surface.</span></span><br><span class="line"><span class="comment"> * If false, then walking movement maintains velocity magnitude parallel to the ramp surface.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>(Category=<span class="string">&quot;Character Movement: Walking&quot;</span>, EditAnywhere, BlueprintReadWrite)</span><br><span class="line">uint8 bMaintainHorizontalGroundVelocity:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p>使用:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">UCharacterMovementComponent::MaintainHorizontalGroundVelocity</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (Velocity.Z != <span class="number">0.f</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (bMaintainHorizontalGroundVelocity)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// Ramp movement already maintained the velocity, so we just want to remove the vertical component.</span></span><br><span class="line">            Velocity.Z = <span class="number">0.f</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// Rescale velocity to be horizontal but maintain magnitude of last update.</span></span><br><span class="line">            Velocity = Velocity.<span class="built_in">GetSafeNormal2D</span>() * Velocity.<span class="built_in">Size</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从代码上很容易看出,
-<code>bMaintainHorizontalGroundVelocity</code>表示:是否保持水平速度.
-当开启<code>bMaintainHorizontalGroundVelocity</code>时,
-直接丢弃<code>z</code>轴方向速度, 保持水平方向速度.
-当关闭<code>bMaintainHorizontalGroundVelocity</code>时, 速度大小不变,
-但是将竖直方向速度转移到水平方向上, 并且速度的水平方向保持不变,
-数值方向为0.</p>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-注意: 无论是否开启<em>bMaintainHorizontalGroundVelocity</em>,
-竖直方向速度都会被清零, 并且速度方向并不是沿着某个表面的,
-而是与<em>xy</em>平面平行的.
-</td>
-</tr>
-</table>
-]]></content>
-      <categories>
-        <category>UE4</category>
-        <category>移动</category>
-        <category>速度</category>
-      </categories>
-      <tags>
-        <tag>UE4</tag>
-        <tag>移动</tag>
-        <tag>速度</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Pawn,Controller和PawnMovementComponent Tick顺序</title>
-    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/Pawn,Controller%E5%92%8CPawnMovementComponent%20Tick%E9%A1%BA%E5%BA%8F/</url>
-    <content><![CDATA[<p>执行顺序:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231016110608952.png" /></p>
-<p>注意,
-<code>UMovementComponent.bTickBeforeOwner</code>默认为<code>true</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231016112629392.png" /></p>
-<span id="more"></span>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">AController::AddPawnTickDependency</span><span class="params">(APawn* NewPawn)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (NewPawn != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">bool</span> bNeedsPawnPrereq = <span class="literal">true</span>;</span><br><span class="line">        UPawnMovementComponent* PawnMovement = NewPawn-&gt;<span class="built_in">GetMovementComponent</span>();</span><br><span class="line">        <span class="keyword">if</span> (PawnMovement &amp;&amp; PawnMovement-&gt;PrimaryComponentTick.bCanEverTick)</span><br><span class="line">        &#123;</span><br><span class="line">            PawnMovement-&gt;PrimaryComponentTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, <span class="keyword">this</span>-&gt;PrimaryActorTick);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Don&#x27;t need a prereq on the pawn if the movement component already sets up a prereq.</span></span><br><span class="line">            <span class="keyword">if</span> (PawnMovement-&gt;bTickBeforeOwner || NewPawn-&gt;PrimaryActorTick.<span class="built_in">GetPrerequisites</span>().<span class="built_in">Contains</span>(<span class="built_in">FTickPrerequisite</span>(PawnMovement, PawnMovement-&gt;PrimaryComponentTick)))</span><br><span class="line">            &#123;</span><br><span class="line">                bNeedsPawnPrereq = <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (bNeedsPawnPrereq)</span><br><span class="line">        &#123;</span><br><span class="line">            NewPawn-&gt;PrimaryActorTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, <span class="keyword">this</span>-&gt;PrimaryActorTick);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMovementComponent::RegisterComponentTickFunctions</span><span class="params">(<span class="type">bool</span> bRegister)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">RegisterComponentTickFunctions</span>(bRegister);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Super may start up the tick function when we don&#x27;t want to.</span></span><br><span class="line">    <span class="built_in">UpdateTickRegistration</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If the owner ticks, make sure we tick first</span></span><br><span class="line">    AActor* Owner = <span class="built_in">GetOwner</span>();</span><br><span class="line">    <span class="keyword">if</span> (bTickBeforeOwner &amp;&amp; bRegister &amp;&amp; PrimaryComponentTick.bCanEverTick &amp;&amp; Owner &amp;&amp; Owner-&gt;<span class="built_in">CanEverTick</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        Owner-&gt;PrimaryActorTick.<span class="built_in">AddPrerequisite</span>(<span class="keyword">this</span>, PrimaryComponentTick);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从代码上可以看出,
-<code>Controller Tick</code>始终排在<code>PawnTick</code>和<code>PawnMovementTick</code>之前.
-如果<code>UMovementComponent.bTickBeforeOwner</code>为<code>true</code>,
-则先执行<code>PawnMovementTick</code>再执行<code>PawnTick</code>,
-否则<code>PawnTick</code>先执行,
-<code>PawnMovementTick</code>后执行.</p>
-<p><code>Actor</code>和<code>Component</code>的Tick注册顺序.
-当<code>UMovementComponent.bTickBeforeOwner</code>为<code>false</code>时,
-<code>PawnTick</code>先执行, <code>PawnMovementTick</code>后执行.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Pawn,Controller和PawnMovementComponent Tick顺序</span></span><br><span class="line">--AActor.BeginPlay</span><br><span class="line">|--<span class="comment">// 注册Actor自身tick</span></span><br><span class="line">|--AActor.<span class="built_in">RegisterAllActorTickFunctions</span>()</span><br><span class="line">| |--AActor.<span class="built_in">RegisterActorTickFunctions</span>()</span><br><span class="line">| | |--PrimaryActorTick.<span class="built_in">SetTickFunctionEnable</span>()</span><br><span class="line">| | |--PrimaryActorTick.<span class="built_in">RegisterTickFunction</span>()</span><br><span class="line">|--<span class="comment">// 针对所有Components, 都执行RegisterTick</span></span><br><span class="line">|--UActorComponent.<span class="built_in">RegisterAllComponentTickFunctions</span>()</span><br><span class="line">| |--UCharacterMovementComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | |--UMovementComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | | |--UActorComponent.<span class="built_in">RegisterComponentTickFunctions</span>()</span><br><span class="line">| | | | |--UActorComponent.<span class="built_in">SetupActorComponentTickFunction</span>()</span><br><span class="line">| | | | | |--TickFunction-&gt;<span class="built_in">SetTickFunctionEnable</span>()</span><br><span class="line">| | | | | |--TickFunction-&gt;<span class="built_in">RegisterTickFunction</span>()</span><br><span class="line">| |--Component-&gt;<span class="built_in">BeginPlay</span>();</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>UE4</category>
-        <category>Tick</category>
-      </categories>
-      <tags>
-        <tag>UE4</tag>
-        <tag>Tick</tag>
-        <tag>Pawn,Controller和PawnMovementComponent Tick顺序</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Geometry Queries(碰撞检测)--翻译</title>
-    <url>/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/</url>
-    <content><![CDATA[<p>原文链接<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html">Geometry
-Queries</a>.</p>
-<span id="more"></span>
-<h1 id="前言">前言</h1>
-<p><code>solid half-space</code>:
-我对<code>solid half-space</code>的理解是: 正常封闭型固体分成内部和外部,
-<code>half-space geometry</code>表示外部与外界相交,
-内部也能与外部相交的几何体.
-例如平面就可以被当做<code>solid half-space</code>.</p>
-<p><code>SPU</code>和<code>PPU</code>是什么? 解释:<a
-href="https://zhuanlan.zhihu.com/p/99446588">PS3中的处理器核心</a>.</p>
-<h1 id="序言">序言</h1>
-<p>这篇文章介绍使用PhysX处理独立几何体的碰撞和形状查询.
-碰撞和场景查询形成对比, 后者碰撞或者查询场景中所有的对象.
-有四种主要的几何<code>Geometry Query</code>:</p>
-<ul>
-<li><code>Raycasts(Raycast Queries)</code>: 射线是否与几何体相交</li>
-<li><code>Sweeps(Sweep Queries)</code>: 沿着直线移动一个几何体,
-找到与之相交的几何体的第一个点</li>
-<li><code>Overlaps(Overlap Queries)</code>: 决定两个结合体怎么相交.</li>
-<li>渗入深度计算(<code>minimal translational distance queries</code>,
-缩写<code>MTD</code>):
-查找能使两个<code>Overlap</code>的几何体分开的最小距离的方向.</li>
-</ul>
-<p>另外,
-<code>PhysX</code>提供一个<code>Geometry Object</code>的计算<code>AABB</code>的方法,
-以及计算一个点到<code>Geometry Object</code>的距离.</p>
-<p>以下所有函数中,
-<code>Geometry Object</code>都是以<code>PxGeometry structure</code>定义形状,
-以<code>PxTransform structure</code>定义姿势的.
-所有的<code>Transform</code>和<code>Vector</code>都被解释为在任意空间,
-并且返回该空间中的结果.</p>
-<h1 id="raycasts">Raycasts</h1>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryRaycast-1696640665770-26.png" /></p>
-<p><code>Raycast Query</code>:沿着一条线段追踪一个点,
-并记录与几何体表面相交的信息.
-<code>PhysX</code>支持向所有几何体打射线.</p>
-<p>下面的代码举例说明如何使用<code>Raycast Query</code>:</p>
-<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="title class_">PxRaycastHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxU32</span> maxHits = <span class="number">1</span>;</span><br><span class="line">bool anyHit = <span class="literal">false</span>;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eUV</span>;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:raycast</span>(origin, unitDir,</span><br><span class="line">                                          geom, pose,</span><br><span class="line">                                          maxDist,</span><br><span class="line">                                          hitFlags,</span><br><span class="line">                                          maxHits, &amp;hitInfo, anyHit);</span><br></pre></td></tr></table></figure>
-<p>对参数的解释如下:</p>
-<ul>
-<li><code>Origin</code>: 射线起始位置.</li>
-<li><code>unitDir</code>: 定义射线方向的单位向量.</li>
-<li><code>maxDist</code>: 沿射线搜寻的最大距离.
-<code>maxDist</code>必须在<span class="math inline">\([0,
-inf]\)</span>范围之内. 如果1<code>maxDist</code>为0,
-只有当射线起始点在图形内部才会返回一个<code>hit</code>,
-下面对每个几何体进行详细说明.</li>
-<li><code>geom</code>: 被测试的几何体.</li>
-<li><code>pose</code>: 被测试几何体的位置</li>
-<li><code>hitFlag</code>: 指定查询应返回的值, 以及处理查询的选项.</li>
-<li><code>maxHits</code>: 返回的最大<code>hit</code>数量.</li>
-<li><code>hitInfo</code>: 指定射线结果存储的地方,
-即<code>PxRaycastHit</code>结构体.</li>
-<li><code>anyHit</code>: 已废弃.
-它等价于<code>PxHitFlag::eMESH_ANY</code>.
-应该使用<code>PxHitFlag::eMESH_ANY</code>.</li>
-</ul>
-<p>返回结果为交互的数量. 每个交互的信息,
-都会用<code>PxRaycastHit</code>存储. 结构体属性如下:</p>
-<figure class="highlight mipsasm"><table><tr><td class="code"><pre><span class="line">PxRigidActor*   actor;</span><br><span class="line">PxShape*        <span class="keyword">shape;</span></span><br><span class="line"><span class="keyword"></span>PxVec3          position;</span><br><span class="line">PxVec3          <span class="keyword">normal;</span></span><br><span class="line"><span class="keyword"></span>PxF32           <span class="keyword">distance;</span></span><br><span class="line"><span class="keyword"></span>PxHitFlags      flags;</span><br><span class="line">PxU32           faceIndex;</span><br><span class="line">PxF32           u, v;</span><br></pre></td></tr></table></figure>
-<p>某些字段是可选的, <code>flag</code>字段指明哪些成员会被填充到结果中.
-如果在输入中设置了相应的字段, 该字段将被填充到输出结构中. 例如,
-如果<code>hitFlags</code>被设置成<code>PxHitFlag::ePOSITION</code>,
-查询将会填充<code>PxRaycastHit::position</code>字段,
-并且在<code>PxRaycastHit::flags</code>中填充<code>PxRaycastHit::position</code>值.
-如果<code>Input Flag</code>中没有设置指定的成员,
-输出结果中不一定会包含相应成员的数据.
-如果输入中不包含<code>eNormal</code>和<code>ePosition</code>标记,
-查询会更快.</p>
-<p>对于那些最初不与几何体相交的射线,
-字段填充如下(可选字段和控制它们的标记列在一起):</p>
-<ul>
-<li><p><code>actor</code>和<code>shape</code>不会被填充(这些字段只在<code>scene-level raycast</code>中被使用,
-详情:<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scene-queries">Scene
-Queries</a>).</p></li>
-<li><p><code>position (PxHitFlag::ePOSITION)</code>:相交的位置.</p></li>
-<li><p><code>normal (PxHitFlag::eNORMAL)</code>:交点的表面法线.</p></li>
-<li><p><code>distance (PxHitFlag::eDISTANCE)</code>:
-射线上找到交点的距离.</p></li>
-<li><p><code>flag</code>指明了结构体中哪些字段是可用的.</p></li>
-<li><p><code>faceIndex</code>:射线<code>hit</code>到的<code>face</code>的<code>index</code>.
-对于<code>三角形网格(triangle mesh)</code>和<code>高度场(height field)</code>相交,
-它表示三角形索引. 对于<code>凸多边形(convex mesh)</code>相交,
-它是多边形的索引. 对于其他形状,
-它永远是<code>0xFFFFFFFF</code>.</p></li>
-<li><p><code>u</code>和<code>v</code>(<code>PxHitFlag::eUV</code>)是交点的重心坐标系.
-这些字段(以及标记)只支持<code>mesh</code>(不支持<code>高度场(height field)</code>).</p></li>
-</ul>
-<p><code>Position</code>字段和重心坐标系相关, 公式如下,
-其中<code>v0</code>,
-<code>v1</code>和<code>v2</code>是被<code>hit</code>的三角形的顶点.</p>
-<blockquote>
-<p>position = (1 - u - v)<em>v0 + u</em>v1 + v*v2;</p>
-</blockquote>
-<p>如何在<code>triangle mesh</code>中检索面和顶点数据,
-在<code>凸多边形mesh(convex mesh)</code>和<code>高度场(height field)</code>中使用面和顶点索引,
-详情请查询<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/Geometry.html#geometry">Geometry</a>.</p>
-<p>当射线起点在几何体内部时, 除了应用上面的行为,
-对于某些字段<code>PhysX</code>可能无法计算出有意义的值. 这种情况下,
-这些字段不会发生更改, 并且对应的标记也不会被设置.
-具体细节因几何类型而异, 如下所述.</p>
-<p>射线交点的具体情况如下:</p>
-<h2
-id="向spheres-capsules-boxs-convex-meshes打射线">向<code>Spheres</code>
-<code>Capsules</code> <code>Boxs</code>
-<code>Convex Meshes</code>打射线</h2>
-<p>当射线原点在固体对象(<code>Spheres</code>, <code>Capsules</code>
-<code>Boxs</code>
-<code>Convex Meshes</code>)内部时,最多返回一个结果:</p>
-<ul>
-<li><code>PxHitFlag::eDISTANCE</code>被设置,
-并且<code>distance</code>为0.</li>
-<li><code>PxHitFlag::eNORMAL</code>被设置,
-并且交点法线方向与射线方向相反.</li>
-<li><code>PxHitFlag::ePOSITION</code>被设置,
-并且<code>position (impact point)</code>设置为射线原点.</li>
-</ul>
-<p>如果射线的起点和终点与物体表面非常近,
-它有可能被看做成<code>surface</code>的任何一边(<code>side</code>).</p>
-<h2 id="向平面打射线">向平面打射线</h2>
-<p>对于射线检测,
-会把平面当做只有半个空间(<code>half-space</code>)的固体,
-(和<code>overlap</code>不同, <strong>为什么不同?</strong>).
-大多数情况下会返回一个结果, 如果射线原点在平面的后边,
-即使射线和平面相交, 也不会有<code>hit</code>点.</p>
-<p>如果射线的起始和结束点与平面非常接近,
-它可能会被当做平面的任何一边.</p>
-<h2
-id="向triangle-meshes打射线">向<code>Triangle meshes</code>打射线</h2>
-<p>把<code>triangle meshes</code>当做非常薄的三角形面而不是固体对象.
-可以通过配置返回一个任意<code>hit</code>点,
-或者很多个<code>hit</code>点.</p>
-<ul>
-<li>如果<code>maxHits</code>为1,
-并且没有设置<code>PxHitFlag::eMESH_ANY</code>(或者<code>anyHit</code>为<code>true</code>),
-查询将会返回最近的交点.</li>
-<li>如果<code>maxHits</code>为1,
-并设置了<code>PxHitFlag::eMESH_ANY</code>(并且<code>anyHit</code>为<code>false</code>),
-查询将会返回任意<code>hit</code>点.
-对于<code>line of sight</code>或者<code>shadow ray</code>而言,
-使用它就可以完全可以知道射线是否<code>hit</code>到<code>mesh</code>.</li>
-<li>如果如果<code>maxHit</code>大于1, 查询将会返回多个交点,
-最多为<code>maxHits</code>个. 如果交点个数超过<code>maxHits</code>,
-无法保证结果中包含最近的<code>hit</code>. 使用示例:
-击中多个三角行的穿墙(<code>wall-piercing</code>)子弹,
-或者要求特定的过滤. 注意,
-在这些例子中必须使用<code>PxHitFlag::eMESH_MULTIPLE</code>.
-还要注意如果<code>hit</code>点彼此非常接近,
-<code>SDK</code>默认返回第一个<code>found</code>到的<code>hit</code>结果.</li>
-</ul>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-<span style="color:red;">通常<em>any hit</em> 比<em>closest hit</em>
-更快, <em>closest hit</em> 比<em>multiple hits</em>更快, 即:<em>any
-hit</em> 快于<em>closest hit</em> 快于<em>multiple hits</em>.
-</span><br>
-</td>
-</tr>
-</table>
-<p>默认情况下, 背面<code>hits</code>(<code>back face hits</code>,
-三角形外向法线和射线的点乘(<code>dot</code>)结果为负)会被剔除,
-<del>所以对于任何命中上述法线的三角形, 与射线方向的点乘结果都为负</del>
-如果三角形正面法线(<code>outward-face-normal</code>)与射线的点乘为负,
-则<code>hit</code>点被剔除.</p>
-<ul>
-<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>或者<code>PxHitFlag::eMESH_BOTH_SIDES</code>被设置,
-则禁止剔除.</li>
-<li>如果<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>被设置,
-<code>back face hit</code>将会把最终结果的法线反转.</li>
-</ul>
-<p>这句话太难翻译直接贴原文了(<code>reported-normal</code>不知道怎么翻译):</p>
-<blockquote>
-<p>For example a transparent glass window could be modeled as a
-double-sided mesh, so that a ray would hit either side with the reported
-normal facing opposite to the ray direction. A raycast tracing the path
-of a bullet that may penetrate the front side of a mesh and emerge from
-the back could use <em>eMESH_BOTH_SIDES</em> to find both front and back
-facing triangles even when the mesh is single-sided.</p>
-<p>例如一个类型为<code>double-sided mesh</code>的玻璃窗, so that a ray
-would hit either side with the reported normal facing opposite to the
-ray direction. 有些子弹可以击穿mesh, 模拟这类子弹路径的射线,
-可以使用<code>eMESH_BOTH_SIDES</code>来找正面和背面的三角形,
-即使该mesh是<code>single-side</code>.</p>
-</blockquote>
-<p>下图展示了当单一射线和一个mesh在几个不同的地方相交时,
-不同<code>flag</code>会发生什么.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/RayMeshDS_Permutations-1696640665770-28.png" /></p>
-<p>只针对某些<code>mesh</code>使用<code>PxHitFlag::eMESH_BOTH_SIDES</code>标志位,
-并且该<code>flag</code>在<code>PxQueryFilterCallback</code>中设置.</p>
-<p>如果射线开始和结束的点和三角面非常接近,
-可能会被当成三角形的任何一边(正面/背面).</p>
-<h2 id="向heightfields打射线">向<code>Heightfields</code>打射线</h2>
-<ul>
-<li>处理<code>Heightfields</code>和<code>triangle meshes</code>不同,
-<code>heightfields</code>会一直被当做<code>double side</code>,
-意味着无论射线原点在<code>heightfileds surface</code>的上面或者下面,
-最终的<code>hits</code>都会被注册.</li>
-<li><code>hit normal</code>一直是<code>triangle hit</code>的法线,
-当<code>thickness</code> <span class="math inline">\(&lt;=\)</span> 0,
-朝向(在<code>heightfields</code>空间)<span
-class="math inline">\(+y\)</span>方向; 当<code>thickness</code>大于0,
-朝向(在<code>heightfields</code>空间)<span
-class="math inline">\(-y\)</span>方向.</li>
-<li>除了上述情况,
-<code>heightfields thickness</code>对其他方面没有任何影响. 特殊的,
-固体的<code>heightfield</code>部分不会生成<code>hit</code>.</li>
-<li>当射线<code>hit</code> <code>heightfield</code>时候,
-<code>UVs</code>不会被设置,
-<code>PxHitFlag::eUV</code>标记也不会被设置.</li>
-</ul>
-<h1 id="overlap">overlap</h1>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryOverlap-1696640665770-30.png" /></p>
-<p><code>overlap</code>查询只是简单的查询两个几何体是否重叠了.
-其中一个几何体必须是<code>box</code>,<code>sphere</code>,<code>capsule</code>或者<code>凸多边形</code>,
-另一个几何体可以使任意类型.</p>
-<p>下面代码说明了如何使用<code>overlap</code>查询:</p>
-<figure class="highlight ebnf"><table><tr><td class="code"><pre><span class="line"><span class="attribute">bool isOverlapping</span> = overlap(geom0, pose0, geom1, pose1);</span><br></pre></td></tr></table></figure>
-<p><code>overlap</code>不支持<code>hit flag</code>,
-只是返回一个<code>bool</code>类型的结果.</p>
-<ul>
-<li>平面被当做<code>solid half-space</code>:
-任何处于平面下的都被当做<code>volume</code>的一部分.</li>
-<li><code>triangle mesh</code>被当做非常薄的三角形表面,
-而不是固体对象.</li>
-<li><code>heightfield</code>被当做由其厚度挤压成的三角形表面.
-<code>overlap</code>几何体不会与<code>heightfield</code>相交,
-但是挤压空间将会上报<code>hit</code></li>
-</ul>
-<p>如果对于<code>triagnle mesh</code>和<code>heightfield</code>类型不仅仅需要一个<code>bool</code>结果,
-使用<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>
-API.</p>
-<h1 id="penetration-depth">Penetration Depth</h1>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPenetration-1696853091899-1.png" /></p>
-<p>当两个对象相交,
-<code>PhysX</code>能够计算通过平移将二者分开的最小距离和方向(分开的量涉及到<code>MTD</code>,
-即: <code>最小平移距离(minimum translational distance)</code>,
-通过平移将二者分开的长度最小的向量).
-其中一个几何体必须是<code>box</code>, <code>sphere</code>,
-<code>capsule</code>, 或者<code>convex mesh</code>,
-另一个可以是任意类型.</p>
-<p>如下代码阐述了如何使用<code>penetration depth</code>的查询:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">bool</span> isPenetrating = PxGeometryQuery::<span class="built_in">computePenetration</span>(direction, depth,</span><br><span class="line">                                                         geom0, pose0,</span><br><span class="line">                                                         geom1, pose1);</span><br></pre></td></tr></table></figure>
-<p>参数解释如下:</p>
-<ul>
-<li><code>direction</code>:
-第一个对象通过平移从第二个对象中脱离(<code>depenetrate</code>)出来的方向.</li>
-<li><code>distance</code>:
-第一个对象从第二个对象中脱离(<code>depenetrate</code>)出来的距离.</li>
-<li><code>geom0</code>: 第一个几何体.</li>
-<li><code>pos0</code>: 第一个几何体的<code>transform</code>.</li>
-<li><code>geom1</code>:第二个几何体.</li>
-<li><code>pos1</code>: 第二个几个题的<code>transform</code>.</li>
-</ul>
-<p>如果对象有渗入, 则返回<code>true</code>, 这种情况下,
-会设置其方向和深度字段. 通过平移向量(<span
-class="math inline">\(\vec{D}=\vec{Direction}*depth\)</span>)将二者分离开来.
-如果函数返回<code>true</code>, <code>depth</code>一定<span
-class="math inline">\(&gt;=0\)</span>.
-如果几何体没有<code>overlap</code>, 函数返回<code>false</code>,
-<code>direction</code>和<code>depth</code>都不会进行设置.</p>
-<p>对于简单(<code>convex</code>)的形状, 返回结果是精确的.</p>
-<p>对于<code>mesh</code>和<code>heightfields</code>,
-在<code>PxExtensions</code>中, 将使用的循环算法和专用函数暴露出来了.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxVec3 direction = <span class="built_in">PxComputeMeshPenetration</span>(maxIter,</span><br><span class="line">                                            geom, geomPose,</span><br><span class="line">                                            meshGeom, meshPose,</span><br><span class="line">                                            nb);</span><br><span class="line"></span><br><span class="line">PxVec3 direction = <span class="built_in">PxComputeHeightFieldPenetration</span>(maxIter,</span><br><span class="line">                                                   geom, geomPose,</span><br><span class="line">                                                   heightFieldGeom, heightFieldPose,</span><br><span class="line">                                                   nb);</span><br></pre></td></tr></table></figure>
-<p>这里, <code>maxIter</code>是算法的最大循环次数,
-并且<code>nb</code>是真正的循环执行数量,
-并且作为<code>output</code>变量输出出来.
-如果检测没有<code>overlap</code>, <code>nb</code>将会被设置成0.
-代码尝试至多<code>maxIter</code>此循环,
-但是如果找到<code>depenetration</code>向量, 可能会提前返回. 通常,
-<code>maxIter = 4</code>就会得出一个不错的结果.</p>
-<p>这些函数只会计算出一个近似的<code>depenetration</code>向量,
-当在几何体和<code>mesh/heightfield</code>之间的<code>overlap</code>数量比较小的时候,
-会工作良好. 特别的, 当对象中心在三角形背面时, 将会忽略与三角形的交互.
-如果所有相交的三角形都符合上述条件,
-该函数将不会计算<code>MTD</code>向量.</p>
-<h1 id="sweeps">Sweeps</h1>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQuerySweep-1696640665770-34.png" /></p>
-<p><code>sweep query</code>追踪一个对象横穿空间的过程,
-并找到在这个过程中与第二个几何体碰撞的点. 并且上报关于碰撞点的信息.
-<code>PhysX</code>只支持第一个对象(贯穿空间的那个对象)为<code>sphere</code>,
-<code>box</code>, <code>capsule</code>, 或者<code>convex</code>几何体,
-第二个对象可以是任何类型.</p>
-<p>下面的代码举例说明如何使用<code>sweep query</code>:</p>
-<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="title class_">PxSweepHit</span> hitInfo;</span><br><span class="line"><span class="title class_">PxHitFlags</span> hitFlags = <span class="title class_">PxHitFlag</span><span class="symbol">:</span><span class="symbol">:ePOSITION|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eNORMAL|PxHitFlag</span><span class="symbol">:</span><span class="symbol">:eDISTANCE</span>;</span><br><span class="line"><span class="title class_">PxReal</span> inflation = <span class="number">0</span>.0f;</span><br><span class="line"><span class="title class_">PxU32</span> hitCount = <span class="title class_">PxGeometryQuery</span><span class="symbol">:</span><span class="symbol">:sweep</span>(unitDir, maxDist,</span><br><span class="line">                                        geomToSweep, poseToSweep,</span><br><span class="line">                                        geomSweptAgainst, poseSweptAgainst,</span><br><span class="line">                                        hitInfo,</span><br><span class="line">                                        hitFlags,</span><br><span class="line">                                        inflation);</span><br></pre></td></tr></table></figure>
-<p>这些参数解释如下:</p>
-<ul>
-<li><code>unitDir</code>: 定义<code>sweep</code>的单位向量.</li>
-<li><code>maxDist</code>: 定义了沿着<code>sweep</code>查询的最大距离.
-它必须在<span class="math inline">\([0, inf)\)</span>之间,
-并且通过SDK会被限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.
-当<code>sweep</code>距离为0时, 等价于<code>overlap</code>检测.</li>
-<li><code>geomToSweep</code>: 将要<code>sweep</code>的几何体,
-支持<code>box</code>, <code>sphere</code>, <code>capsule</code>,
-或者<code>convex mesh</code>类型.</li>
-<li><code>PosToSweep</code>:
-用于<code>sweep</code>几何体的初始位置.</li>
-<li><code>geomSweptAgainst</code>:
-<code>sweep against</code>的几何体.</li>
-<li><code>hitInfo</code>: 最终返回的结果.
-一个<code>sweep</code>最多返回一个<code>hit</code>.</li>
-<li><code>hitFlags</code>: 决定<code>sweep</code>将被如何处理,
-如果发现<code>impact</code>点, 会返回对应的数据.</li>
-<li><code>inflation</code>: 以对象表面向外扩展的方式膨胀第一个几何体,
-并将所有角都做成圆角.
-当使用<code>sweep</code>来测试<code>movement</code>是否可用时,
-它用来保证几何体最小的空间边界.</li>
-</ul>
-<p>正如射线检测一样,
-如果某个<code>flag</code>在<code>hitFlags</code>中设置,
-在输出结构体对应的字段会被填充. <code>PxSweepHit</code>的字段如下:</p>
-<figure class="highlight abnf"><table><tr><td class="code"><pre><span class="line">PxRigidActor*   actor<span class="comment">;</span></span><br><span class="line">PxShape*        shape<span class="comment">;</span></span><br><span class="line">PxVec3          position<span class="comment">;</span></span><br><span class="line">PxVec3          normal<span class="comment">;</span></span><br><span class="line">PxF32           distance<span class="comment">;</span></span><br><span class="line">PxHitFlags      flags<span class="comment">;</span></span><br><span class="line">PxU32           faceIndex<span class="comment">;</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>actor</code>和<code>shape</code>:
-<code>actor</code>和<code>shape</code>不会被设置(这些字段只有在<code>scene-level sweep</code>中才会被使用,
-详见: <a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/SceneQueries.html#scenequeries"><em>Scene
-Queries</em></a>).</li>
-<li><code>position</code>(<code>PxHitFlag::ePOSITION</code>):
-交点的位置. 当有多个<code>impact</code>点时, 例如两个<code>box</code>,
-面和面相撞, <code>physX</code>将任意选择一个点.
-针对<code>meshes</code>或者<code>height fields</code>类型, 使用函数<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#meshquery">PxMeshQuery</a>获取详细信息.</li>
-<li><code>normal</code>(<code>PxHitFlag::eNORMAL</code>):<code>impact</code>点的表面法线.
-他是一个单位向量, 指向被击中对象的外侧, 与<code>sweep</code>方向相反(即:
-<code>sweep</code>方向和<code>impact</code>法线的点乘是负数.).</li>
-<li><code>distance</code>(<code>PxHitFlag::eDISTANCE</code>):沿着射线方向,
-物体与碰撞点的距离.</li>
-<li><code>flag</code>: 指定结构体的哪些字段是可用的.</li>
-<li><code>faceIndex</code>: <code>sweep hit</code>的面索引.
-这个是被击中对象的面, 而不是<code>sweep</code>对象.
-对于和<code>triangle mesh</code>和<code>heightfield</code>的<code>sweep</code>交点,
-它是三角形顶点索引, 与<code>convex mesh</code>的交点,
-它是多边形顶点索引. 对于其他类型, 它是0xffffffff.</li>
-</ul>
-<p>当<code>sweep</code>
-<code>hit</code>到<code>triangle mesh</code>或者<code>convex mesh</code>,
-返回的被选择的三角形如下:</p>
-<ul>
-<li>对于<code>convex</code>和<code>box</code> <code>sweep</code>,
-选择距离最短的三角形.</li>
-<li>对于<code>capsule</code>和<code>sphere</code>,
-最短距离的三角形不一定会被选择, 最短距离在<span
-class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
-选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
-如果这些三角形法线相同, 会随机选择他们中的一个然后返回.</li>
-</ul>
-<p>这些例子中, <code>hit</code>点, 位置(<span
-style="color:red;">例如两个<em>box</em>的面和面<code>sweep</code>会随机选择其中一个点</span>),
-法线(<span
-style="color:red;">对于<code>capsule</code>和<code>sphere</code>,
-最短距离的三角形不一定会被选择, 最短距离在<span
-class="math inline">\(10^{-3}f(即1e-3f)\)</span>范围内的都会被考虑,
-选择法线(三角形的法线)方向与<code>sweep</code>方向几乎一致的三角形.
-如果这些三角形法线相同,
-会随机选择他们中的一个然后返回.</span>),都会影响最终选择哪个三角形.</p>
-<p>与<code>raycast</code>不同, <code>sweep</code>不支持<code>u</code>,
-<code>v</code>坐标.</p>
-<p>对于几何对象的<code>sweep against</code>:</p>
-<ul>
-<li>平面被当做半个空间的固体,
-也就是说任何在平面后面的物体多会被当做<code>volume</code>的一部分进行<code>sweep against</code>.</li>
-<li>相同的背面剔除规则(应用在<code>raycast</code>上的)也会应用到<code>sweep</code>上,
-需要注意的是,
-不支持<code>eMESH_MULTIPLE</code>和<code>eMESH_BOTH_SIDES</code>.</li>
-</ul>
-<h2 id="initial-overlaps">Initial Overlaps</h2>
-<p>和射线检测相似, 开始就在对象内部,
-两个几何体<code>sweep</code>时候可能就已经相交了. 默认情况下,
-<code>PhysX</code>会检测并上报<code>overlap</code>.
-使用<code>PxSweepHit::hadInitialOverlap()</code>来查看<code>hit</code>是否是<code>initial overlap</code>生成的.</p>
-<p>对于<code>triangle mesh</code>和<code>height field</code>,
-背面剔除在<code>overlap check</code>之前执行,
-因为如果<code>triangle</code>被剔除了,
-就不会上报<code>overlap</code>事件了.</p>
-<p><code>PhysX</code>是否计算<code>MTD</code>由<code>PxHitFlag::eMTD</code>决定.
-如果<code>PxHitFlag::eMTD</code>没有被设置:</p>
-<ul>
-<li><code>distance</code>将被设置成0,
-<code>PxHitFlag::eDISTANCE</code>也会在<code>PxSweepHit</code>结构体中设置.</li>
-<li><code>normal</code>和<code>sweep</code>方向相反,
-并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::eNORMAL</code>会被设置.</li>
-<li><code>position</code>不会被定义,
-并且在结果<code>PxSweepHit</code>中<code>PxHitFlag::ePOSITION</code>不会被设置.</li>
-<li><code>faceIndex</code>是第二个几何对象的面.
-对于<code>heightfield</code>和<code>triangle mesh</code>,
-他是第一个被发现的<code>overlap triangle</code>的索引. 对于其他几何类型,
-将设置为<code>0xffffffff</code>.</li>
-</ul>
-<p>如果<code>PxHitFlag::eMTD</code>被设置,
-<code>hit</code>结果的定义如下:</p>
-<ul>
-<li><code>distance</code>被设置成<code>penetrate</code>的深度,
-<code>PxSweepHit</code>
-中的<code>PxHitFlag::eDISTANCE</code>被设置.</li>
-<li><code>normal</code>被设置成<code>penetrate</code>的方向,
-<code>PxSweepHit</code>中的<code>PxHitFlag::eNORMAL</code>被设置.</li>
-<li><code>position</code>为<code>sweep</code>几何对象上的一个点(即:第一个几何对象参数),
-并且<code>PxSweepHit</code>中的<code>PxHitFlag::ePOSITION</code>会被设置.</li>
-<li><code>faceIndex</code>是第二个几何对象上的面.
-<ul>
-<li>对于<code>convex mesh</code>, 它是最小<code>penetrate</code>的面.
-如果<code>MTD</code>可以通过<code>edge</code>或者<code>convex</code>顶点分离对象,
-将选择法线(面的法线)最接近分开方向的面.</li>
-<li>对于<code>triangle mesh</code>和<code>heightfield</code>,
-它是在<code>depenetration</code>算法最后一次循环中查找到的最后一个<code>penetrate</code>三角形.</li>
-<li>对于其他几何类型,
-<code>faceIndex</code>将会被设置成<code>0xffffffff</code>.</li>
-</ul></li>
-</ul>
-<p>在<code>initial overlap</code>中, 这个标志将会带来额外负担的处理操作.
-另外, 会启用如下限制:</p>
-<ul>
-<li><code>PxHitFlag::eMTD</code>与<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>(见下文)不兼容.
-<code>PxHitFlag::eMTD</code>与他们中的任何一个组合使用都会报错,
-并且与<code>PxHitFlag::eMTD</code>不兼容的标志将被忽略.</li>
-<li>在<code>PS3</code>中,
-<code>PxHitFlag::eMTD</code>不支持<code>SPU(Power Processing Element) sweep</code>.
-如果在<code>SPU sweep</code>中包含了<code>PxHitFlag::eMTD</code>,
-将会报错.
-<code>PPU(Synergistic Processing Elements)</code>完全支持<code>PxHitFlag::eMTD</code>.</li>
-</ul>
-<p>有时使用定制的代码路径测试<code>initial overlap</code>会带来性能消耗.
-有必要保证几何对象不是<code>initially overlapping</code>,
-<code>overlap</code>支持使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>进行检测.
-有一些使用该<code>flag</code>的限制, 详见:<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#sweep-pitfalls"><em>Pitfalls</em></a>.</p>
-<ul>
-<li>当<code>initial overlap</code>几何体处理未定义行为时,
-会使用<code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>标志.</li>
-<li><code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>与<code>zero sweep distance</code>组合使用会导致<code>warning</code>和<code>undefined behavior</code>.</li>
-</ul>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-注意:<br> 具有<em>PxHitFlag::eMTD</em>
-flag的<em>sweep</em>使用两种针对三角形的背面剔除. 首先,
-在<em>Sweep</em>方向上被剔除的三角形决定这是否是一个<em>overlap</em>.
-如果检测到<em>overlap</em>,
-他们会进一步检测<em>centroid(面心)</em>是否在三角形后面,
-如果没找到三角形, <em>direction</em>将设置为<em>sweep
-diection</em>的反方向, <em>distance</em>设置为0.
-</td>
-</tr>
-</table>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-注意:<br> 大多数情况下, 将第一个几何体平移<em>-normal*distance</em>距离,
-会将对象分开. 尽管可以使用循环<em>depenetration</em>算法找到<em>triangle
-mesh</em>和<em>height field</em>的<em>MTD</em>,
-但是有些情况下<em>MTD</em>可能不会将mesh完全分离开. 这种情况下,
-在应用平移后, 要调用第二次查询.
-</td>
-</tr>
-</table>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-注意:<br> 在<em>PhysX
-3.3</em>中一个已知的问题是当<em>eMTD</em>没有设置时, <em>sweep against
-convex mesh</em>的<em>face index</em>是<em>undefined</em>
-</td>
-</tr>
-</table>
-<h2 id="precise-sweeps">Precise Sweeps</h2>
-<p><code>PxHitFlag::ePRECISE_SWEEP</code>允许更加精确的<code>sweep</code>代码(默认情况下使用更快的但是精度不高的解决方案).
-<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>inflation</code>和<code>PxHitFlag::eMTD</code>不兼容.</p>
-<h2 id="sweeps-against-height-fields">Sweeps against Height Fields</h2>
-<ul>
-<li><code>Height field</code>被当做很薄的三角形面, 而不是固体对象.</li>
-<li>厚度不会影响<code>initial overlap</code>检测和点的碰撞.</li>
-<li>对于<code>single height field</code>, 如果厚度小于0,
-<code>hit</code>的法线方向为本地坐标系中的<code>+Y</code>方向,
-如果厚度大于0,
-<code>hit</code>的法线方向为本地坐标系中的<code>-Y</code>方向.</li>
-<li>如果设置了<code>eDOUBLE_SIDED</code>或者<code>eMESH_BOTH_SIDES</code>,
-<code>height field</code>将被认为是双面的.
-<ul>
-<li>返回的<code>hit</code>会一直朝向<code>sweep</code>方向.</li>
-</ul></li>
-<li><code>eMESH_ANY</code>不起作用.</li>
-<li><code>ePRECISE_SWEEP</code>不起作用.</li>
-</ul>
-<h2 id="pitfalls">Pitfalls</h2>
-<p>在使用<code>sweep</code>时候需要注意一些隐患:</p>
-<ul>
-<li>由于精度问题, 当两个对象有非常巨大的大小差异, 会返回错误的结果.</li>
-<li>由于算法不同,
-<code>sweep query</code>可能不仅仅检测到一个<code>overlap</code>查询,
-而是会检测一个不同的<code>overlapping</code>形状的初始化集合.
-执行一个<code>overlap check</code>还不足以判定<code>PxHitFlag::eIGNORE_INITIAL_OVERLAP</code>标志位的安全性,
-需要一系列的<code>overlap/sweep/penetration depth</code>信息的应用程序应该使用带有<code>initial overlap testing</code>和<code>PxHitFlag::eMTD</code>标志的<code>sweep check</code>.</li>
-</ul>
-<h1 id="additional-pxgeometryquery-functions">Additional PxGeometryQuery
-functions</h1>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryPointDistance-1696643163649-41.png" /></p>
-<p>下面的函数计算点和几何体之间的距离. 只支持<code>box</code>,
-<code>sphere</code>,
-<code>capsule</code>和<code>convex shape</code>.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxReal dist = PxGeometryQuery::<span class="built_in">pointDistance</span>(point, geom, pose, closestPoint);</span><br></pre></td></tr></table></figure>
-<p><code>closestPoint</code>是一个可选地输出参数, 它返回最近的点.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/GeomQueryWorldBounds-1696643311796-44.png" /></p>
-<p>下面的函数计算几何体轴对齐的包围盒(<code>AABB</code>),
-并返回它的姿态.</p>
-<figure class="highlight reasonml"><table><tr><td class="code"><pre><span class="line">PxBounds3 bounds = PxGeometryQuery::get<span class="constructor">WorldBounds(<span class="params">geom</span>, <span class="params">pose</span>, <span class="params">inflation</span>)</span>;</span><br></pre></td></tr></table></figure>
-<p><code>AABB</code>包围盒被<code>inflation</code>缩放,
-如果没有显式指定, 它的值为`<code>1.01f</code>.</p>
-<h1 id="pxmeshquery">PxMeshQuery</h1>
-<p>对于<code>triangle mesh</code>, <code>height field overlap</code>,
-以及对<code>triangle</code>数组的<code>sweep</code>,
-<code>PhysX</code>提供额外的函数可以获得多个结果.
-只有<code>boxes</code>, <code>spheres</code>,
-<code>capsules</code>与<code>mesh</code>或<code>heightFields</code>被测试的时候使用这些函数.</p>
-<h2 id="mesh-overlaps">Mesh Overlaps</h2>
-<p>下面的代码举例说明了如何处理<code>mesh triangle</code>与给定球状体积:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">PxU32 triangleIndexBuffer[bufferSize];</span><br><span class="line">PxU32 startIndex = <span class="number">0</span>;</span><br><span class="line"><span class="type">bool</span> bufferOverflowOccured = <span class="literal">false</span>;</span><br><span class="line">PxU32 nbTriangles = PxMeshQuery::<span class="built_in">findOverlapTriangleMesh</span>(sphereGeom, spherePose,</span><br><span class="line">                                                         meshGeom, meshPose,</span><br><span class="line">                                                         triangleIndexBuffer, bufferSize,</span><br><span class="line">                                                         startIndex, bufferOverflowOccured);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(PxU32 i=<span class="number">0</span>; i &lt; nbTriangles; i++)</span><br><span class="line">&#123;</span><br><span class="line">    PxTriangle tri;</span><br><span class="line">    PxU32 vertexIndices[<span class="number">3</span>];</span><br><span class="line">    PxMeshQuery::<span class="built_in">getTriangle</span>(meshGeom, meshPose, triangleIndexBuffer[i], tri, vertexIndices);</span><br><span class="line"></span><br><span class="line">     ...  <span class="comment">// process triangle info</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>findOverlapTriangleMesh</code>函数用于额外提取三角形索引.</p>
-<ul>
-<li><code>sphereGeom</code>和<code>spherePose</code>指定<code>overlap</code>的区域.</li>
-<li><code>meshGeom</code>和<code>meshPose</code>指定<code>mesh</code>和它的姿态.</li>
-<li><code>triangleIndexBuffer</code>和<code>triangleSize</code>指定<code>buffer</code>以及<code>buffer</code>的大小.</li>
-<li>当<code>buffer</code>溢出时,
-<code>startIndex</code>用于重新启动查询. 在这里例子中,
-为了查询更多的三角形集合, 将该参数设置为目前已检索的数量.</li>
-<li>当查询的结果超过<code>buffer</code>的大小,
-会设置<code>bufferOverflowOccured</code>标志位.</li>
-</ul>
-<p><code>height field</code>也存在类似的查询函数.</p>
-<h2 id="sweeps-against-triangles">Sweeps against Triangles</h2>
-<p>有时候, 例如, 当使用<code>mesh overlap API</code>时,
-它会很方便的与一组三角形进行<code>sweep</code>. 为此,
-<code>PhysX</code>提供指定的函数. 函数签名如下:</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">sweep</span><span class="params">(<span class="type">const</span> PxVec3&amp; unitDir,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal distance,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxGeometry&amp; geom,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTransform&amp; pose,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxU32 triangleCount,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxTriangle* triangles,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxSweepHit&amp; sweepHit,</span></span></span><br><span class="line"><span class="params"><span class="function">           PxHitFlags hitFlags = PxHitFlag::eDEFAULT,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxU32* cachedIndex = <span class="literal">NULL</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">const</span> PxReal inflation = <span class="number">0.0f</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="type">bool</span> doubleSided = <span class="literal">false</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>参数解释如下:</p>
-<ul>
-<li><code>unitDir</code>, <code>distance</code>,
-<code>geom</code>和<code>pose</code>与<code>PxGeometryQuery::sweep()</code>函数头四个参数一样.
-<code>distance</code>的范围限制在<code>PX_MAX_SWEEP_DISTANCE</code>之内.</li>
-<li><code>triangleCount</code>为包含在<code>buffer</code>中的三角形数量.</li>
-<li><code>triangles</code>为三角形的<code>buffer</code>.</li>
-<li><code>hitFlags</code>指定输出所需信息.</li>
-<li><code>cachedIndex</code>, 如果设置了,
-则该值表示第一个测试的三角形索引.
-当重复的与三角形集合<code>sweep</code>时, 它非常有用.</li>
-<li><code>inflation</code>与函数<code>PxGeometryQuery::sweep()</code>中的<code>inflation</code>参数一致.</li>
-<li><code>doubleSided</code>表示输入的三角形是否为<code>double-side</code>.
-它和<code>PxMeshGeometryFlag::eDOUBLE_SIDED</code>标志是等价的.
-它支持背面剔除, 对于任何<code>hit</code>,
-返回的面法线与<code>sweep</code>方向相反(详见:<a
-href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html#raycasts-vs-meshes"><em>Raycasts
-against Triangle Meshes</em></a>).</li>
-</ul>
-<p>与其他查询相比, 该函数有额外的限制:</p>
-<ul>
-<li>几何体类型必须是<code>sphere</code>,
-<code>capsule</code>或者<code>box</code>.
-不支持<code>convex</code>几何体.</li>
-<li>该函数返回单一<code>hit</code>.
-不支持<code>multiple hits</code>(尤其是<code>PxHitFlag::eMESH_MULTIPLE</code>).</li>
-<li>该函数总是返回最近的点.</li>
-<li>只支持 <code>PxHitFlag::eASSUME_NO_INITIAL_OVERLAP</code>,
-<code>PxHitFlag::ePRECISE_SWEEP</code>和<code>PxHitFlag::eMESH_BOTH_SIDES</code>.</li>
-<li>在返回的<code>PxSweepHit</code>结构体中,
-不会设置有效标志位(<code>PxHitFlag::ePOSITION</code>,
-<code>PxHitFlag::eNORMAL</code>, <code>PxHitFlag::eDISTANCE</code>,
-<code>PxHitFlag::eUV</code>)</li>
-</ul>
-]]></content>
-      <categories>
-        <category>翻译</category>
-        <category>PhysX</category>
-        <category>Geometry Queries</category>
-      </categories>
-      <tags>
-        <tag>翻译</tag>
-        <tag>PhysX</tag>
-        <tag>Geometry Queries</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>UE-TMap</title>
-    <url>/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/</url>
-    <content><![CDATA[<h1 id="概述">概述</h1>
-<p><span style="color:red;">先了解<code>TSet</code>,
-再看<code>TMap</code>. </span></p>
-<p><code>TMap</code>是继承自<code>TMapBase</code>,
-最终操作的也是其成员变量<code>ElementSetType Pairs</code>,
-即<code>TSet</code>类型.
-<code>TMap</code>将<code>Element</code>类型设置为<code>typedef TPair&lt;KeyType, ValueType&gt; ElementType;</code>,
-即Pair类型.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912193952646.png" /></p>
-<span id="more"></span>
-<p>重写<code>BaseKeyFuncs</code>, 实现<code>TDefaultMapKeyFuncs</code>,
-自定义关键函数<code>GetSetKey</code>和<code>Matches</code>,
-来进行获取<code>Key</code>和<code>KeyHash</code>以及比较等操作. 这样,
-其Element内容就和整个类解耦了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912194205939.png" /></p>
-<h1 id="关键变量">关键变量</h1>
-<p>从TMap的整体构建来看,
-其所有函数都是对<code>ElementSetType Pairs</code>进行操作,
-其实就是对<code>TSet</code>的封装.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> TPair&lt;KeyType, ValueType&gt; ElementType;</span><br><span class="line"><span class="keyword">typedef</span> TSet&lt;ElementType, KeyFuncs, SetAllocator&gt; ElementSetType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** A set of the key-value pairs in the map. */</span></span><br><span class="line">ElementSetType Pairs;</span><br></pre></td></tr></table></figure>
-<h2 id="find">Find</h2>
-<p>详见<code>TSet.Find</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195115734.png" /></p>
-<h2 id="findoradd">FindOrAdd</h2>
-<p>先进行<code>Find</code>, 如果没<code>Find</code>到,
-则进行<code>Add</code>, 返回<code>Add</code>结果.
-<code>Add</code>最终调用的是<code>TSet.EmplaceByHash</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195217492.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195251885.png" /></p>
-<p>从上述代码可以看出,
-<code>FindOrAdd</code>比<code>Find</code>+<code>Add</code>少算一次<code>KeyHash</code>,
-并且从使用方式上比<code>Find</code>+<code>Add</code>更简洁.
-所以推荐使用<code>FindOrAdd</code>.</p>
-<h2 id="contains">Contains</h2>
-<p>详见<code>TSet.Contains</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200401412.png" /></p>
-<h2 id="remove">Remove</h2>
-<p>详见<code>TSet.Remove</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200432209.png" /></p>
-<h2 id="operator">operator[]</h2>
-<p>其核心还是调用<code>TSet.Find</code>.
-查询到<code>Item.Value</code>并且返回其引用, 进而可以直接进行操作.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912191924488.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912192013741.png" /></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>Container</category>
-      </categories>
-      <tags>
-        <tag>UE</tag>
-        <tag>Container</tag>
-        <tag>TMap</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>UE-TSet</title>
-    <url>/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TSet/</url>
-    <content><![CDATA[<h1 id="概述">概述</h1>
-<p>核心: <code>HashArray</code>+<code>ElementArray</code></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115416424.png" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911192653763.png"
-alt="关键流程" />
-<figcaption aria-hidden="true">关键流程</figcaption>
-</figure>
-<p>一般Hash的实现一般由以下步骤实现:</p>
-<ol type="1">
-<li>将Element映射成Hash.</li>
-<li>通过Hash值找到对应成员.</li>
-</ol>
-<p>具体实现:
-UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<code>TSet</code>,
-<code>HashArray</code>中存放着<code>ElementArray</code>的<code>Index</code>,
-<code>ElementArray</code>中存放着具体的值.</p>
-<ol type="1">
-<li>TSet将映射方式暴露给用户,
-由程序员自定义实现:<code>uint32 GetTypeHash(...)</code>,
-最终返回类型为<code>uint32</code>的<code>KeyHash</code>.</li>
-<li>TSet内部实现了通过<code>KeyHash</code>找到对应Element的方式:
-<ol type="1">
-<li>根据<code>HashIndex &amp; (HashSize - 1)</code>,
-计算<code>HashIndex</code>, 然后取出<code>HashElementValue</code>,
-此处<code>HashElementValue</code>代表<code>ElementArray</code>的<code>Index</code>.</li>
-<li>根据<code>Index</code>从<code>ElementArray</code>获取具体的<code>ElementValue</code>,
-如果发生冲突, 拉链法解决冲突.
-每个<code>Element</code>记录着<code>NextElementIndex</code>,
-如果该Element发生冲突,
-通过<code>NextElementIndex</code>寻找到下一个Element.</li>
-</ol></li>
-</ol>
-<span id="more"></span>
-<h1 id="实现细节">实现细节</h1>
-<h2 id="声明">声明</h2>
-<p><strong>前置声明</strong>,
-默认使用<code>DefaultKeyFuncs&lt;InElementType&gt;</code>作为<code>KeyFuncs</code>,
-使用<code>FDefaultSetAllocator</code>作为<code>Allocator</code></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911161319485.png" /></p>
-<p><strong>真正实现:</strong>使用四个传入参数作为TSet的模板参数.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911193102258.png" /></p>
-<h2 id="add">Add</h2>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911200700442.png" /></p>
-<h3 id="tset.add">TSet.Add</h3>
-<p>调用Add函数<code>TSet.Add</code>添加元素.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911162930925.png" /></p>
-<h3 id="tset.emplace">TSet.Emplace</h3>
-<p>进一步调用<code>TSet.Emplace</code>.
-在<code>Elements</code>中添加元素,
-然后根据参数进行初始化(<code>place new</code>).
-根据<code>ElementValue</code>获取<code>Hash</code>值.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911163039172.png" /></p>
-<p>根据Hash值,
-获取Hash数组中的索引<code>HashIndex &amp; (HashSize - 1)</code>,
-根据Hash索引, 取出Element</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911163632098.png"
-alt="image-20230911163632098" />
-<figcaption aria-hidden="true">image-20230911163632098</figcaption>
-</figure>
-<h3 id="tset.emplaceimpl">TSet.EmplaceImpl</h3>
-<p>调用<code>TSet.EmplaceImpl</code>, 实现真正Add.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911201128318.png" /></p>
-<p>讲解一下该函数中的<code>FindIdByHash</code>函数.
-通过<code>KeyHash</code>获取到<code>ElementArray</code>中指定元素.
-由于不同元素可能定位到同一个<code>ElementIndex</code>上,
-UE使用拉链方式解决冲突,
-它根据<code>TSetElementBase.HashNextId</code>构成一个链表, 进行存储.
-所以需要遍历这个链表, 比较每个元素是否真正相同. 如果真正相同,
-则返回其ElementIndex.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911201816846.png" /></p>
-<p>如果ElementArray存在对应的元素, 就覆盖, 否则,就添加新的.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911202014254.png" /></p>
-<p>添加新元素时, 将新元素插入到链表首位.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911202129420.png" /></p>
-<p>注意: 在Add时候会返回之前元素是否已经存在.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911203633007.png" /></p>
-<h2 id="find">Find</h2>
-<p>首先根据Element生成KeyHash, 根据KeyHash找到HashArray中的Index,
-根据<code>ElementIndex(HashArray[HashIndex])</code>定位到<code>ElementArray</code>中的元素,
-即链表头, 然后遍历链表, 通过比较方式找到最终的对象.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115207933.png" /></p>
-<p>找到最终的Element元素索引.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115125157.png" /></p>
-<h2 id="contains">Contains</h2>
-<p>根据<code>Key(Element本身)</code>计算出<code>KeyHash</code>,
-通过<code>KeyHash&amp; (HashSize - 1)</code>得到<code>HashIndex</code>,
-取出<code>HashArrayItem(即ElementIndex)</code>,
-遍历<code>ElementArray</code>中的链表, 查看其是否真正存在.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195557175.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195622278.png" /></p>
-<h2 id="remove">Remove</h2>
-<p>调用<code>TSet.Remove</code>函数,
-使用<code>KeyFuncs::GetKeyHash(Key)</code>计算其<code>KeyHash</code>,
-并传入到<code>TSet.RemoveImpl</code>中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911205738241.png" /></p>
-<p>在函数<code>TSet.RemoveImpl</code>中,
-使用函数<code>GetTypedHash(KeyHash)</code>计算其<code>ElementArrayIndex</code>,
-然后开始该遍历. 使用比较函数<code>KeyFuncs::Matches</code>, 如果相同,
-则直接删除, 如果<code>bAllowDuplicateKeys</code>为false, 则直接break,
-否则继续遍历.</p>
-<p><strong>注意一点, 当<code>bAllowDuplicateKeys</code>为true的时候,
-是删除了<code>NextElementId</code>指向的元素,
-<code>NextElementId</code>并没有删除,
-这就是为什么<code>NextElementId</code>使用指针的原因. 否则代码会非常乱,
-没有现在这么简洁</strong></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911210335490.png" /></p>
-<p>使用<code>void Remove(FSetElementId ElementId)</code>函数,
-真正删除对应的元素.</p>
-<p>链表删除逻辑:</p>
-<ol type="1">
-<li>存储next指针, 指向待处理元素.</li>
-<li>通过比较, 检测是否为待删除元素A, 如果是,
-则将Next指针的值设置为A的next, 并进行break; 否则继续遍历.</li>
-<li>删除元素A.</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912095240012.png" /></p>
-<h2 id="rehash">Rehash</h2>
-<ol type="1">
-<li>释放HashArray所有元素</li>
-<li>重建HashArray</li>
-<li>将HashArray中元素设置为默认值.</li>
-<li>遍历ElementArray, 重建HashArray.</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911212306750.png" /></p>
-<p><code>TSet.HashElement</code>核心逻辑, 如下代码可以理解为:
-对于任意新添加的元素Element, 重新计算其HashIndex,
-将<code>Element.Next</code>设置为<code>HashArray[HashIndex]</code>,
-即<code>Element.Next</code>指向旧的<code>ElementIndex</code>,
-然后更新<code>HashArray[HashIndex]</code>,
-将其设置为新的<code>ElementIndex</code>. 经过如上分析可知,</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911212557432.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911214905993.png" /></p>
-<p>如果将Element插入到自己所在链表中会造成什么样的结果呢? 死循环:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911215026124.png" /></p>
-<p>在TSet中, 不会将一个Element插入到自己链表头部. 所以不会有死循环.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911215125651.png" /></p>
-<h3 id="什么时候进行rehash呢">什么时候进行Rehash呢?</h3>
-<p>一般而言根据<code>Element</code>的数量计算是否需要<code>Rehash</code>.
-根据<code>Element</code>数量计算出目标数量(<code>RoundUpToPowerOfTwo</code>),
-如果目标数量大于当前Hash数量, 就进行扩容.</p>
-<ol type="1">
-<li><strong>添加新元素</strong></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103218293.png" /></p>
-<ol start="2" type="1">
-<li><strong>排序</strong></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103724574.png" /></p>
-<ol start="3" type="1">
-<li><strong>Empty</strong></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103820753.png" /></p>
-<ol start="4" type="1">
-<li><strong>Compact</strong></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103905355.png" /></p>
-<ol start="5" type="1">
-<li><strong>Reserve</strong></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230914103948863.png" /></p>
-<h2 id="hasharray扩容">HashArray扩容</h2>
-<p><strong>Reserve时候会进行扩容.</strong></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912103543864.png" /></p>
-<p><strong>在添加元素时, 会按需进行扩容.</strong></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912104908446.png" /></p>
-<p>扩容的时候, 要执行Rehash.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912105037405.png" /></p>
-<h2 id="elementarray扩容">ElementArray扩容</h2>
-<p><strong>Reserve时候会进行扩容.</strong></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912103509351.png" /></p>
-<p>每当添加元素时候, 会按需进行扩容.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912105340106.png" /></p>
-<h1 id="优化">优化</h1>
-<p>性能消耗点: 在Add时候, 会进行一次<code>GetTypeHash</code>计算,
-并与链表中元素进行比较. 假设<code>HashArray</code>大小为16,
-那么每次添加元素的Hash值恰好是16的倍数, 则会形成单链表,
-比较结果如下:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912113418959.png" /></p>
-<p>那么我们怎么才能节省性能呢?</p>
-<p>可以将<code>GetTypeHash</code>生成的<code>KeyHash</code>存储在结构体内部,
-只生成一次, 每次比较时候优先比较<code>KeyHash</code>, 如果KeyHash相同,
-再比较具体内容. 如果我们能假定生成的<code>KeyHash</code>一定是唯一的,
-那么只要比较其<code>KeyHash</code>就可以了.
-但是尽量不要用<code>operator ==</code>,
-可以仿照<code>DefaultKeyFuncs</code>定制<code>BaseKeyFuncs</code>,
-最好进行前向声明, 这样大家就能直接用了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912114550734.png" /></p>
-<p>前向声明参考:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912114656002.png" /></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>Container</category>
-      </categories>
-      <tags>
-        <tag>UE</tag>
-        <tag>Container</tag>
-        <tag>TSet</tag>
       </tags>
   </entry>
 </search>
