@@ -199,7 +199,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -217,7 +217,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/" class="post-title-link" itemprop="url">UE-TMap</a>
+          <a href="/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/" class="post-title-link" itemprop="url">UE SoftReference浅析</a>
         </h2>
 
         <div class="post-meta-container">
@@ -238,10 +238,6 @@
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
           <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
         </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/UE/Container/" itemprop="url" rel="index"><span itemprop="name">Container</span></a>
-        </span>
     </span>
 
   
@@ -251,14 +247,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>268</span>
+      <span>712</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
+      <span>3 分钟</span>
     </span>
 </div>
 
@@ -270,18 +266,50 @@
     
     <div class="post-body" itemprop="articleBody">
           <h1 id="概述">概述</h1>
-<p><span style="color:red;">先了解<code>TSet</code>,
-再看<code>TMap</code>. </span></p>
-<p><code>TMap</code>是继承自<code>TMapBase</code>,
-最终操作的也是其成员变量<code>ElementSetType Pairs</code>,
-即<code>TSet</code>类型.
-<code>TMap</code>将<code>Element</code>类型设置为<code>typedef TPair&lt;KeyType, ValueType&gt; ElementType;</code>,
-即Pair类型.</p>
+<p>资源路径: <span style="color:red;">/Game</span><span
+style="color:Purple;">/ThirdPersonCPP/Maps</span><span
+style="color:Blue;">/UEDPIE_0_NewMap1</span><span
+style="color:Gold;">.NewMap1</span><span
+style="color:Black;">:</span><span
+style="color:SeaGreen;">PersistentLevel.</span><span
+style="color:DarkOrange;">TestActor1_2</span></p>
+<ol type="1">
+<li>红色<span style="color:red;">/Game</span>: 资源分区,
+<code>/Game</code>为GameContent区域,
+<code>/Engine</code>为EngineContent区域,
+<code>/Plugin</code>为PluginContent区域</li>
+</ol>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912193952646.png" /></p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812153324842.png" /></p>
+<ol start="2" type="1">
+<li>紫色<span
+style="color:Purple;">/ThirdPersonCPP/Maps</span>表示资源路径</li>
+<li>蓝色<span
+style="color:Blue;">UEDPIE_0_NewMap1</span>表示Package名称</li>
+<li>黄色<span style="color:Gold;">NewMap1</span>表示Package内对象名称,
+即World.</li>
+<li>黑色<span style="color:Black;">:</span>子对象分隔符,
+表明其后面的都是子对象.</li>
+<li>绿色<span style="color:SeaGreen;">PersistentLevel</span>表示以<span
+style="color:Gold;">NewMap1</span>作为Outer的SubObject,
+World中的Level.</li>
+<li>橙色<span style="color:DarkOrange;">TestActor1_2</span>表示以<span
+style="color:SeaGreen;">PersistentLevel</span>为Outer的SubObject,
+Level内的Actor.</li>
+</ol>
+<p>搜寻过程: <strong>通过资源全路径(<span
+style="color:red;">/Game</span><span
+style="color:Purple;">/ThirdPersonCPP/Maps</span><span
+style="color:Blue;">/UEDPIE_0_NewMap1</span>)找到package(蓝色<span
+style="color:Blue;">UEDPIE_0_NewMap1</span>),
+通过Package找到World(黄色<span style="color:Gold;">NewMap1</span>),
+通过world找到Level(绿色<span
+style="color:SeaGreen;">PersistentLevel</span>),
+通过Level找到Actor(橙色<span
+style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/#more" rel="contents">
+              <a class="btn" href="/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
