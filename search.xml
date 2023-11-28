@@ -1373,145 +1373,6 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202308182116
       </tags>
   </entry>
   <entry>
-    <title>Component Replication归属权</title>
-    <url>/2023/11/18/UE/%E7%BD%91%E7%BB%9C/Component%20Replication%E5%BD%92%E5%B1%9E%E6%9D%83/</url>
-    <content><![CDATA[<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png" /><span id="more"></span></p>
-<p>创建一个Component后, 其由哪个Actor负责传输呢? <span
-style="color:red;">放到其Owner的ActorChannel里面进行传输.</span></p>
-<p>查看如下代码,
-<code>UTestRepFlowSpawnedCmp</code>的传输由<code>ABasePlayerController</code>负责.
-即其归属于<code>ABasePlayerController</code>的ActorChannel.
-<code>UTestRepFlowSpawnedCmp</code>对应的<code>FObjectReplicator</code>存储在<code>ABasePlayerController ActorChannel</code>的<code>UActorChannel.ReplicationMap</code>中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118163412963.png" /></p>
-<p>原因: 关键函数<code>NewObject</code>中经过层层调用,
-最终调用了<code>AActor.AddOwnedComponent</code>,
-将该<code>ActorComponent</code>放入了其<code>UActorComponent.OwnerPrivate</code>的<code>AActor.ReplicatedComponents</code>中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118163838301.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164136189.png" /></p>
-<p>在<code>AActor.ReplicateSubobjects</code>中,
-遍历所有<code>AActor.ReplicatedComponents</code>进行<code>Replication</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164211437.png" /></p>
-<p><strong>延伸:</strong> 当其Outer不是Actor怎么办呢? 递归寻找其Outer,
-直到找到一个为Actor类型的为止.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164541957.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164603113.png" /></p>
-<p>总结: <span style="color:red;">ActorComponent的网络归属跟Outer有关,
-跟谁在使用它无关.</span></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>UE4网络模块概述</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>GUID延迟绑定</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/</url>
-    <content><![CDATA[<h1 id="延迟绑定">延迟绑定</h1>
-<p>UE对UObject指针的映射是通过GUID进行的,
-例如当客户端ABasePlayerController.TestReplicationComp2需要根据DS传来的新数据进行赋值,
-这个值就是GUID其代表一个对象.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628172027340.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387.png" /></p>
-<span id="more"></span>
-<p>首先需要了解到, UE序列化是有顺序的,
-ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623173331842-1687770871870-7-1687942299803-23.png" /></p>
-<p>当属性的赋值在GUID对象创建之前, 因为指针对象还没有创建,
-那么指针就不可能指向正确的地址. 这种情况该怎么处理呢?
-例如当客户端ABasePlayerController.TestReplicationComp2需要反序列化的时候,
-发现该GUID表示的对象还不存在, 这时候怎么办?</p>
-<p>U根据UE处理属性同步的顺序(ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties),
-先反序列化属性变量, 发现没有找到GUID对应的UObj,
-将其放入临时存储变量UPackageMap.TrackedUnmappedNetGuids中(<strong>详见特殊说明1</strong>).</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200757905.png" /></p>
-<p>并将结果添加到FReceivingRepState.GuidReferencesMap中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201728804.png" /></p>
-<p>并且如果检测到有Unmapped数据,
-还要将其添加到UNetDriver.UnmappedReplicators中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628202112682.png" /></p>
-<p>在每帧末尾会处理UNetDriver.UnmappedReplicators中未处理的UnmappedGUID.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201922955.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17.png" /></p>
-<p>通过以上逻辑,
-就可以将ABasePlayerController.TestReplicationComp2指向对应的Obj了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387-1687955124036-34.png" /></p>
-<p><strong>思考:</strong></p>
-<p>如果在反序列化属性时, GUID没有找到, 那么该属性会更改吗?</p>
-<p>在序列化TestReplicationComp2时, 可以看出,
-当没有解析出GUID对应的Object时, Obj会设置成nullptr,
-然后将nullptr设置到TestReplicationComp2中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205526440.png" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205408507.png"
-alt="image-20230628205408507" />
-<figcaption aria-hidden="true">image-20230628205408507</figcaption>
-</figure>
-<p>但是这种情况只是短暂存在的,
-即在UNetDriver.TickFlush结尾就已经将TestReplicationComp2设置成正确的值了.</p>
-<p><strong>进一步思考</strong>, 在属性同步的时候,
-是否会发生将TestReplicationComp2设置成nullptr,
-过了几帧才将TestReplicationComp2设置成正确的值呢?
-这种情况发生的条件为GUID同步过来了, 但是其真正的对象在后续才创建.
-针对Owner为Actor本身的Component不可能出现, 当一个属性发生变化,
-如果查找到该GUID对象的Obj, 则直接设置,
-否则后续一定会紧跟着GUID对应Obj的创建. 但是针对一个指针,
-指向别的Actor/UObject, 是可能出现: GUID有了, 但是Actor/UObject还没</p>
-<h1 id="特殊说明">特殊说明</h1>
-<h2
-id="unmappednetguids和mappeddynamicnetguids临时存储">UnmappedNetGuids和MappedDynamicNetGuids临时存储</h2>
-<p>UPackageMap.TrackedUnmappedNetGuids和UPackageMap.TrackedMappedDynamicNetGuids都是临时存储数据用的,
-用完即清理.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201131153.png" /></p>
-<h2 id="unmappednetguids用途">UnmappedNetGuids用途</h2>
-<p>针对UnmappedGUID主要是用于延迟绑定. 绑定后, 如果GUID为Dynamic,
-则将其放入MappedDynamic</p>
-<p>每帧处理UnmappedGUID.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17-1687958346817-37.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212016071.png" /></p>
-<h2 id="mappeddynamic用途">MappedDynamic用途</h2>
-<p>收集UnmappedGUID和MappedGUID, 填充UNetDriver.GuidToReplicatorMap数据,
-供后续使用.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212205753.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212318266.png" /></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-        <category>NetworkGUID</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>NetworkGUID</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>NetworkGUID浅析</title>
     <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/FNetworkGUID%E6%B5%85%E6%9E%90/</url>
     <content><![CDATA[<p><img
@@ -2219,252 +2080,142 @@ DS和客户端的Obj是怎么关联起来的?</p>
       </tags>
   </entry>
   <entry>
-    <title>NetDormancy</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/</url>
-    <content><![CDATA[<h1 id="dormancy定义">Dormancy定义</h1>
-<p>Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过.
-Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致.
-一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化,
-即可设置为Dormancy.</p>
-<p>Dormancy状态转换图:</p>
+    <title>Component Replication归属权</title>
+    <url>/2023/11/18/UE/%E7%BD%91%E7%BB%9C/Component%20Replication%E5%BD%92%E5%B1%9E%E6%9D%83/</url>
+    <content><![CDATA[<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png" /><span id="more"></span></p>
+<p>创建一个Component后, 其由哪个Actor负责传输呢? <span
+style="color:red;">放到其Owner的ActorChannel里面进行传输.</span></p>
+<p>查看如下代码,
+<code>UTestRepFlowSpawnedCmp</code>的传输由<code>ABasePlayerController</code>负责.
+即其归属于<code>ABasePlayerController</code>的ActorChannel.
+<code>UTestRepFlowSpawnedCmp</code>对应的<code>FObjectReplicator</code>存储在<code>ABasePlayerController ActorChannel</code>的<code>UActorChannel.ReplicationMap</code>中.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802161108281.png" /></p>
-<span id="more"></span>
-<p>Dormancy转换大致堆栈流程:</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118163412963.png" /></p>
+<p>原因: 关键函数<code>NewObject</code>中经过层层调用,
+最终调用了<code>AActor.AddOwnedComponent</code>,
+将该<code>ActorComponent</code>放入了其<code>UActorComponent.OwnerPrivate</code>的<code>AActor.ReplicatedComponents</code>中.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802160012920.png" /></p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** Describes if an actor can enter a low network bandwidth dormant mode */</span></span><br><span class="line"><span class="built_in">UENUM</span>(BlueprintType)</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">ENetDormancy</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/** This actor can never go network dormant. */</span></span><br><span class="line">    <span class="function">DORM_Never <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Never&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor can go dormant, but is not currently dormant. Game code will tell it when it go dormant. */</span></span></span><br><span class="line"><span class="function">    DORM_Awake <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Awake&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor wants to go fully dormant for all connections. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantAll <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant All&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor may want to go dormant for some connections, GetNetDormancy() will be called to find out which. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantPartial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant Partial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor is initially dormant for all connection if it was placed in map. */</span></span></span><br><span class="line"><span class="function">    DORM_Initial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Initial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    DORM_MAX <span class="title">UMETA</span><span class="params">(Hidden)</span>,</span></span><br><span class="line"><span class="function">&#125;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Actor中的变量</span></span><br><span class="line"><span class="comment">/** Dormancy setting for actor to take itself off of the replication list without being destroyed on clients. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>(BlueprintReadOnly, EditDefaultsOnly, Category=Replication)</span><br><span class="line">TEnumAsByte&lt;<span class="keyword">enum</span> <span class="title class_">ENetDormancy</span>&gt; NetDormancy;</span><br></pre></td></tr></table></figure>
-<p>可以看出, Actor使用NetDormancy变量实现Dormancy逻辑.
-其中DORM_Never和DORM_Awake都表示未休眠, 会进行属性同步,
-其他的变量表示休眠, 不进行属性同步.
-特殊的DORM_Initial表示放在地图中进行休眠的Actor.</p>
-<h1 id="dormancy使用">Dormancy使用</h1>
-<p>初始化时, 默认将NetDormancy设置成DORM_Awake,
-表示可以使用Dormancy.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118163838301.png" /></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724161130553.png" /></p>
-<p>如果想要启用Dormancy需要调用AActor.SetNetDormancy将其设置为Dormacy.
-后续会根据设置的状态, 进行处理.</p>
-<p>具体参考测试用例:https://github.com/fdcumt/ALSV.git</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164136189.png" /></p>
+<p>在<code>AActor.ReplicateSubobjects</code>中,
+遍历所有<code>AActor.ReplicatedComponents</code>进行<code>Replication</code>.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731153740974.png" /></p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 其中关键代码:</span></span><br><span class="line"><span class="comment">//TestNetDormancyActor.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;GameFramework/Actor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.generated.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span>  <span class="title class_">ATestNetDormancyActor</span> : <span class="keyword">public</span> AActor</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/** Default constructor for AActor */</span></span><br><span class="line">    <span class="built_in">ATestNetDormancyActor</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Unreliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_Unreliable_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Server, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">C2S_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    int32 TestNumber = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    int32 LocalNumber = <span class="number">0</span>;</span><br><span class="line">    uint32 FrameNumber = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// TestNetDormancyActor.cpp </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Net/UnrealNetwork.h&quot;</span></span></span><br><span class="line"></span><br><span class="line">ATestNetDormancyActor::<span class="built_in">ATestNetDormancyActor</span>()</span><br><span class="line">: <span class="built_in">AActor</span>()</span><br><span class="line">&#123;</span><br><span class="line">    bReplicates = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">//NetDormancy = ENetDormancy::DORM_DormantAll;</span></span><br><span class="line"></span><br><span class="line">    PrimaryActorTick.bCanEverTick = <span class="literal">true</span>;</span><br><span class="line">    PrimaryActorTick.TickGroup = TG_PrePhysics;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">Tick</span>(DeltaSeconds);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++FrameNumber;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">        if (FrameNumber%20==19)</span></span><br><span class="line"><span class="comment">        &#123;</span></span><br><span class="line"><span class="comment">            ++TestNumber;</span></span><br><span class="line"><span class="comment">            FlushNetDormancy();</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        else */</span><span class="keyword">if</span> (FrameNumber % <span class="number">20</span> == <span class="number">10</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">S2C_Unreliable_ChangeCharacterNumber</span>();</span><br><span class="line">            <span class="comment">//S2C_ChangeCharacterNumber();</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_AutonomousProxy)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">C2S_ChangeCharacterNumber</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(ATestNetDormancyActor, TestNumber);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_Unreliable_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::C2S_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 并在ABasePlayerController.tick中添加:</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++LocalFrameIndex;</span><br><span class="line">        <span class="keyword">if</span> (TestNetDormancyActor == <span class="literal">nullptr</span> &amp;&amp; LocalFrameIndex==<span class="number">3</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            FVector Loc = FVector::ZeroVector;</span><br><span class="line">            FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">            FActorSpawnParameters Par;</span><br><span class="line">            Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">            TestNetDormancyActor = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;ATestNetDormancyActor&gt;(ATestNetDormancyActor::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetNetDormancy</span>(ENetDormancy::DORM_DormantAll);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>在SpawnActor时会将其添加到指定Node节点中.
-在调用UReplicationGraph::AddNetworkActor时候,
-会设置Actor对应的GlobalInfo.bWantsToBeDormant,
-检测其是否需要进行一次属性同步.
-例如如果在构造函数中将其设置为ENetDormancy::DORM_DormantAll, 即是这样,
-也应该进行一次属性同步, 将初始化的信息同步到远端.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164211437.png" /></p>
+<p><strong>延伸:</strong> 当其Outer不是Actor怎么办呢? 递归寻找其Outer,
+直到找到一个为Actor类型的为止.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724171546754.png" /></p>
-<p>创建之后, 然后将其设置为ENetDormancy::DORM_DormantAll.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164541957.png" /></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724163540441.png" /></p>
-<p>当属性发生变化的时候调用FlushActorDormancy, 触发一次属性同步.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726102844002.png" /></p>
-<h1 id="dormancy详解">Dormancy详解</h1>
-<p>那么在这期间, Dormant究竟是怎么执行的, 它有什么逻辑呢?
-下面开始寻根溯源.</p>
-<h2 id="addnetwork详细流程">AddNetwork详细流程</h2>
-<p>根据上面的示例, 在ActorSpawn时候,
-会添加到DynamicSpatializedActors中.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"> <span class="comment">// ActorSpawn时候, 将Actor添加到ReplicationNode中</span></span><br><span class="line">--UWorld::<span class="built_in">SpawnActor</span>()</span><br><span class="line"> |--UWorld::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | |--<span class="comment">// 遍历所有NetDriver, 并将Actor添加到其中</span></span><br><span class="line"> | |--Driver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | |--UNetDriver::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | |--<span class="built_in">GetNetworkObjectList</span>().<span class="built_in">FindOrAdd</span>(Actor, <span class="keyword">this</span>);</span><br><span class="line"> | | | |--<span class="comment">// 向ReplicationGraph中添加NetworkActor</span></span><br><span class="line"> | | | |--ReplicationDriver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 添加Actor对应的描述信息FGlobalActorReplicationInfo</span></span><br><span class="line"> | | | | |--FGlobalActorReplicationInfo&amp; GlobalInfo = GlobalActorReplicationInfoMap.<span class="built_in">Get</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 设置Dormant属性</span></span><br><span class="line"> | | | | |--GlobalInfo.bWantsToBeDormant = Actor-&gt;NetDormancy &gt; DORM_Awake;</span><br><span class="line"> | | | | |--UReplicationGraph::<span class="built_in">RouteAddNetworkActorToNodes</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中</span></span><br><span class="line"> | | | | | |--AlwaysRelevantNode-&gt;<span class="built_in">NotifyAddNetworkActor</span>(ActorInfo);</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner, 添加到ActorsWithoutNetConnection中</span></span><br><span class="line"> | | | | | |--ActorsWithoutNetConnection.<span class="built_in">Add</span>(ActorInfo.Actor);</span><br><span class="line"> | | | | | |--<span class="comment">// 其他情况添加到GridNode中</span></span><br><span class="line"> | | | | | |--GridNode-&gt;<span class="built_in">AddActor_Dormancy</span>(ActorInfo, GlobalInfo);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy</span><br><span class="line"> | | | | | | |--<span class="comment">// 如果要想要休眠, 调用AddActorInternal_Static函数</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Static</span>(ActorInfo, ActorRepInfo, <span class="literal">true</span>);</span><br><span class="line"> | | | | | | |--<span class="comment">// 否则, 调用AddActorInternal_Dynamic</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Dynamic</span>(ActorInfo);</span><br><span class="line"> | | | | | | | |--<span class="comment">// 放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中</span></span><br><span class="line"> | | | | | | | |--DynamicSpatializedActors.<span class="built_in">Emplace</span>(ActorInfo.Actor, ActorInfo);</span><br></pre></td></tr></table></figure>
-<p>可以看出,
-最终将Actor放入了放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中.
-在每帧tick时候, 会将同步到其他端.</p>
-<h2 id="setnetdormancy详细流程">SetNetDormancy详细流程</h2>
-<h3 id="startbecomingdormant">StartBecomingDormant</h3>
-<p>在SetNetDormancy流程中, 有几个关键点:</p>
-<ol type="1">
-<li><p>将ActorRepInfo.bWantsToBeDormant设置为true.</p></li>
-<li><p>将Actor放入Cell的UReplicationGraphNode_DormancyNode中.
-表明不再进行Gather了.
-但是会在UReplicationGraphNode_ConnectionDormancyNode中Gather</p></li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy堆栈</span></span><br><span class="line">--AActor.<span class="built_in">SetNetDormancy</span>()</span><br><span class="line"> |--NetDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>(<span class="keyword">this</span>, OldDormancy);</span><br><span class="line"> | |--ReplicationDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>()</span><br><span class="line"> | | |--ActorRepInfo-&gt;bWantsToBeDormant = bNewWantsToBeDormant;</span><br><span class="line"> | | |--ActorRepInfo-&gt;Events.DormancyChange.<span class="built_in">Broadcast</span>(Actor, *ActorRepInfo, CurrentDormancy, OldDormancyState);</span><br><span class="line"> | | | |--<span class="comment">// 在UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy中注册的回调函数</span></span><br><span class="line"> | | | |--UReplicationGraphNode_GridSpatialization2D::<span class="built_in">OnNetDormancyChange</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static</span>()</span><br><span class="line"> | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static_Implementation</span>()</span><br><span class="line"> | | | | | | |--StaticSpatializedActors.<span class="built_in">Emplace</span>(Actor, <span class="built_in">FCachedStaticActorInfo</span>(ActorInfo, bDormancyDriven));</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">PutStaticActorIntoCell</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将Actor放入对应的Cell中</span></span><br></pre></td></tr></table></figure>
-<p>在同一帧的TickFlush GatherActor时候,
-会在UReplicationGraphNode_ConnectionDormancyNode中将Actor Gather出来.
-针对DormancyActor会有如下流程(如是DS第一帧, 会有截断, 但是一般情况不会.
-这里只说一般情况). 可以看出, Gather之后,
-Actor会执行StartBecomingDormant, 准备进行休眠状态.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy同一帧, TickFlush GatherActor的流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UReplicationGraph.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | |--UReplicationGraphNode_ActorList.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_DormancyNode.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 如果ConnectionNode为空还要进行创建</span></span><br><span class="line"> | | | | | |--ConnectionNode = <span class="built_in">CreateConnectionNode</span>(Params);</span><br><span class="line"> | | | | | | |--这里会将UReplicationGraphNode_DormancyNode中UReplicationGraphNode_ActorList.ReplicateActorList完全拷贝一份</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">DeepCopyActorListsFrom</span>(<span class="keyword">this</span>);</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">InitConnectionNode</span>(RepGraphConnection, Params.ReplicationFrameNum);</span><br><span class="line"> | | | | | |--<span class="comment">//UReplicationGraphNode_ConnectionDormancyNode收集Actor</span></span><br><span class="line"> | | | | | |--ConnectionNode-&gt;<span class="built_in">GatherActorListsForConnection</span>(Params);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_ConnectionDormancyNode.<span class="built_in">ConditionalGatherDormantActorsForConnection</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将node添加到OutGatheredReplicationLists中</span></span><br><span class="line"> | | | | | | | |--Params.OutGatheredReplicationLists.<span class="built_in">AddReplicateActorList</span>(ConnectionList);</span><br><span class="line"> | | |--UReplicationGraph.<span class="built_in">ReplicateActorListsForConnections_Default</span>()</span><br><span class="line"> | | | |--UReplicationGraph.<span class="built_in">ReplicateSingleActor</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 针对GlobalActorInfo.bWantsToBeDormant要进行StartBecomingDormant</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | |--FObjectReplicator::<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | | |--bLastUpdateEmpty = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">true</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--Connection-&gt;<span class="built_in">StartTickingChannel</span>(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
-<p>DS第一帧截断原因:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727164750246.png" /></p>
-<h4 id="问-已经startbecomingdormant的actor还会进行属性同步吗">问:
-已经StartBecomingDormant的Actor还会进行属性同步吗?</h4>
-<p>每帧还会将BecomeDormant的Actor Gather出来. 但是, 不会进行属性同步了.
-因为, 他没有发生变化:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172151474.png" /></p>
-<p>如果发生丢包, 还会进行同步, 并且这里BitsWritten会大于0,
-有数据进行网络传输.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172233340.png" /></p>
-<h3 id="becomedormant">BecomeDormant</h3>
-<p>在ActorChannelTick的时候, 每帧检测是否满足Dormancy的条件, 如果满足,
-直接进入Dormancy.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy之后的BecomeDormant流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection </span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
-<p>这里着重说一下ReadyForDormancy:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">FObjectReplicator::ReadyForDormancy</span><span class="params">(<span class="type">bool</span> bSuppressLogs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetObject</span>() == <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">UE_LOG</span>(LogRep, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;ReadyForDormancy: Object == nullptr&quot;</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;		<span class="comment">// Technically, we don&#x27;t want to hold up dormancy, but the owner needs to clean us up, so we warn</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Can&#x27;t go dormant until last update produced no new property updates</span></span><br><span class="line">    <span class="comment">// 上一次Update必须是空的, 即上一次没有任何更新</span></span><br><span class="line">    <span class="keyword">if</span> (!bLastUpdateEmpty)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] Not ready for dormancy. bLastUpdateEmpty = false&quot;</span>), OwningChannel-&gt;ChIndex);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FSendingRepState* SendingRepState = RepState.<span class="built_in">IsValid</span>() ? RepState-&gt;<span class="built_in">GetSendingRepState</span>() : <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;HistoryStart != SendingRepState-&gt;HistoryEnd)</span><br><span class="line">        &#123; <span class="comment">// 所有数据都ack了</span></span><br><span class="line">            <span class="comment">// We have change lists that haven&#x27;t been acked</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;NumNaks &gt; <span class="number">0</span>)</span><br><span class="line">        &#123; <span class="comment">// 没有丢包</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!SendingRepState-&gt;bOpenAckedCalled)</span><br><span class="line">        &#123; <span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;PreOpenAckHistory.<span class="built_in">Num</span>() &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;<span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Can&#x27;t go dormant if there are unAckd property updates</span></span><br><span class="line">        <span class="keyword">for</span> (FPropertyRetirement&amp; Retirement : SendingRepState-&gt;Retirement)</span><br><span class="line">        &#123; <span class="comment">// 针对Delta Properties类型, 所有消息也要被Ack才可以</span></span><br><span class="line">            <span class="keyword">if</span> (Retirement.Next != <span class="literal">nullptr</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] OutAckPacketId: %d First: %d Last: %d &quot;</span>), OwningChannel-&gt;ChIndex, OwningChannel-&gt;Connection-&gt;OutAckPacketId, Retirement.OutPacketIdRange.First, Retirement.OutPacketIdRange.Last);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ol type="1">
-<li>bLastUpdateEmpty为true, 下图是bLastUpdateEmpty刷新的地方</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729143356134-1690612543416-1.png" /></p>
-<ol start="2" type="1">
-<li>SendingRepState-&gt;HistoryStart必须和SendingRepState-&gt;HistoryEnd相同</li>
-</ol>
-<p>即已经发送的数据全部被ack了, 并且没有丢包情况.
-因为History代表已经发送的历史, 每次UpdateChangelistHistory时候,
-会根据AckPacketId清理History数据. 当所有history数据清理干净之后,
-就表示所有数据都已经发送完成了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145842644.png" /></p>
-<ol start="3" type="1">
-<li>SendingRepState必须全部都Ack了. 这里处理丢包情况,
-即所有丢包数据都已经重发了.</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729144839069.png" /></p>
-<p>重发丢包数据:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145012879.png" /></p>
-<ol start="4" type="1">
-<li><p>bOpenAckedCalled和PreOpenAckHistory:
-所有SpawnActor的ack都收到了.</p></li>
-<li><p>SendingRepState-&gt;Retirement用于记录DeltaProperty的历史.
-这个也要全部ack后才能Dormancy.</p></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729150134647.png" /></p>
-<p>并且根据上述堆栈,
-可以看到BecomeDormant最后设置FConnectionReplicateActorInfo.bDormantOnConnection为true.
-即GatherActor也不会收集到DormancyActor了.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151417230.png" /></p>
-<h2 id="flushactordormancy详细流程">FlushActorDormancy详细流程</h2>
-<figure class="highlight gherkin"><table><tr><td class="code"><pre><span class="line">// Actor调用AActor.FlushNetDormancy详细堆栈</span><br><span class="line">--AActor.FlushNetDormancy()</span><br><span class="line"> |<span class="string">--UNetDriver.FlushActorDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationDriver.FlushNetDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.LastFlushNetDormancyFrame = ReplicationGraphFrame;</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.Events.DormancyFlush.Broadcast(Actor, GlobalInfo);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_DormancyNode.OnActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">-- // 针对所有DormancyNode中存储的UReplicationGraphNode_ConnectionDormancyNode, 进行处理</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_ConnectionDormancyNode::NotifyActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ReplicateActorList.Add(ActorInfo.Actor);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有Connection, 设置bDormantOnConnection为false</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Info-&gt;bDormantOnConnection = false</span></span><br></pre></td></tr></table></figure>
-<p>触发下图这些DormancyNode的回调</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151645834.png" /></p>
-<p>从上图可以看出,
-FlushActorDormancy会将Actor放入UReplicationGraphNode_ConnectionDormancyNode的ReplicateActorList中,
-然后和StartBecomingDormant类似, 进行同步后,
-等待该Actor所有数据同步完成之后, 进入休眠.</p>
-<h2 id="channel的dormancyclose流程">Channel的DormancyClose流程</h2>
-<p>通过如下堆栈可以看出Dormancy CloseBunch并不会将Actor等对象销毁,
-仅仅是将Channel回收了.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ActorChannel进入DormancyClose流程, 向客户端发送DormancyClose Bunch</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | | |--CloseBunch.bReliable = <span class="number">1</span>;</span><br><span class="line"> | | | | | | | | |--CloseBunch.CloseReason = Reason;</span><br><span class="line"> | | | | | | | | |--<span class="built_in">SendBunch</span>( &amp;CloseBunch, <span class="number">0</span> );</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection </span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
-<p>回收Channel:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729160949280.png" /></p>
-<h3 id="客户端调用closeup-进行清理">客户端调用CloseUp, 进行清理</h3>
-<p>在清理的过程中, 需要清理Channel的所有资源, 然后将Channel回收.
-这些资源包括但不限于ReplicationMap, ActorReplication数据等.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154619790.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154133521.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154332928.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154353306.png" /></p>
-<h3 id="ds收到ack-closechannel">DS收到Ack, CloseChannel</h3>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154810659.png" /></p>
-<p>DS收到Ack后, 根据ChannelIndex对Channel进行Close.
-清理并回收Channel.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154922529.png" /></p>
-<p>触发UNetReplicationGraphConnection::NotifyActorChannelCleanedUp进行清理:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155152475.png" /></p>
-<p>清理ReplicatorMap相关信息.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155216575.png" /></p>
-<h3
-id="ds调用flushactordormancy-replicateactor会重新打开channel">DS调用FlushActorDormancy,
-ReplicateActor会重新打开Channel</h3>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161125894.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161117873.png" /></p>
-<h3
-id="客户端收到bunch查找对应的channel-没有就创建">客户端收到Bunch,查找对应的channel,
-没有就创建</h3>
-<p>根据ChannelIndex索引Channel, 由于Channel时新建的,
-所以其对应的Actor为空, 然后根据GUID去查找对应的Actor.
-最后将Actor和Channel绑定.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161341483.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161334222.png" /></p>
-<h2
-id="如果在构造函数中将netdormancy设置为dorm_dormantall呢">如果在构造函数中将NetDormancy设置为DORM_DormantAll呢?</h2>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727111411075.png" /></p>
-<p>和SetNetDormancy流程一样, 这里不再赘述.</p>
-<h1 id="问">问</h1>
-<h2 id="dormancy期间能否rpc">Dormancy期间,能否RPC?</h2>
-<h3 id="能否s2c">能否S2C</h3>
-<p>能进行RPC, 并且会创建新的Channel,
-而且在RPC之前还会进行ReplicateActor.</p>
-<p>构建测试用例:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152252964.png" /></p>
-<p>并且, S2C_ChangeCharacterNumber为Reliable.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152322984.png" /></p>
-<p>在RPC过程中, 会首先创建ActorChannel, 然后ReplicateActor,
-最后才会RPC.</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729163913372.png"
-alt="image-20230729163913372" />
-<figcaption aria-hidden="true">image-20230729163913372</figcaption>
-</figure>
-<p>只要是Channel刚创建的, 就会首先进行ReplicateActor.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164013067.png" /></p>
-<p>注意在这这个过程中, 是不会触发Dormancy流程的,
-只进行了ReliableReplicateActor+Reliable/UnReliable的RPC.</p>
-<p>这里还要特意说一下, 针对Dormancy期间的S2C,
-都会发送Reliable的ReplicateActor包, 由于是ReliableBunch,
-其可靠性由Driver自己保证. 针对UnreliableRPC, 其Bunch为非Reliable,
-所以丢就丢了, 不会重发.</p>
-<h3
-id="为什么属性没有变化还会replicateactor呢">为什么属性没有变化还会ReplicateActor呢?</h3>
-<p>由于为新打开的Channel, 所以设置为Init, 并设定为ReliableBunch.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155041019.png" /></p>
-<p>序列化Actor的GUID, 并强制设置为Dirty.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155009635.png" /></p>
-<p>填充Bunch中的SerializeNewActor消息, 然后进行发送.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731162337718.png" /></p>
-<h3 id="能否c2s">能否C2S</h3>
-<p>不能, 因为Dormancy, 会销毁Channel, 无法进行RPC.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164830954.png" /></p>
-<p>测试关键代码:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164937129.png" /></p>
-<h1 id="总结">总结</h1>
-<p>Dormancy的单位是Actor, 当其休眠的时候, 不会发生属性同步, 如果发送RPC,
-只有DS向客户端发送的RPC可以执行, C2S会直接丢弃.
-并且所有S2C的RPC都会调用, ReplicateActor 进行一次属性同步.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231118164603113.png" /></p>
+<p>总结: <span style="color:red;">ActorComponent的网络归属跟Outer有关,
+跟谁在使用它无关.</span></p>
 ]]></content>
       <categories>
         <category>UE</category>
         <category>UE网络</category>
-        <category>NetDormancy</category>
       </categories>
       <tags>
         <tag>UE网络</tag>
-        <tag>NetDormancy</tag>
+        <tag>UE4网络模块概述</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>GUID延迟绑定</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/</url>
+    <content><![CDATA[<h1 id="延迟绑定">延迟绑定</h1>
+<p>UE对UObject指针的映射是通过GUID进行的,
+例如当客户端ABasePlayerController.TestReplicationComp2需要根据DS传来的新数据进行赋值,
+这个值就是GUID其代表一个对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628172027340.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387.png" /></p>
+<span id="more"></span>
+<p>首先需要了解到, UE序列化是有顺序的,
+ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623173331842-1687770871870-7-1687942299803-23.png" /></p>
+<p>当属性的赋值在GUID对象创建之前, 因为指针对象还没有创建,
+那么指针就不可能指向正确的地址. 这种情况该怎么处理呢?
+例如当客户端ABasePlayerController.TestReplicationComp2需要反序列化的时候,
+发现该GUID表示的对象还不存在, 这时候怎么办?</p>
+<p>U根据UE处理属性同步的顺序(ActorProperties-&gt;ActorComponentProperties-&gt;SelfReplicatedObjProperties),
+先反序列化属性变量, 发现没有找到GUID对应的UObj,
+将其放入临时存储变量UPackageMap.TrackedUnmappedNetGuids中(<strong>详见特殊说明1</strong>).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200757905.png" /></p>
+<p>并将结果添加到FReceivingRepState.GuidReferencesMap中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201728804.png" /></p>
+<p>并且如果检测到有Unmapped数据,
+还要将其添加到UNetDriver.UnmappedReplicators中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628202112682.png" /></p>
+<p>在每帧末尾会处理UNetDriver.UnmappedReplicators中未处理的UnmappedGUID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201922955.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17.png" /></p>
+<p>通过以上逻辑,
+就可以将ABasePlayerController.TestReplicationComp2指向对应的Obj了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387-1687955124036-34.png" /></p>
+<p><strong>思考:</strong></p>
+<p>如果在反序列化属性时, GUID没有找到, 那么该属性会更改吗?</p>
+<p>在序列化TestReplicationComp2时, 可以看出,
+当没有解析出GUID对应的Object时, Obj会设置成nullptr,
+然后将nullptr设置到TestReplicationComp2中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205526440.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628205408507.png"
+alt="image-20230628205408507" />
+<figcaption aria-hidden="true">image-20230628205408507</figcaption>
+</figure>
+<p>但是这种情况只是短暂存在的,
+即在UNetDriver.TickFlush结尾就已经将TestReplicationComp2设置成正确的值了.</p>
+<p><strong>进一步思考</strong>, 在属性同步的时候,
+是否会发生将TestReplicationComp2设置成nullptr,
+过了几帧才将TestReplicationComp2设置成正确的值呢?
+这种情况发生的条件为GUID同步过来了, 但是其真正的对象在后续才创建.
+针对Owner为Actor本身的Component不可能出现, 当一个属性发生变化,
+如果查找到该GUID对象的Obj, 则直接设置,
+否则后续一定会紧跟着GUID对应Obj的创建. 但是针对一个指针,
+指向别的Actor/UObject, 是可能出现: GUID有了, 但是Actor/UObject还没</p>
+<h1 id="特殊说明">特殊说明</h1>
+<h2
+id="unmappednetguids和mappeddynamicnetguids临时存储">UnmappedNetGuids和MappedDynamicNetGuids临时存储</h2>
+<p>UPackageMap.TrackedUnmappedNetGuids和UPackageMap.TrackedMappedDynamicNetGuids都是临时存储数据用的,
+用完即清理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628201131153.png" /></p>
+<h2 id="unmappednetguids用途">UnmappedNetGuids用途</h2>
+<p>针对UnmappedGUID主要是用于延迟绑定. 绑定后, 如果GUID为Dynamic,
+则将其放入MappedDynamic</p>
+<p>每帧处理UnmappedGUID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623180837595-1687942299803-17-1687958346817-37.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212016071.png" /></p>
+<h2 id="mappeddynamic用途">MappedDynamic用途</h2>
+<p>收集UnmappedGUID和MappedGUID, 填充UNetDriver.GuidToReplicatorMap数据,
+供后续使用.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212205753.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628212318266.png" /></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>NetworkGUID</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>NetworkGUID</tag>
       </tags>
   </entry>
   <entry>
@@ -2864,6 +2615,255 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311132129
       <tags>
         <tag>UE网络</tag>
         <tag>NetworkGUID</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>NetDormancy</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/</url>
+    <content><![CDATA[<h1 id="dormancy定义">Dormancy定义</h1>
+<p>Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过.
+Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致.
+一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化,
+即可设置为Dormancy.</p>
+<p>Dormancy状态转换图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802161108281.png" /></p>
+<span id="more"></span>
+<p>Dormancy转换大致堆栈流程:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802160012920.png" /></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** Describes if an actor can enter a low network bandwidth dormant mode */</span></span><br><span class="line"><span class="built_in">UENUM</span>(BlueprintType)</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">ENetDormancy</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/** This actor can never go network dormant. */</span></span><br><span class="line">    <span class="function">DORM_Never <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Never&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor can go dormant, but is not currently dormant. Game code will tell it when it go dormant. */</span></span></span><br><span class="line"><span class="function">    DORM_Awake <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Awake&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor wants to go fully dormant for all connections. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantAll <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant All&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor may want to go dormant for some connections, GetNetDormancy() will be called to find out which. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantPartial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant Partial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor is initially dormant for all connection if it was placed in map. */</span></span></span><br><span class="line"><span class="function">    DORM_Initial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Initial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    DORM_MAX <span class="title">UMETA</span><span class="params">(Hidden)</span>,</span></span><br><span class="line"><span class="function">&#125;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Actor中的变量</span></span><br><span class="line"><span class="comment">/** Dormancy setting for actor to take itself off of the replication list without being destroyed on clients. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>(BlueprintReadOnly, EditDefaultsOnly, Category=Replication)</span><br><span class="line">TEnumAsByte&lt;<span class="keyword">enum</span> <span class="title class_">ENetDormancy</span>&gt; NetDormancy;</span><br></pre></td></tr></table></figure>
+<p>可以看出, Actor使用NetDormancy变量实现Dormancy逻辑.
+其中DORM_Never和DORM_Awake都表示未休眠, 会进行属性同步,
+其他的变量表示休眠, 不进行属性同步.
+特殊的DORM_Initial表示放在地图中进行休眠的Actor.</p>
+<h1 id="dormancy使用">Dormancy使用</h1>
+<p>初始化时, 默认将NetDormancy设置成DORM_Awake,
+表示可以使用Dormancy.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724161130553.png" /></p>
+<p>如果想要启用Dormancy需要调用AActor.SetNetDormancy将其设置为Dormacy.
+后续会根据设置的状态, 进行处理.</p>
+<p>具体参考测试用例:https://github.com/fdcumt/ALSV.git</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731153740974.png" /></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 其中关键代码:</span></span><br><span class="line"><span class="comment">//TestNetDormancyActor.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;GameFramework/Actor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.generated.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span>  <span class="title class_">ATestNetDormancyActor</span> : <span class="keyword">public</span> AActor</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/** Default constructor for AActor */</span></span><br><span class="line">    <span class="built_in">ATestNetDormancyActor</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Unreliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_Unreliable_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Server, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">C2S_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    int32 TestNumber = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    int32 LocalNumber = <span class="number">0</span>;</span><br><span class="line">    uint32 FrameNumber = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// TestNetDormancyActor.cpp </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Net/UnrealNetwork.h&quot;</span></span></span><br><span class="line"></span><br><span class="line">ATestNetDormancyActor::<span class="built_in">ATestNetDormancyActor</span>()</span><br><span class="line">: <span class="built_in">AActor</span>()</span><br><span class="line">&#123;</span><br><span class="line">    bReplicates = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">//NetDormancy = ENetDormancy::DORM_DormantAll;</span></span><br><span class="line"></span><br><span class="line">    PrimaryActorTick.bCanEverTick = <span class="literal">true</span>;</span><br><span class="line">    PrimaryActorTick.TickGroup = TG_PrePhysics;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">Tick</span>(DeltaSeconds);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++FrameNumber;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">        if (FrameNumber%20==19)</span></span><br><span class="line"><span class="comment">        &#123;</span></span><br><span class="line"><span class="comment">            ++TestNumber;</span></span><br><span class="line"><span class="comment">            FlushNetDormancy();</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        else */</span><span class="keyword">if</span> (FrameNumber % <span class="number">20</span> == <span class="number">10</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">S2C_Unreliable_ChangeCharacterNumber</span>();</span><br><span class="line">            <span class="comment">//S2C_ChangeCharacterNumber();</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_AutonomousProxy)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">C2S_ChangeCharacterNumber</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(ATestNetDormancyActor, TestNumber);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_Unreliable_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::C2S_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 并在ABasePlayerController.tick中添加:</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++LocalFrameIndex;</span><br><span class="line">        <span class="keyword">if</span> (TestNetDormancyActor == <span class="literal">nullptr</span> &amp;&amp; LocalFrameIndex==<span class="number">3</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            FVector Loc = FVector::ZeroVector;</span><br><span class="line">            FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">            FActorSpawnParameters Par;</span><br><span class="line">            Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">            TestNetDormancyActor = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;ATestNetDormancyActor&gt;(ATestNetDormancyActor::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetNetDormancy</span>(ENetDormancy::DORM_DormantAll);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>在SpawnActor时会将其添加到指定Node节点中.
+在调用UReplicationGraph::AddNetworkActor时候,
+会设置Actor对应的GlobalInfo.bWantsToBeDormant,
+检测其是否需要进行一次属性同步.
+例如如果在构造函数中将其设置为ENetDormancy::DORM_DormantAll, 即是这样,
+也应该进行一次属性同步, 将初始化的信息同步到远端.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724171546754.png" /></p>
+<p>创建之后, 然后将其设置为ENetDormancy::DORM_DormantAll.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724163540441.png" /></p>
+<p>当属性发生变化的时候调用FlushActorDormancy, 触发一次属性同步.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726102844002.png" /></p>
+<h1 id="dormancy详解">Dormancy详解</h1>
+<p>那么在这期间, Dormant究竟是怎么执行的, 它有什么逻辑呢?
+下面开始寻根溯源.</p>
+<h2 id="addnetwork详细流程">AddNetwork详细流程</h2>
+<p>根据上面的示例, 在ActorSpawn时候,
+会添加到DynamicSpatializedActors中.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"> <span class="comment">// ActorSpawn时候, 将Actor添加到ReplicationNode中</span></span><br><span class="line">--UWorld::<span class="built_in">SpawnActor</span>()</span><br><span class="line"> |--UWorld::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | |--<span class="comment">// 遍历所有NetDriver, 并将Actor添加到其中</span></span><br><span class="line"> | |--Driver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | |--UNetDriver::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | |--<span class="built_in">GetNetworkObjectList</span>().<span class="built_in">FindOrAdd</span>(Actor, <span class="keyword">this</span>);</span><br><span class="line"> | | | |--<span class="comment">// 向ReplicationGraph中添加NetworkActor</span></span><br><span class="line"> | | | |--ReplicationDriver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 添加Actor对应的描述信息FGlobalActorReplicationInfo</span></span><br><span class="line"> | | | | |--FGlobalActorReplicationInfo&amp; GlobalInfo = GlobalActorReplicationInfoMap.<span class="built_in">Get</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 设置Dormant属性</span></span><br><span class="line"> | | | | |--GlobalInfo.bWantsToBeDormant = Actor-&gt;NetDormancy &gt; DORM_Awake;</span><br><span class="line"> | | | | |--UReplicationGraph::<span class="built_in">RouteAddNetworkActorToNodes</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中</span></span><br><span class="line"> | | | | | |--AlwaysRelevantNode-&gt;<span class="built_in">NotifyAddNetworkActor</span>(ActorInfo);</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner, 添加到ActorsWithoutNetConnection中</span></span><br><span class="line"> | | | | | |--ActorsWithoutNetConnection.<span class="built_in">Add</span>(ActorInfo.Actor);</span><br><span class="line"> | | | | | |--<span class="comment">// 其他情况添加到GridNode中</span></span><br><span class="line"> | | | | | |--GridNode-&gt;<span class="built_in">AddActor_Dormancy</span>(ActorInfo, GlobalInfo);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy</span><br><span class="line"> | | | | | | |--<span class="comment">// 如果要想要休眠, 调用AddActorInternal_Static函数</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Static</span>(ActorInfo, ActorRepInfo, <span class="literal">true</span>);</span><br><span class="line"> | | | | | | |--<span class="comment">// 否则, 调用AddActorInternal_Dynamic</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Dynamic</span>(ActorInfo);</span><br><span class="line"> | | | | | | | |--<span class="comment">// 放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中</span></span><br><span class="line"> | | | | | | | |--DynamicSpatializedActors.<span class="built_in">Emplace</span>(ActorInfo.Actor, ActorInfo);</span><br></pre></td></tr></table></figure>
+<p>可以看出,
+最终将Actor放入了放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中.
+在每帧tick时候, 会将同步到其他端.</p>
+<h2 id="setnetdormancy详细流程">SetNetDormancy详细流程</h2>
+<h3 id="startbecomingdormant">StartBecomingDormant</h3>
+<p>在SetNetDormancy流程中, 有几个关键点:</p>
+<ol type="1">
+<li><p>将ActorRepInfo.bWantsToBeDormant设置为true.</p></li>
+<li><p>将Actor放入Cell的UReplicationGraphNode_DormancyNode中.
+表明不再进行Gather了.
+但是会在UReplicationGraphNode_ConnectionDormancyNode中Gather</p></li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy堆栈</span></span><br><span class="line">--AActor.<span class="built_in">SetNetDormancy</span>()</span><br><span class="line"> |--NetDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>(<span class="keyword">this</span>, OldDormancy);</span><br><span class="line"> | |--ReplicationDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>()</span><br><span class="line"> | | |--ActorRepInfo-&gt;bWantsToBeDormant = bNewWantsToBeDormant;</span><br><span class="line"> | | |--ActorRepInfo-&gt;Events.DormancyChange.<span class="built_in">Broadcast</span>(Actor, *ActorRepInfo, CurrentDormancy, OldDormancyState);</span><br><span class="line"> | | | |--<span class="comment">// 在UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy中注册的回调函数</span></span><br><span class="line"> | | | |--UReplicationGraphNode_GridSpatialization2D::<span class="built_in">OnNetDormancyChange</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static</span>()</span><br><span class="line"> | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static_Implementation</span>()</span><br><span class="line"> | | | | | | |--StaticSpatializedActors.<span class="built_in">Emplace</span>(Actor, <span class="built_in">FCachedStaticActorInfo</span>(ActorInfo, bDormancyDriven));</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">PutStaticActorIntoCell</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将Actor放入对应的Cell中</span></span><br></pre></td></tr></table></figure>
+<p>在同一帧的TickFlush GatherActor时候,
+会在UReplicationGraphNode_ConnectionDormancyNode中将Actor Gather出来.
+针对DormancyActor会有如下流程(如是DS第一帧, 会有截断, 但是一般情况不会.
+这里只说一般情况). 可以看出, Gather之后,
+Actor会执行StartBecomingDormant, 准备进行休眠状态.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy同一帧, TickFlush GatherActor的流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UReplicationGraph.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | |--UReplicationGraphNode_ActorList.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_DormancyNode.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 如果ConnectionNode为空还要进行创建</span></span><br><span class="line"> | | | | | |--ConnectionNode = <span class="built_in">CreateConnectionNode</span>(Params);</span><br><span class="line"> | | | | | | |--这里会将UReplicationGraphNode_DormancyNode中UReplicationGraphNode_ActorList.ReplicateActorList完全拷贝一份</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">DeepCopyActorListsFrom</span>(<span class="keyword">this</span>);</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">InitConnectionNode</span>(RepGraphConnection, Params.ReplicationFrameNum);</span><br><span class="line"> | | | | | |--<span class="comment">//UReplicationGraphNode_ConnectionDormancyNode收集Actor</span></span><br><span class="line"> | | | | | |--ConnectionNode-&gt;<span class="built_in">GatherActorListsForConnection</span>(Params);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_ConnectionDormancyNode.<span class="built_in">ConditionalGatherDormantActorsForConnection</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将node添加到OutGatheredReplicationLists中</span></span><br><span class="line"> | | | | | | | |--Params.OutGatheredReplicationLists.<span class="built_in">AddReplicateActorList</span>(ConnectionList);</span><br><span class="line"> | | |--UReplicationGraph.<span class="built_in">ReplicateActorListsForConnections_Default</span>()</span><br><span class="line"> | | | |--UReplicationGraph.<span class="built_in">ReplicateSingleActor</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 针对GlobalActorInfo.bWantsToBeDormant要进行StartBecomingDormant</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | |--FObjectReplicator::<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | | |--bLastUpdateEmpty = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">true</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--Connection-&gt;<span class="built_in">StartTickingChannel</span>(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<p>DS第一帧截断原因:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727164750246.png" /></p>
+<h4 id="问-已经startbecomingdormant的actor还会进行属性同步吗">问:
+已经StartBecomingDormant的Actor还会进行属性同步吗?</h4>
+<p>每帧还会将BecomeDormant的Actor Gather出来. 但是, 不会进行属性同步了.
+因为, 他没有发生变化:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172151474.png" /></p>
+<p>如果发生丢包, 还会进行同步, 并且这里BitsWritten会大于0,
+有数据进行网络传输.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172233340.png" /></p>
+<h3 id="becomedormant">BecomeDormant</h3>
+<p>在ActorChannelTick的时候, 每帧检测是否满足Dormancy的条件, 如果满足,
+直接进入Dormancy.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy之后的BecomeDormant流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection </span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
+<p>这里着重说一下ReadyForDormancy:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">FObjectReplicator::ReadyForDormancy</span><span class="params">(<span class="type">bool</span> bSuppressLogs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetObject</span>() == <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">UE_LOG</span>(LogRep, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;ReadyForDormancy: Object == nullptr&quot;</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;		<span class="comment">// Technically, we don&#x27;t want to hold up dormancy, but the owner needs to clean us up, so we warn</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Can&#x27;t go dormant until last update produced no new property updates</span></span><br><span class="line">    <span class="comment">// 上一次Update必须是空的, 即上一次没有任何更新</span></span><br><span class="line">    <span class="keyword">if</span> (!bLastUpdateEmpty)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] Not ready for dormancy. bLastUpdateEmpty = false&quot;</span>), OwningChannel-&gt;ChIndex);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FSendingRepState* SendingRepState = RepState.<span class="built_in">IsValid</span>() ? RepState-&gt;<span class="built_in">GetSendingRepState</span>() : <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;HistoryStart != SendingRepState-&gt;HistoryEnd)</span><br><span class="line">        &#123; <span class="comment">// 所有数据都ack了</span></span><br><span class="line">            <span class="comment">// We have change lists that haven&#x27;t been acked</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;NumNaks &gt; <span class="number">0</span>)</span><br><span class="line">        &#123; <span class="comment">// 没有丢包</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!SendingRepState-&gt;bOpenAckedCalled)</span><br><span class="line">        &#123; <span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;PreOpenAckHistory.<span class="built_in">Num</span>() &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;<span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Can&#x27;t go dormant if there are unAckd property updates</span></span><br><span class="line">        <span class="keyword">for</span> (FPropertyRetirement&amp; Retirement : SendingRepState-&gt;Retirement)</span><br><span class="line">        &#123; <span class="comment">// 针对Delta Properties类型, 所有消息也要被Ack才可以</span></span><br><span class="line">            <span class="keyword">if</span> (Retirement.Next != <span class="literal">nullptr</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] OutAckPacketId: %d First: %d Last: %d &quot;</span>), OwningChannel-&gt;ChIndex, OwningChannel-&gt;Connection-&gt;OutAckPacketId, Retirement.OutPacketIdRange.First, Retirement.OutPacketIdRange.Last);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>bLastUpdateEmpty为true, 下图是bLastUpdateEmpty刷新的地方</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729143356134-1690612543416-1.png" /></p>
+<ol start="2" type="1">
+<li>SendingRepState-&gt;HistoryStart必须和SendingRepState-&gt;HistoryEnd相同</li>
+</ol>
+<p>即已经发送的数据全部被ack了, 并且没有丢包情况.
+因为History代表已经发送的历史, 每次UpdateChangelistHistory时候,
+会根据AckPacketId清理History数据. 当所有history数据清理干净之后,
+就表示所有数据都已经发送完成了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145842644.png" /></p>
+<ol start="3" type="1">
+<li>SendingRepState必须全部都Ack了. 这里处理丢包情况,
+即所有丢包数据都已经重发了.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729144839069.png" /></p>
+<p>重发丢包数据:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145012879.png" /></p>
+<ol start="4" type="1">
+<li><p>bOpenAckedCalled和PreOpenAckHistory:
+所有SpawnActor的ack都收到了.</p></li>
+<li><p>SendingRepState-&gt;Retirement用于记录DeltaProperty的历史.
+这个也要全部ack后才能Dormancy.</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729150134647.png" /></p>
+<p>并且根据上述堆栈,
+可以看到BecomeDormant最后设置FConnectionReplicateActorInfo.bDormantOnConnection为true.
+即GatherActor也不会收集到DormancyActor了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151417230.png" /></p>
+<h2 id="flushactordormancy详细流程">FlushActorDormancy详细流程</h2>
+<figure class="highlight gherkin"><table><tr><td class="code"><pre><span class="line">// Actor调用AActor.FlushNetDormancy详细堆栈</span><br><span class="line">--AActor.FlushNetDormancy()</span><br><span class="line"> |<span class="string">--UNetDriver.FlushActorDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationDriver.FlushNetDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.LastFlushNetDormancyFrame = ReplicationGraphFrame;</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.Events.DormancyFlush.Broadcast(Actor, GlobalInfo);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_DormancyNode.OnActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">-- // 针对所有DormancyNode中存储的UReplicationGraphNode_ConnectionDormancyNode, 进行处理</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_ConnectionDormancyNode::NotifyActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ReplicateActorList.Add(ActorInfo.Actor);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有Connection, 设置bDormantOnConnection为false</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Info-&gt;bDormantOnConnection = false</span></span><br></pre></td></tr></table></figure>
+<p>触发下图这些DormancyNode的回调</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151645834.png" /></p>
+<p>从上图可以看出,
+FlushActorDormancy会将Actor放入UReplicationGraphNode_ConnectionDormancyNode的ReplicateActorList中,
+然后和StartBecomingDormant类似, 进行同步后,
+等待该Actor所有数据同步完成之后, 进入休眠.</p>
+<h2 id="channel的dormancyclose流程">Channel的DormancyClose流程</h2>
+<p>通过如下堆栈可以看出Dormancy CloseBunch并不会将Actor等对象销毁,
+仅仅是将Channel回收了.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ActorChannel进入DormancyClose流程, 向客户端发送DormancyClose Bunch</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | | |--CloseBunch.bReliable = <span class="number">1</span>;</span><br><span class="line"> | | | | | | | | |--CloseBunch.CloseReason = Reason;</span><br><span class="line"> | | | | | | | | |--<span class="built_in">SendBunch</span>( &amp;CloseBunch, <span class="number">0</span> );</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection </span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
+<p>回收Channel:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729160949280.png" /></p>
+<h3 id="客户端调用closeup-进行清理">客户端调用CloseUp, 进行清理</h3>
+<p>在清理的过程中, 需要清理Channel的所有资源, 然后将Channel回收.
+这些资源包括但不限于ReplicationMap, ActorReplication数据等.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154619790.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154133521.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154332928.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154353306.png" /></p>
+<h3 id="ds收到ack-closechannel">DS收到Ack, CloseChannel</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154810659.png" /></p>
+<p>DS收到Ack后, 根据ChannelIndex对Channel进行Close.
+清理并回收Channel.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154922529.png" /></p>
+<p>触发UNetReplicationGraphConnection::NotifyActorChannelCleanedUp进行清理:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155152475.png" /></p>
+<p>清理ReplicatorMap相关信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155216575.png" /></p>
+<h3
+id="ds调用flushactordormancy-replicateactor会重新打开channel">DS调用FlushActorDormancy,
+ReplicateActor会重新打开Channel</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161125894.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161117873.png" /></p>
+<h3
+id="客户端收到bunch查找对应的channel-没有就创建">客户端收到Bunch,查找对应的channel,
+没有就创建</h3>
+<p>根据ChannelIndex索引Channel, 由于Channel时新建的,
+所以其对应的Actor为空, 然后根据GUID去查找对应的Actor.
+最后将Actor和Channel绑定.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161341483.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161334222.png" /></p>
+<h2
+id="如果在构造函数中将netdormancy设置为dorm_dormantall呢">如果在构造函数中将NetDormancy设置为DORM_DormantAll呢?</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727111411075.png" /></p>
+<p>和SetNetDormancy流程一样, 这里不再赘述.</p>
+<h1 id="问">问</h1>
+<h2 id="dormancy期间能否rpc">Dormancy期间,能否RPC?</h2>
+<h3 id="能否s2c">能否S2C</h3>
+<p>能进行RPC, 并且会创建新的Channel,
+而且在RPC之前还会进行ReplicateActor.</p>
+<p>构建测试用例:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152252964.png" /></p>
+<p>并且, S2C_ChangeCharacterNumber为Reliable.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152322984.png" /></p>
+<p>在RPC过程中, 会首先创建ActorChannel, 然后ReplicateActor,
+最后才会RPC.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729163913372.png"
+alt="image-20230729163913372" />
+<figcaption aria-hidden="true">image-20230729163913372</figcaption>
+</figure>
+<p>只要是Channel刚创建的, 就会首先进行ReplicateActor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164013067.png" /></p>
+<p>注意在这这个过程中, 是不会触发Dormancy流程的,
+只进行了ReliableReplicateActor+Reliable/UnReliable的RPC.</p>
+<p>这里还要特意说一下, 针对Dormancy期间的S2C,
+都会发送Reliable的ReplicateActor包, 由于是ReliableBunch,
+其可靠性由Driver自己保证. 针对UnreliableRPC, 其Bunch为非Reliable,
+所以丢就丢了, 不会重发.</p>
+<h3
+id="为什么属性没有变化还会replicateactor呢">为什么属性没有变化还会ReplicateActor呢?</h3>
+<p>由于为新打开的Channel, 所以设置为Init, 并设定为ReliableBunch.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155041019.png" /></p>
+<p>序列化Actor的GUID, 并强制设置为Dirty.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155009635.png" /></p>
+<p>填充Bunch中的SerializeNewActor消息, 然后进行发送.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731162337718.png" /></p>
+<h3 id="能否c2s">能否C2S</h3>
+<p>不能, 因为Dormancy, 会销毁Channel, 无法进行RPC.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164830954.png" /></p>
+<p>测试关键代码:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164937129.png" /></p>
+<h1 id="总结">总结</h1>
+<p>Dormancy的单位是Actor, 当其休眠的时候, 不会发生属性同步, 如果发送RPC,
+只有DS向客户端发送的RPC可以执行, C2S会直接丢弃.
+并且所有S2C的RPC都会调用, ReplicateActor 进行一次属性同步.</p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>NetDormancy</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>NetDormancy</tag>
       </tags>
   </entry>
   <entry>
@@ -3362,25 +3362,6 @@ UE可以自动合并.</li>
       <tags>
         <tag>UE网络</tag>
         <tag>ReliableBunch溢出</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>UE4消息结构</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/</url>
-    <content><![CDATA[<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png"
-alt="BunchArchetype" />
-<figcaption aria-hidden="true">BunchArchetype</figcaption>
-</figure>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>UE4消息结构</tag>
       </tags>
   </entry>
   <entry>
@@ -4197,6 +4178,25 @@ style="color:red;">总结:</span>还要结合项目具体情况使用,
       </tags>
   </entry>
   <entry>
+    <title>UE4消息结构</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png"
+alt="BunchArchetype" />
+<figcaption aria-hidden="true">BunchArchetype</figcaption>
+</figure>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>UE4消息结构</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>UE4网络中UObject创建和销毁</title>
     <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE4%E7%BD%91%E7%BB%9C%E4%B8%ADUObject%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/</url>
     <content><![CDATA[<p><img
@@ -4896,46 +4896,6 @@ DS会将MustedMappedGUID放入Bunch(非ExportGUIDBunch)头部,
       </tags>
   </entry>
   <entry>
-    <title>自定义UObject进行Replicate</title>
-    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/</url>
-    <content><![CDATA[<p>UE本身有一套自创的网络框架,
-在这个框架里UObject类型默认是无法进行属性同步的.
-如果想要UObject进行属性同步就必须进行一系列重写.</p>
-<span id="more"></span>
-<h1 id="示例代码">示例代码</h1>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// .h</span></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UMyTestObject</span> : <span class="keyword">public</span> UObject</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer = FObjectInitializer::<span class="built_in">Get</span>());</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Allows the Object to get a valid UWorld from it&#x27;s outer.</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> UWorld* <span class="title">GetWorld</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow replicate data</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow rpc</span></span><br><span class="line">    <span class="function">int32 <span class="title">GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    uint32 bReplicatedFlag : <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// .cpp</span></span><br><span class="line">UMyTestObject::<span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer <span class="comment">/*= FObjectInitializer::Get()*/</span>)</span><br><span class="line">    :<span class="built_in">UObject</span>(ObjectInitializer)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">UWorld* <span class="title">UMyTestObject::GetWorld</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="type">const</span> UObject* MyOuter = <span class="built_in">GetOuter</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> MyOuter-&gt;<span class="built_in">GetWorld</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMyTestObject::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(UMyTestObject, bReplicatedFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        UNetDriver* NetDriver = OuterActor-&gt;<span class="built_in">GetNetDriver</span>();</span><br><span class="line">        <span class="keyword">if</span> (NetDriver)</span><br><span class="line">        &#123;</span><br><span class="line">            NetDriver-&gt;<span class="built_in">ProcessRemoteFunction</span>(OuterActor, Function, Parameters, OutParams, Stack, <span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">int32 <span class="title">UMyTestObject::GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> OuterActor-&gt;<span class="built_in">GetFunctionCallspace</span>(Function, Stack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> FunctionCallspace::Local;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在BasePlayerController.h中添加:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105137222.png" /></p>
-<p>由于Replicated, 需要将pTestObj添加到GetLifetimeReplicatedProps中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623111940690.png" /></p>
-<p>重写ABasePlayerController::ReplicateSubobjects函数,
-将pTestObj添加到ABasePlayerController列表中.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105331465.png" /></p>
-<p>在BasePlayerController.cpp中动态创建:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105258155.png" /></p>
-<p>经过上述步骤, 可以将自定义UMyTestObject进行属性同步.</p>
-<h1 id="ue-replicate流程">UE Replicate流程</h1>
-<p>UE在进行属性同步时候, 首先进行Actor自身的属性同步, 然后同步SubObject,
-最后才同步自定义UObject.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义UObject属性同步流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UNetDriver.<span class="built_in">ServerReplicateActors_ProcessPrioritizedActors</span>()</span><br><span class="line"> | | |--UActorChannel.<span class="built_in">ReplicateActor</span>()</span><br><span class="line"> | | | |--<span class="comment">// 同步该Actor自身属性</span></span><br><span class="line"> | | | |--FObjectReplicator.<span class="built_in">ReplicateProperties</span>()</span><br><span class="line"> | | | |--AActor.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 同步Actor中所有需要Replicated的ActorComponent</span></span><br><span class="line"> | | | | |--UActorComponent.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 自定义UObject进行属性同步</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br></pre></td></tr></table></figure>
-<p>引用:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" title="RPC浅析">RPC浅析</a></p>
-]]></content>
-      <categories>
-        <category>UE</category>
-        <category>UE网络</category>
-        <category>属性同步</category>
-      </categories>
-      <tags>
-        <tag>UE网络</tag>
-        <tag>属性同步</tag>
-        <tag>自定义UObject属性同步</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>网络日志,丢包,延迟等相关命令</title>
     <url>/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="网络相关日志">网络相关日志</h1>
@@ -4978,6 +4938,46 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311141147
         <tag>日志</tag>
         <tag>丢包</tag>
         <tag>延迟</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>自定义UObject进行Replicate</title>
+    <url>/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/</url>
+    <content><![CDATA[<p>UE本身有一套自创的网络框架,
+在这个框架里UObject类型默认是无法进行属性同步的.
+如果想要UObject进行属性同步就必须进行一系列重写.</p>
+<span id="more"></span>
+<h1 id="示例代码">示例代码</h1>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// .h</span></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UMyTestObject</span> : <span class="keyword">public</span> UObject</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer = FObjectInitializer::<span class="built_in">Get</span>());</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// Allows the Object to get a valid UWorld from it&#x27;s outer.</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> UWorld* <span class="title">GetWorld</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow replicate data</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// allow rpc</span></span><br><span class="line">    <span class="function">int32 <span class="title">GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    uint32 bReplicatedFlag : <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// .cpp</span></span><br><span class="line">UMyTestObject::<span class="built_in">UMyTestObject</span>(<span class="type">const</span> FObjectInitializer&amp; ObjectInitializer <span class="comment">/*= FObjectInitializer::Get()*/</span>)</span><br><span class="line">    :<span class="built_in">UObject</span>(ObjectInitializer)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">UWorld* <span class="title">UMyTestObject::GetWorld</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="type">const</span> UObject* MyOuter = <span class="built_in">GetOuter</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> MyOuter-&gt;<span class="built_in">GetWorld</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::IsSupportedForNetworking</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">UMyTestObject::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(UMyTestObject, bReplicatedFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UMyTestObject::CallRemoteFunction</span><span class="params">(UFunction* Function, <span class="type">void</span>* Parameters, <span class="keyword">struct</span> FOutParmRec* OutParams, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        UNetDriver* NetDriver = OuterActor-&gt;<span class="built_in">GetNetDriver</span>();</span><br><span class="line">        <span class="keyword">if</span> (NetDriver)</span><br><span class="line">        &#123;</span><br><span class="line">            NetDriver-&gt;<span class="built_in">ProcessRemoteFunction</span>(OuterActor, Function, Parameters, OutParams, Stack, <span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">int32 <span class="title">UMyTestObject::GetFunctionCallspace</span><span class="params">(UFunction* Function, FFrame* Stack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (AActor* OuterActor = <span class="built_in">Cast</span>&lt;AActor&gt;(<span class="built_in">GetOuter</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> OuterActor-&gt;<span class="built_in">GetFunctionCallspace</span>(Function, Stack);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> FunctionCallspace::Local;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在BasePlayerController.h中添加:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105137222.png" /></p>
+<p>由于Replicated, 需要将pTestObj添加到GetLifetimeReplicatedProps中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623111940690.png" /></p>
+<p>重写ABasePlayerController::ReplicateSubobjects函数,
+将pTestObj添加到ABasePlayerController列表中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105331465.png" /></p>
+<p>在BasePlayerController.cpp中动态创建:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623105258155.png" /></p>
+<p>经过上述步骤, 可以将自定义UMyTestObject进行属性同步.</p>
+<h1 id="ue-replicate流程">UE Replicate流程</h1>
+<p>UE在进行属性同步时候, 首先进行Actor自身的属性同步, 然后同步SubObject,
+最后才同步自定义UObject.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义UObject属性同步流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UNetDriver.<span class="built_in">ServerReplicateActors_ProcessPrioritizedActors</span>()</span><br><span class="line"> | | |--UActorChannel.<span class="built_in">ReplicateActor</span>()</span><br><span class="line"> | | | |--<span class="comment">// 同步该Actor自身属性</span></span><br><span class="line"> | | | |--FObjectReplicator.<span class="built_in">ReplicateProperties</span>()</span><br><span class="line"> | | | |--AActor.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 同步Actor中所有需要Replicated的ActorComponent</span></span><br><span class="line"> | | | | |--UActorComponent.<span class="built_in">ReplicateSubobjects</span>()</span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 自定义UObject进行属性同步</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">ReplicateSubobject</span>()</span><br></pre></td></tr></table></figure>
+<p>引用:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" title="RPC浅析">RPC浅析</a></p>
+]]></content>
+      <categories>
+        <category>UE</category>
+        <category>UE网络</category>
+        <category>属性同步</category>
+      </categories>
+      <tags>
+        <tag>UE网络</tag>
+        <tag>属性同步</tag>
+        <tag>自定义UObject属性同步</tag>
       </tags>
   </entry>
 </search>
