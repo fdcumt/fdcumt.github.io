@@ -26,7 +26,7 @@
 <meta property="og:site_name" content="NoBodyNoOne">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-11-09T10:04:11.348Z">
-<meta property="article:modified_time" content="2023-11-09T10:04:11.349Z">
+<meta property="article:modified_time" content="2024-03-11T14:04:39.148Z">
 <meta property="article:author" content="NoBodyNoOne">
 <meta property="article:tag" content="UE网络">
 <meta property="article:tag" content="NetworkGUID">
@@ -141,7 +141,7 @@
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
             <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#networkguid%E8%A7%84%E5%88%99%E8%AE%BE%E5%AE%9A"><span class="nav-number">2.</span> <span class="nav-text">NetworkGUID规则设定</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#networkguid"><span class="nav-number">2.1.</span> <span class="nav-text">NetworkGUID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E9%9D%99%E6%80%81uobject"><span class="nav-number">2.2.</span> <span class="nav-text">动&#x2F;静态UObject</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81uobject"><span class="nav-number">2.2.1.</span> <span class="nav-text">静态UObject</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#rf_wasloaded%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">RF_WasLoaded类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rf_defaultsubobject%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">RF_DefaultSubObject类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#native%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">Native类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#defaultsubobject%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.1.4.</span> <span class="nav-text">DefaultSubobject类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E5%86%99isnamestablefornetworking%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.1.5.</span> <span class="nav-text">重写IsNameStableForNetworking函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#upackage"><span class="nav-number">2.2.1.5.1.</span> <span class="nav-text">UPackage:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#uclass"><span class="nav-number">2.2.1.5.2.</span> <span class="nav-text">UClass</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#uleve"><span class="nav-number">2.2.1.5.3.</span> <span class="nav-text">ULeve</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cdo%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.1.6.</span> <span class="nav-text">CDO类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%94%BE%E7%BD%AE%E5%88%B0%E5%9C%BA%E6%99%AF%E4%B8%AD%E7%9A%84actor"><span class="nav-number">2.2.1.7.</span> <span class="nav-text">放置到场景中的Actor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.2.1.8.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81uobject"><span class="nav-number">2.2.2.</span> <span class="nav-text">动态UObject</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#networkguid%E5%92%8Cuobject%E5%85%B3%E8%81%94"><span class="nav-number">3.</span> <span class="nav-text">NetworkGUID和UObject关联</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#exportbunch"><span class="nav-number">3.1.</span> <span class="nav-text">ExportBunch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A1%AB%E5%85%85exportbunch"><span class="nav-number">3.1.1.</span> <span class="nav-text">填充ExportBunch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90exportbunch"><span class="nav-number">3.1.2.</span> <span class="nav-text">解析ExportBunch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">3.1.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#defaultguid"><span class="nav-number">3.2.</span> <span class="nav-text">DefaultGUID</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%A4%8D%E7%8E%B0%E5%9C%BA%E6%99%AF"><span class="nav-number">3.2.1.</span> <span class="nav-text">构造复现场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E6%8E%A7%E7%AB%AF%E5%8F%91%E9%80%81defaultguid"><span class="nav-number">3.2.2.</span> <span class="nav-text">主控端发送DefaultGUID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E8%A7%A3%E6%9E%90defaultguid"><span class="nav-number">3.2.3.</span> <span class="nav-text">DS解析DefaultGUID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-2"><span class="nav-number">3.2.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81uobject%E4%B8%8Enetworkguid%E7%BB%91%E5%AE%9A"><span class="nav-number">3.3.</span> <span class="nav-text">静态UObject与NetworkGUID绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E9%9C%80%E8%A6%81%E5%90%8C%E6%AD%A5"><span class="nav-number">3.3.1.</span> <span class="nav-text">什么情况下需要同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="nav-number">3.3.2.</span> <span class="nav-text">数据传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%91%E5%AE%9Auobject"><span class="nav-number">3.3.3.</span> <span class="nav-text">绑定UObject</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cdo%E7%B1%BB%E5%9E%8B%E5%85%B3%E8%81%94"><span class="nav-number">3.3.4.</span> <span class="nav-text">CDO类型关联</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81uobject%E4%B8%8Enetworkguid%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.</span> <span class="nav-text">动态UObject与NetworkGUID绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#actor%E4%B8%8Eguid%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.1.</span> <span class="nav-text">Actor与GUID绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ds%E5%BA%8F%E5%88%97%E5%8C%96"><span class="nav-number">3.4.1.1.</span> <span class="nav-text">DS序列化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="nav-number">3.4.1.2.</span> <span class="nav-text">客户端反序列化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createdefaultsubobject%E4%B8%8Eguid%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.2.</span> <span class="nav-text">CreateDefaultSubobject与GUID绑定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%88%9B%E5%BB%BA%E7%9A%84subobject%E7%BB%91%E5%AE%9Aguid"><span class="nav-number">3.4.3.</span> <span class="nav-text">动态创建的SubObject绑定GUID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89uobject%E4%B8%8Eguid%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.4.</span> <span class="nav-text">自定义UObject与GUID绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ds%E5%BA%8F%E5%88%97%E5%8C%96uobj"><span class="nav-number">3.4.4.1.</span> <span class="nav-text">DS序列化UObj</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%A7%A3%E6%9E%90uobj"><span class="nav-number">3.4.4.2.</span> <span class="nav-text">客户端解析UObj</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ds%E5%88%A0%E9%99%A4uobj"><span class="nav-number">3.4.4.3.</span> <span class="nav-text">DS删除UObj</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%A0%E9%99%A4uobj"><span class="nav-number">3.4.4.4.</span> <span class="nav-text">客户端删除UObj</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E6%88%90%E5%91%98%E4%B8%8Euobj%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.4.5.</span> <span class="nav-text">属性成员与UObj绑定</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.4.5.1.</span> <span class="nav-text">直接绑定</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A"><span class="nav-number">3.4.4.5.2.</span> <span class="nav-text">延迟绑定</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-3"><span class="nav-number">3.4.4.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-4"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83-1"><span class="nav-number">5.</span> <span class="nav-text">思考</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BE%E7%BD%AE%E5%9C%A8%E5%9C%BA%E6%99%AF%E4%B8%AD%E7%9A%84actor%E4%B8%8D%E8%83%BD%E8%BF%9B%E8%A1%8Crpc-%E5%8F%AA%E8%83%BD%E5%B1%9E%E6%80%A7%E5%90%8C%E6%AD%A5."><span class="nav-number">5.1.</span> <span class="nav-text">放置在场景中的Actor不能进行RPC,
-只能属性同步.</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E4%B8%80%E4%B8%AAacotrchannel%E8%BF%98%E6%B2%A1%E6%9C%89%E5%88%9B%E5%BB%BA-%E5%B1%9E%E6%80%A7%E5%90%8C%E6%AD%A5%E5%B7%B2%E7%BB%8F%E5%88%B0%E6%9D%A5-%E4%BC%9A%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="nav-number">5.2.</span> <span class="nav-text">当一个AcotrChannel还没有创建,
+只能属性同步.</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E4%B8%80%E4%B8%AAactorchannel%E8%BF%98%E6%B2%A1%E6%9C%89%E5%88%9B%E5%BB%BA-%E5%B1%9E%E6%80%A7%E5%90%8C%E6%AD%A5%E5%B7%B2%E7%BB%8F%E5%88%B0%E6%9D%A5-%E4%BC%9A%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="nav-number">5.2.</span> <span class="nav-text">当一个ActorChannel还没有创建,
 属性同步已经到来, 会怎么处理?</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9E%E7%AD%94%E8%AF%BE%E5%89%8D%E6%8F%90%E9%97%AE"><span class="nav-number">6.</span> <span class="nav-text">回答课前提问</span></a></li></ol></div>
         </div>
         <!--/noindex-->
@@ -155,18 +155,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">42</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">55</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -235,6 +235,13 @@
       <span class="post-meta-item-text">发表于</span>
 
       <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-03-11 22:04:39" itemprop="dateModified" datetime="2024-03-11T22:04:39+08:00">2024-03-11</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -937,7 +944,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202306191640
 <p>如果将一个Actor进行RPC, 需要重写AActor::GetNetConnection(),
 或者其Owner具有Connection就可以.</p>
 <h2
-id="当一个acotrchannel还没有创建-属性同步已经到来-会怎么处理">当一个AcotrChannel还没有创建,
+id="当一个actorchannel还没有创建-属性同步已经到来-会怎么处理">当一个ActorChannel还没有创建,
 属性同步已经到来, 会怎么处理?</h2>
 <p>如果Actor第一次属性同步, 则会在Bunch头添加SerializeNewActor.</p>
 <p><img
@@ -1013,8 +1020,8 @@ DS和客户端的Obj是怎么关联起来的?</p>
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/" rel="prev" title="Geometry Queries(碰撞检测)--翻译">
-                  <i class="fa fa-chevron-left"></i> Geometry Queries(碰撞检测)--翻译
+                <a href="/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/Pawn,Controller%E5%92%8CPawnMovementComponent%20Tick%E9%A1%BA%E5%BA%8F/" rel="prev" title="Pawn,Controller和PawnMovementComponent Tick顺序">
+                  <i class="fa fa-chevron-left"></i> Pawn,Controller和PawnMovementComponent Tick顺序
                 </a>
             </div>
             <div class="post-nav-item">
@@ -1041,8 +1048,8 @@ DS和客户端的Obj是怎么关联起来的?</p>
 
 
 <div class="copyright">
-  &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -1053,13 +1060,13 @@ DS和客户端的Obj是怎么关联起来的?</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">37k</span>
+    <span title="站点总字数">59k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:15</span>
+    <span title="站点阅读时长">3:36</span>
   </span>
 </div>
 <div class="busuanzi-count">

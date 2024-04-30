@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="背景 碰撞一般都是通过Trace&#x2F;Sweep检测, 有了它作为基础, 才能实现移动的具体操作.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE4移动-FHitResult详解">
+<meta property="og:url" content="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="背景 碰撞一般都是通过Trace&#x2F;Sweep检测, 有了它作为基础, 才能实现移动的具体操作.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/assets/image-20231202172836441.png">
+<meta property="og:image" content="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/assets/image-20231202181151307.png">
+<meta property="article:published_time" content="2023-12-02T09:09:38.005Z">
+<meta property="article:modified_time" content="2024-04-11T08:07:43.992Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="UE4移动">
+<meta property="article:tag" content="FHitResult">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/assets/image-20231202172836441.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/","path":"2023/12/02/UE/移动/FHitResult详解/","title":"UE4移动-FHitResult详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE4移动-FHitResult详解 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sweep-capsule%E4%B8%8B%E7%9A%84fhitresult"><span class="nav-number">2.</span> <span class="nav-text">Sweep Capsule下的FHitResult</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83"><span class="nav-number">2.1.</span> <span class="nav-text">构造测试环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.time"><span class="nav-number">2.2.</span> <span class="nav-text">FHitResult.Time</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.distance"><span class="nav-number">2.3.</span> <span class="nav-text">FHitResult.Distance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.location"><span class="nav-number">2.4.</span> <span class="nav-text">FHitResult.Location</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.impactpoint"><span class="nav-number">2.5.</span> <span class="nav-text">FHitResult.ImpactPoint</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.normal"><span class="nav-number">2.6.</span> <span class="nav-text">FHitResult.Normal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.impactnormal"><span class="nav-number">2.7.</span> <span class="nav-text">FHitResult.ImpactNormal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.tracestart"><span class="nav-number">2.8.</span> <span class="nav-text">FHitResult.TraceStart</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.traceend"><span class="nav-number">2.9.</span> <span class="nav-text">FHitResult.TraceEnd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.penetrationdepth"><span class="nav-number">2.10.</span> <span class="nav-text">FHitResult.PenetrationDepth</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.bstartpenetrating"><span class="nav-number">2.11.</span> <span class="nav-text">FHitResult.bStartPenetrating</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.bblockinghit"><span class="nav-number">2.12.</span> <span class="nav-text">FHitResult.bBlockingHit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.physmaterial"><span class="nav-number">2.13.</span> <span class="nav-text">FHitResult.PhysMaterial</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.actor"><span class="nav-number">2.14.</span> <span class="nav-text">FHitResult.Actor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.component"><span class="nav-number">2.15.</span> <span class="nav-text">FHitResult.Component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.bonename"><span class="nav-number">2.16.</span> <span class="nav-text">FHitResult.BoneName</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fhitresult.mybonename"><span class="nav-number">2.17.</span> <span class="nav-text">FHitResult.MyBoneName</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">55</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE4移动-FHitResult详解 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE4移动-FHitResult详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-12-02 17:09:38" itemprop="dateCreated datePublished" datetime="2023-12-02T17:09:38+08:00">2023-12-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-11 16:07:43" itemprop="dateModified" datetime="2024-04-11T16:07:43+08:00">2024-04-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE4%E7%A7%BB%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">UE4移动</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE4%E7%A7%BB%E5%8A%A8/FHitResult/" itemprop="url" rel="index"><span itemprop="name">FHitResult</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="背景">背景</h1>
+<p>碰撞一般都是通过Trace/Sweep检测, 有了它作为基础,
+才能实现移动的具体操作.</p>
+<span id="more"></span>
+<h1 id="sweep-capsule下的fhitresult">Sweep Capsule下的FHitResult</h1>
+<h2 id="构造测试环境">构造测试环境</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">ABasePlayerController::TestDoCapsuleTrace</span><span class="params">(<span class="type">float</span> StartZOffset, <span class="type">float</span> EndZOffset, <span class="type">float</span> InDistance)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">float</span> DuringTime = <span class="number">50.f</span>;</span><br><span class="line">    ACharacter *pChar = <span class="built_in">GetCharacter</span>();</span><br><span class="line">    FVector StartLocation = pChar-&gt;<span class="built_in">GetActorLocation</span>();</span><br><span class="line"></span><br><span class="line">    FVector Forward = pChar-&gt;<span class="built_in">GetActorForwardVector</span>().<span class="built_in">GetSafeNormal</span>();</span><br><span class="line">    FVector Right = pChar-&gt;<span class="built_in">GetActorRightVector</span>().<span class="built_in">GetSafeNormal</span>();</span><br><span class="line">    StartLocation.Z += StartZOffset;</span><br><span class="line">    FVector EndLocation = StartLocation + Forward*InDistance;</span><br><span class="line">    EndLocation.Z += EndZOffset;</span><br><span class="line"></span><br><span class="line">    <span class="type">float</span> ScaledCapsuleHalfHeight = pChar-&gt;<span class="built_in">GetCapsuleComponent</span>()-&gt;<span class="built_in">GetScaledCapsuleHalfHeight</span>();</span><br><span class="line">    <span class="type">float</span> ScaledCapsuleRadius = pChar-&gt;<span class="built_in">GetCapsuleComponent</span>()-&gt;<span class="built_in">GetScaledCapsuleRadius</span>();</span><br><span class="line"></span><br><span class="line">    FCollisionQueryParams Params;</span><br><span class="line">    Params.<span class="built_in">AddIgnoredActor</span>(pChar);</span><br><span class="line">    <span class="function">FName <span class="title">ProfilerName</span><span class="params">(<span class="string">&quot;MyTestProfiler&quot;</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    UKismetSystemLibrary::<span class="built_in">DrawDebugLine</span>(<span class="keyword">this</span>, StartLocation, EndLocation, FLinearColor::Red, DuringTime);</span><br><span class="line">    UKismetSystemLibrary::<span class="built_in">DrawDebugCapsule</span>(<span class="keyword">this</span>, StartLocation, ScaledCapsuleHalfHeight, ScaledCapsuleRadius, FRotator::ZeroRotator, FLinearColor::Blue, DuringTime);</span><br><span class="line">    UKismetSystemLibrary::<span class="built_in">DrawDebugBox</span>(<span class="keyword">this</span>, StartLocation, FVector::OneVector, FLinearColor::Blue, FRotator::ZeroRotator, DuringTime);</span><br><span class="line">    UKismetSystemLibrary::<span class="built_in">DrawDebugCapsule</span>(<span class="keyword">this</span>, EndLocation, ScaledCapsuleHalfHeight, ScaledCapsuleRadius, FRotator::ZeroRotator, FLinearColor::Blue, DuringTime);</span><br><span class="line">    UKismetSystemLibrary::<span class="built_in">DrawDebugBox</span>(<span class="keyword">this</span>, EndLocation, FVector::OneVector, FLinearColor::Blue, FRotator::ZeroRotator, DuringTime);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    FHitResult HitResult;</span><br><span class="line">    <span class="type">bool</span> bHit = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SweepSingleByProfile</span>(HitResult, StartLocation, EndLocation, FQuat::Identity, ProfilerName, FCollisionShape::<span class="built_in">MakeCapsule</span>(ScaledCapsuleRadius, ScaledCapsuleHalfHeight), Params);</span><br><span class="line">    <span class="keyword">if</span> (bHit)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (HitResult.bBlockingHit)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// Location box</span></span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugBox</span>(<span class="keyword">this</span>, HitResult.Location, FVector::OneVector, FLinearColor::Blue, FRotator::ZeroRotator, DuringTime);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// impact point box</span></span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugBox</span>(<span class="keyword">this</span>, HitResult.ImpactPoint, FVector::OneVector, FLinearColor::Blue, FRotator::ZeroRotator, DuringTime);</span><br><span class="line"></span><br><span class="line">            FVector BottomLocation = HitResult.Location;</span><br><span class="line">            BottomLocation.Z = HitResult.Location.Z - ScaledCapsuleHalfHeight + ScaledCapsuleRadius;</span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugBox</span>(<span class="keyword">this</span>, BottomLocation, FVector::OneVector, FLinearColor::Blue, FRotator::ZeroRotator, DuringTime);</span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugLine</span>(<span class="keyword">this</span>, HitResult.Location, BottomLocation, FLinearColor::Green, DuringTime);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            <span class="comment">// draw hit</span></span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugCapsule</span>(<span class="keyword">this</span>, HitResult.Location, ScaledCapsuleHalfHeight, ScaledCapsuleRadius, FRotator::ZeroRotator, FLinearColor::Red, DuringTime);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// hit point+impact normal</span></span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugLine</span>(<span class="keyword">this</span>, HitResult.ImpactPoint, HitResult.ImpactPoint + HitResult.ImpactNormal * <span class="number">100</span>, FLinearColor::Green, DuringTime);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// hit point+ normal</span></span><br><span class="line">            UKismetSystemLibrary::<span class="built_in">DrawDebugLine</span>(<span class="keyword">this</span>, HitResult.ImpactPoint, HitResult.ImpactPoint+ HitResult.Normal*<span class="number">100</span>, FLinearColor::White, DuringTime);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试结果如图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202172001722.png" /></p>
+<h2 id="fhitresult.time">FHitResult.Time</h2>
+<p><span
+class="math inline">\(Time=\frac{FHitResult.Distance}{TraceEnd-TraceStart}\)</span></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * &#x27;Time&#x27; of impact along trace direction (ranging from 0.0 to 1.0) if there is a hit, indicating time between TraceStart and TraceEnd.</span></span><br><span class="line"><span class="comment"> * For swept movement (but not queries) this may be pulled back slightly from the actual time of impact, to prevent precision problems with adjacent geometry.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line"><span class="type">float</span> Time;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.distance">FHitResult.Distance</h2>
+<p>从trace起始点到碰撞点(还是胶囊体位置)的距离.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202173015384.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The distance from the TraceStart to the Location in world space. This value is 0 if there was an initial overlap (trace started inside another colliding object). */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line"><span class="type">float</span> Distance; </span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.location">FHitResult.Location</h2>
+<p>当没有bStartPenetrating时为: 碰撞时胶囊体所在位置.
+当有<code>bStartPenetrating</code>,
+<code>FHitResult.Location</code>和<code>FHitResult.TraceStart</code>相等.</p>
+<figure>
+<img src="./assets/image-20231202172836441.png"
+alt="image-20231202172836441" />
+<figcaption aria-hidden="true">image-20231202172836441</figcaption>
+</figure>
+<p>当有<code>bStartPenetrating</code>,
+<code>FHitResult.Location</code>和<code>FHitResult.TraceStart</code>相等.</p>
+<figure>
+<img src="./assets/image-20231202181151307.png"
+alt="image-20231202181151307" />
+<figcaption aria-hidden="true">image-20231202181151307</figcaption>
+</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202181507165.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The location in world space where the moving shape would end up against the impacted object, if there is a hit. Equal to the point of impact for line tests.</span></span><br><span class="line"><span class="comment"> * Example: for a sphere trace test, this is the point where the center of the sphere would be located when it touched the other object.</span></span><br><span class="line"><span class="comment"> * For swept movement (but not queries) this may not equal the final location of the shape since hits are pulled back slightly to prevent precision issues from overlapping another surface.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantize Location;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.impactpoint">FHitResult.ImpactPoint</h2>
+<p>碰撞点位置</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202173056753.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Location in world space of the actual contact of the trace shape (box, sphere, ray, etc) with the impacted object.</span></span><br><span class="line"><span class="comment"> * Example: for a sphere trace test, this is the point where the surface of the sphere touches the other object.</span></span><br><span class="line"><span class="comment"> * @note: In the case of initial overlap (bStartPenetrating=true), ImpactPoint will be the same as Location because there is no meaningful single impact point to report.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantize ImpactPoint;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.normal">FHitResult.Normal</h2>
+<p><code>FHitResult.Normal</code>: 碰撞体(胶囊体)在碰撞点切面的法线.
+可以看出, 当胶囊体下半球与物体相撞时候,
+<code>FHitResult.Normal</code>过下半球的球心;
+当胶囊体中间的圆柱部分与物体相撞时候,
+<code>FHitResult.Normal</code>与圆柱的轴线相交.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202173626265.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202174140843.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Normal of the hit in world space, for the object that was swept. Equal to ImpactNormal for line tests.</span></span><br><span class="line"><span class="comment"> * This is computed for capsules and spheres, otherwise it will be the same as ImpactNormal.</span></span><br><span class="line"><span class="comment"> * Example: for a sphere trace test, this is a normalized vector pointing in towards the center of the sphere at the point of impact.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantizeNormal Normal;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.impactnormal">FHitResult.ImpactNormal</h2>
+<p><code>FHitResult.ImpactNormal</code>: 被碰撞物体在碰撞点切面的法线.
+<span style="color:red;">注意当发生<code>Penetrating</code>时,
+<code>FHitResult.ImpactNormal</code>等于<code>FHitResult.Normal</code>,
+他们都是碰撞体表面法线.</span></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231202174609211.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Normal of the hit in world space, for the object that was hit by the sweep, if any.</span></span><br><span class="line"><span class="comment"> * For example if a sphere hits a flat plane, this is a normalized vector pointing out from the plane.</span></span><br><span class="line"><span class="comment"> * In the case of impact with a corner or edge of a surface, usually the &quot;most opposing&quot; normal (opposed to the query direction) is chosen.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantizeNormal ImpactNormal;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.tracestart">FHitResult.TraceStart</h2>
+<p>碰撞检测的起始位置.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Start location of the trace.</span></span><br><span class="line"><span class="comment"> * For example if a sphere is swept against the world, this is the starting location of the center of the sphere.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantize TraceStart;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.traceend">FHitResult.TraceEnd</h2>
+<p>碰撞检测的结束位置.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * End location of the trace; this is NOT where the impact occurred (if any), but the furthest point in the attempted sweep.</span></span><br><span class="line"><span class="comment"> * For example if a sphere is swept against the world, this would be the center of the sphere if there was no blocking hit.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FVector_NetQuantize TraceEnd;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.penetrationdepth">FHitResult.PenetrationDepth</h2>
+<p>如果碰撞的起始位置在某个物体内部,
+则沿着Normal方向<code>PenetrationDepth</code>, 可以最快脱离碰撞体.
+脱离的最短距离为<code>FHitResult.PenetrationDepth</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * If this test started in penetration (bStartPenetrating is true) and a depenetration vector can be computed,</span></span><br><span class="line"><span class="comment"> * this value is the distance along Normal that will result in moving out of penetration.</span></span><br><span class="line"><span class="comment"> * If the distance cannot be computed, this distance will be zero.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line"><span class="type">float</span> PenetrationDepth;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.bstartpenetrating">FHitResult.bStartPenetrating</h2>
+<p>是否发生渗透现象, 即碰撞起始点是否在物体内部.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Whether the trace started in penetration, i.e. with an initial blocking overlap.</span></span><br><span class="line"><span class="comment"> * In the case of penetration, if PenetrationDepth &gt; 0.f, then it will represent the distance along the Normal vector that will result in</span></span><br><span class="line"><span class="comment"> * minimal contact between the swept shape and the object that was hit. In this case, ImpactNormal will be the normal opposed to movement at that location</span></span><br><span class="line"><span class="comment"> * (ie, Normal may not equal ImpactNormal). ImpactPoint will be the same as Location, since there is no single impact point to report.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">uint8 bStartPenetrating : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.bblockinghit">FHitResult.bBlockingHit</h2>
+<p>是否发生了Block类型的碰撞, 如果为false则表示发生了Overlap.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Indicates if this hit was a result of blocking collision. If false, there was no hit or it was an overlap/touch instead. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">uint8 bBlockingHit : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.physmaterial">FHitResult.PhysMaterial</h2>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Physical material that was hit.</span></span><br><span class="line"><span class="comment"> * @note Must set bReturnPhysicalMaterial on the swept PrimitiveComponent or in the query params for this to be returned.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">TWeakObjectPtr&lt;class UPhysicalMaterial&gt; PhysMaterial;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.actor">FHitResult.Actor</h2>
+<p>被碰撞物体.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Actor hit by the trace. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">TWeakObjectPtr&lt;<span class="keyword">class</span> <span class="title class_">AActor</span>&gt; Actor;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.component">FHitResult.Component</h2>
+<p>被碰撞的Component</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** PrimitiveComponent hit by the trace. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">TWeakObjectPtr&lt;<span class="keyword">class</span> <span class="title class_">UPrimitiveComponent</span>&gt; Component;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.bonename">FHitResult.BoneName</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Name of bone we hit (for skeletal meshes). */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FName BoneName;</span><br></pre></td></tr></table></figure>
+<h2 id="fhitresult.mybonename">FHitResult.MyBoneName</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Name of the _my_ bone which took part in hit event (in case of two skeletal meshes colliding). */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">FName MyBoneName;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/UE4%E7%A7%BB%E5%8A%A8/" rel="tag"># UE4移动</a>
+              <a href="/tags/FHitResult/" rel="tag"># FHitResult</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/11/29/UE/Perf/UE%E5%8A%A8%E6%80%81Stat/" rel="prev" title="UE动态Stat">
+                  <i class="fa fa-chevron-left"></i> UE动态Stat
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/12/17/UE/%E5%85%B6%E4%BB%96/Profiler%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6/" rel="next" title="Profiler操作文件">
+                  Profiler操作文件 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">59k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

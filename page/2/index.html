@@ -150,18 +150,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-count">42</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">55</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -199,7 +199,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/12/17/UE/%E5%85%B6%E4%BB%96/Profiler%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -217,7 +217,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/" class="post-title-link" itemprop="url">UE SoftReference浅析</a>
+          <a href="/2023/12/17/UE/%E5%85%B6%E4%BB%96/Profiler%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">Profiler操作文件</a>
         </h2>
 
         <div class="post-meta-container">
@@ -228,148 +228,14 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+      <time title="创建时间：2023-12-17 16:43:34" itemprop="dateCreated datePublished" datetime="2023-12-17T16:43:34+08:00">2023-12-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
+        <i class="far fa-calendar-check"></i>
       </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>712</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="概述">概述</h1>
-<p>资源路径: <span style="color:red;">/Game</span><span
-style="color:Purple;">/ThirdPersonCPP/Maps</span><span
-style="color:Blue;">/UEDPIE_0_NewMap1</span><span
-style="color:Gold;">.NewMap1</span><span
-style="color:Black;">:</span><span
-style="color:SeaGreen;">PersistentLevel.</span><span
-style="color:DarkOrange;">TestActor1_2</span></p>
-<ol type="1">
-<li>红色<span style="color:red;">/Game</span>: 资源分区,
-<code>/Game</code>为GameContent区域,
-<code>/Engine</code>为EngineContent区域,
-<code>/Plugin</code>为PluginContent区域</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230812153324842.png" /></p>
-<ol start="2" type="1">
-<li>紫色<span
-style="color:Purple;">/ThirdPersonCPP/Maps</span>表示资源路径</li>
-<li>蓝色<span
-style="color:Blue;">UEDPIE_0_NewMap1</span>表示Package名称</li>
-<li>黄色<span style="color:Gold;">NewMap1</span>表示Package内对象名称,
-即World.</li>
-<li>黑色<span style="color:Black;">:</span>子对象分隔符,
-表明其后面的都是子对象.</li>
-<li>绿色<span style="color:SeaGreen;">PersistentLevel</span>表示以<span
-style="color:Gold;">NewMap1</span>作为Outer的SubObject,
-World中的Level.</li>
-<li>橙色<span style="color:DarkOrange;">TestActor1_2</span>表示以<span
-style="color:SeaGreen;">PersistentLevel</span>为Outer的SubObject,
-Level内的Actor.</li>
-</ol>
-<p>搜寻过程: <strong>通过资源全路径(<span
-style="color:red;">/Game</span><span
-style="color:Purple;">/ThirdPersonCPP/Maps</span><span
-style="color:Blue;">/UEDPIE_0_NewMap1</span>)找到package(蓝色<span
-style="color:Blue;">UEDPIE_0_NewMap1</span>),
-通过Package找到World(黄色<span style="color:Gold;">NewMap1</span>),
-通过world找到Level(绿色<span
-style="color:SeaGreen;">PersistentLevel</span>),
-通过Level找到Actor(橙色<span
-style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/11/09/UE/%E5%85%B6%E4%BB%96/UE%20SoftReference%E6%B5%85%E6%9E%90/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="NoBodyNoOne">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NoBodyNoOne">
-      <meta itemprop="description" content="欢迎来到我的世界">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | NoBodyNoOne">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/" class="post-title-link" itemprop="url">UE-TMap</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-18 09:41:31" itemprop="dateModified" datetime="2023-12-18T09:41:31+08:00">2023-12-18</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -381,7 +247,7 @@ style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/UE/Container/" itemprop="url" rel="index"><span itemprop="name">Container</span></a>
+          <a href="/categories/UE/Profiler/" itemprop="url" rel="index"><span itemprop="name">Profiler</span></a>
         </span>
     </span>
 
@@ -392,7 +258,7 @@ style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>268</span>
+      <span>97</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -410,24 +276,22 @@ style="color:DarkOrange;">TestActor1_2</span>).</strong></p>
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="概述">概述</h1>
-<p><span style="color:red;">先了解<code>TSet</code>,
-再看<code>TMap</code>. </span></p>
-<p><code>TMap</code>是继承自<code>TMapBase</code>,
-最终操作的也是其成员变量<code>ElementSetType Pairs</code>,
-即<code>TSet</code>类型.
-<code>TMap</code>将<code>Element</code>类型设置为<code>typedef TPair&lt;KeyType, ValueType&gt; ElementType;</code>,
-即Pair类型.</p>
+          <span id="more"></span>
+<h1 id="创建文件">创建文件</h1>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// Profiler创建文件流程</span><br><span class="line">--FWindowsApplication.AppWndProc </span><br><span class="line"> |<span class="string">--WindowsApplication_WndProc </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--FWindowsApplication.ProcessMessage.if.switch.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FWindowsApplication.DeferMessage.else </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FWindowsApplication.ProcessDeferredMessage.if.switch.&#123; </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FSlateApplication.OnKeyUp </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FSlateApplication.ProcessKeyUpEvent </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FEventRouter.RouteAlongFocusPath </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FEventRouter.Route.for.else </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FSlateApplication.ProcessKeyUpEvent.Reply.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--SViewport.OnKeyUp </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FSceneViewport.OnKeyUp.if.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UGameViewportClient.InputKey </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UConsole.InputKey </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UConsole.InputKey_InputLine.if.if.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UConsole.ConsoleCommand.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--APlayerController.ConsoleCommand </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UPlayer.ConsoleCommand.while.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ULocalPlayer.Exec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UGameViewportClient.Exec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UUnrealEdEngine.Exec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UEditorEngine.Exec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UEngine.Exec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--StaticExec </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FSelfRegisteringExec.StaticExec.for </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--DirectStatsCommand.if.if.if </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--CreateProfileFilename </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--CreateProfileFilename </span></span><br></pre></td></tr></table></figure>
+<h2 id="文件名">文件名</h2>
+<p>如果在命令行输入文件名称, 就会使用该名称,否则会自行创建.</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912193952646.png" /></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TMap/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231217165055970.png" /></p>
+<p><strong><code>CreateProfileFilename</code></strong>:</p>
+<p>首先传入的是文件类型:<code>.ue4stats</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231217165205999.png" /></p>
+<h2 id="文件路径">文件路径</h2>
+<h1 id="写入文件">写入文件</h1>
+<h1 id="关闭文件">关闭文件</h1>
+<h1 id="读取文件">读取文件</h1>
+
       
     </div>
 
@@ -453,7 +317,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202309121939
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TSet/">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -471,7 +335,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202309121939
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TSet/" class="post-title-link" itemprop="url">UE-TSet</a>
+          <a href="/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">UE4移动-FHitResult详解</a>
         </h2>
 
         <div class="post-meta-container">
@@ -482,7 +346,14 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202309121939
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+      <time title="创建时间：2023-12-02 17:09:38" itemprop="dateCreated datePublished" datetime="2023-12-02T17:09:38+08:00">2023-12-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-11 16:07:43" itemprop="dateModified" datetime="2024-04-11T16:07:43+08:00">2024-04-11</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -494,7 +365,11 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202309121939
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/UE/Container/" itemprop="url" rel="index"><span itemprop="name">Container</span></a>
+          <a href="/categories/UE/UE4%E7%A7%BB%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">UE4移动</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE4%E7%A7%BB%E5%8A%A8/FHitResult/" itemprop="url" rel="index"><span itemprop="name">FHitResult</span></a>
         </span>
     </span>
 
@@ -523,44 +398,12 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202309121939
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="概述">概述</h1>
-<p>核心: <code>HashArray</code>+<code>ElementArray</code></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912115416424.png" /></p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230911192653763.png"
-alt="关键流程" />
-<figcaption aria-hidden="true">关键流程</figcaption>
-</figure>
-<p>一般Hash的实现一般由以下步骤实现:</p>
-<ol type="1">
-<li>将Element映射成Hash.</li>
-<li>通过Hash值找到对应成员.</li>
-</ol>
-<p>具体实现:
-UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<code>TSet</code>,
-<code>HashArray</code>中存放着<code>ElementArray</code>的<code>Index</code>,
-<code>ElementArray</code>中存放着具体的值.</p>
-<ol type="1">
-<li>TSet将映射方式暴露给用户,
-由程序员自定义实现:<code>uint32 GetTypeHash(...)</code>,
-最终返回类型为<code>uint32</code>的<code>KeyHash</code>.</li>
-<li>TSet内部实现了通过<code>KeyHash</code>找到对应Element的方式:
-<ol type="1">
-<li>根据<code>HashIndex &amp; (HashSize - 1)</code>,
-计算<code>HashIndex</code>, 然后取出<code>HashElementValue</code>,
-此处<code>HashElementValue</code>代表<code>ElementArray</code>的<code>Index</code>.</li>
-<li>根据<code>Index</code>从<code>ElementArray</code>获取具体的<code>ElementValue</code>,
-如果发生冲突, 拉链法解决冲突.
-每个<code>Element</code>记录着<code>NextElementIndex</code>,
-如果该Element发生冲突,
-通过<code>NextElementIndex</code>寻找到下一个Element.</li>
-</ol></li>
-</ol>
+          <h1 id="背景">背景</h1>
+<p>碰撞一般都是通过Trace/Sweep检测, 有了它作为基础,
+才能实现移动的具体操作.</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2023/11/09/UE/%E5%AE%B9%E5%99%A8/TSet/#more" rel="contents">
+              <a class="btn" href="/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -591,7 +434,7 @@ UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<co
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/Hexo/hexo%E6%94%AF%E6%8C%81%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/29/UE/Perf/UE%E5%8A%A8%E6%80%81Stat/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -609,7 +452,118 @@ UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<co
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/Hexo/hexo%E6%94%AF%E6%8C%81%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/" class="post-title-link" itemprop="url">hexo支持数学公式</a>
+          <a href="/2023/11/29/UE/Perf/UE%E5%8A%A8%E6%80%81Stat/" class="post-title-link" itemprop="url">UE动态Stat</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-11-29 10:38:07 / 修改时间：10:43:22" itemprop="dateCreated datePublished" datetime="2023-11-29T10:38:07+08:00">2023-11-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/Perf/" itemprop="url" rel="index"><span itemprop="name">Perf</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/Perf/%E5%8A%A8%E6%80%81Stat/" itemprop="url" rel="index"><span itemprop="name">动态Stat</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>51</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>相关代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 头文件:</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Stats/Stats2.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Stats/Stats.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义:</span></span><br><span class="line"><span class="built_in">DECLARE_STATS_GROUP</span>(<span class="built_in">TEXT</span>(<span class="string">&quot;BasePlayerControllerAAAAA&quot;</span>), STATGROUP_BasePlayerControllerAAAAA, STATCAT_Advanced);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span>    STATS</span></span><br><span class="line">    <span class="type">const</span> FString ___StatName = <span class="built_in">GetName</span>()+<span class="string">&quot;this Test Stat&quot;</span>;</span><br><span class="line">    <span class="type">const</span> TStatId StatId = FDynamicStats::<span class="built_in">CreateStatId</span>&lt;FStatGroup_STATGROUP_BasePlayerControllerAAAAA&gt;(___StatName);</span><br><span class="line">    <span class="function">FScopeCycleCounter <span class="title">CycleCounter</span><span class="params">(StatId)</span></span>;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// STATS</span></span></span><br></pre></td></tr></table></figure>
+<p>代码截图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129103935880.png" /></p>
+<p>Profiler截图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129103826827.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129104054685.png" /></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/27/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/27/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">ReliableBunch溢出处理</a>
         </h2>
 
         <div class="post-meta-container">
@@ -620,14 +574,14 @@ UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<co
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+      <time title="创建时间：2023-11-27 11:30:15" itemprop="dateCreated datePublished" datetime="2023-11-27T11:30:15+08:00">2023-11-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-23 15:05:50" itemprop="dateModified" datetime="2023-11-23T15:05:50+08:00">2023-11-23</time>
+      <time title="修改时间：2023-12-01 16:46:40" itemprop="dateModified" datetime="2023-12-01T16:46:40+08:00">2023-12-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -635,7 +589,129 @@ UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<co
       </span>
       <span class="post-meta-item-text">分类于</span>
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/latex/" itemprop="url" rel="index"><span itemprop="name">latex</span></a>
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA/" itemprop="url" rel="index"><span itemprop="name">ReliableBunch溢出</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="什么是reliablebunch溢出">什么是ReliableBunch溢出</h1>
+<p>当DS日志显示:<code>SendBunch: Reliable partial bunch overflows reliable buffer!</code>,
+即当前未响应的<code>ReliableBunch</code>过多, 造成DS关闭了连接.</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SendBunch:</span> Reliable <span class="keyword">partial</span> bunch overflows reliable buffer!</span><br></pre></td></tr></table></figure>
+<p>SendBunch时触发Overflow.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127211542330.png" /></p>
+<p>SendRPC时触发Overflow</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129091215487.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/27/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/18/UE/%E7%BD%91%E7%BB%9C/Component%20Replication%E5%BD%92%E5%B1%9E%E6%9D%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/18/UE/%E7%BD%91%E7%BB%9C/Component%20Replication%E5%BD%92%E5%B1%9E%E6%9D%83/" class="post-title-link" itemprop="url">Component Replication归属权</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-11-18 16:28:26 / 修改时间：16:56:01" itemprop="dateCreated datePublished" datetime="2023-11-18T16:28:26+08:00">2023-11-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
         </span>
     </span>
 
@@ -664,13 +740,11 @@ UE使用两个数组<code>HashArray</code>+<code>ElementArray</code>来实现<co
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>参考:
-https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
-<p>首先，卸载原有的渲染器 <code>hexo-renderer-marked</code>,
-并安装新的渲染器<code>hexo-renderer-pandoc</code></p>
+          <p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png" />
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2023/11/09/Hexo/hexo%E6%94%AF%E6%8C%81%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/#more" rel="contents">
+              <a class="btn" href="/2023/11/18/UE/%E7%BD%91%E7%BB%9C/Component%20Replication%E5%BD%92%E5%B1%9E%E6%9D%83/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -701,7 +775,7 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E5%85%B6%E4%BB%96/PlayNetMode/">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -719,7 +793,7 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/11/09/UE/%E5%85%B6%E4%BB%96/PlayNetMode/" class="post-title-link" itemprop="url">PlayNetMode</a>
+          <a href="/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">网络日志,丢包,延迟等相关命令</a>
         </h2>
 
         <div class="post-meta-container">
@@ -729,9 +803,15 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-11-09 18:04:11 / 修改时间：19:05:15" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+      <time title="创建时间：2023-11-14 11:43:27" itemprop="dateCreated datePublished" datetime="2023-11-14T11:43:27+08:00">2023-11-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-18 10:38:32" itemprop="dateModified" datetime="2024-04-18T10:38:32+08:00">2024-04-18</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -743,7 +823,19 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
         </span>
           ，
         <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/UE/PlayNetMode/" itemprop="url" rel="index"><span itemprop="name">PlayNetMode</span></a>
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/%E6%97%A5%E5%BF%97/" itemprop="url" rel="index"><span itemprop="name">日志</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/%E6%97%A5%E5%BF%97/%E4%B8%A2%E5%8C%85/" itemprop="url" rel="index"><span itemprop="name">丢包</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/%E6%97%A5%E5%BF%97/%E4%B8%A2%E5%8C%85/%E5%BB%B6%E8%BF%9F/" itemprop="url" rel="index"><span itemprop="name">延迟</span></a>
         </span>
     </span>
 
@@ -754,7 +846,7 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>250</span>
+      <span>251</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -772,33 +864,33 @@ https://github.com/theme-next/hexo-theme-next/blob/master/docs/zh-CN/MATH.md</p>
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>定义:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UENUM</span>()</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">EPlayNetMode</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/** A standalone game will be started. This will not create a dedicated server, nor automatically connect to one. A server can be launched by enabling bLaunchSeparateServer if you need to test offline -&gt; server connection flow for your game. */</span></span><br><span class="line">    <span class="function">PIE_Standalone <span class="title">UMETA</span><span class="params">(DisplayName=<span class="string">&quot;Play Standalone&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** The editor will act as both a Server and a Client. Additional instances may be opened beyond that depending on the number of clients. */</span></span></span><br><span class="line"><span class="function">    PIE_ListenServer <span class="title">UMETA</span><span class="params">(DisplayName=<span class="string">&quot;Play As Listen Server&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** The editor will act as a Client. A server will be started for you behind the scenes to connect to. */</span></span></span><br><span class="line"><span class="function">    PIE_Client <span class="title">UMETA</span><span class="params">(DisplayName=<span class="string">&quot;Play As Client&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">&#125;</span>;</span><br></pre></td></tr></table></figure>
-<h1 id="pie_standalone">PIE_Standalone</h1>
-<p>本地端, 没有远端. 没有DS, 只有本地一个端在跑.</p>
-<h1 id="pie_listenserver">PIE_ListenServer</h1>
-<p>创建一个GameInstance, 它即当DS, 又作为客户端.
-并且允许多个独立的客户端与它相连.</p>
-<p>可以看到, 其就有两个<code>world</code>: <code>editor</code>,
-<code>Client+DS</code>.</p>
+          <h1 id="网络相关日志">网络相关日志</h1>
+<p>开启网络相关日志:</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">log LogNetTraffic log</span><br><span class="line">log LogNetPackageMap log</span><br><span class="line"></span><br><span class="line">log LogNetTraffic log|<span class="type">log</span> LogNetPackageMap log|<span class="type">log</span> LogNetPartialBunch log|<span class="type">log</span> LogNet <span class="keyword">Verbose</span>|<span class="type">log</span> LogRep log|<span class="type">log</span> LogNetPlayerMovement log|<span class="type">log</span> LogRepTraffic log|<span class="type">log</span> LogNetDormancy log|<span class="type">log</span> LogNetFastTArray log|<span class="type">log</span> LogSecurity log|<span class="type">log</span> LogRepProperties VeryVerbose|<span class="type">log</span> LogRepPropertiesBackCompat VeryVerbose</span><br></pre></td></tr></table></figure>
+<p>关闭网络相关日志:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">log</span> LogNetTraffic <span class="keyword">off</span></span><br><span class="line"><span class="keyword">log</span> LogNetPackageMap <span class="keyword">off</span></span><br></pre></td></tr></table></figure>
+<p>开启DS端络相关日志:</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ServerExec <span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line">ServerExec <span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
+<h1 id="丢包延迟">丢包/延迟</h1>
+<p>注意, 一下命令等号两端不能有空格</p>
+<ol type="1">
+<li>Net pktLag=，模拟延迟，单位是毫秒</li>
+<li>Net
+PktLagVariance=300，在模拟延迟的基础上，再上下浮动300毫秒。加上这个就会出现移动瞬移卡顿的效果</li>
+<li>Net PKtLoss=，丢包，单位是百分比，Net
+PKtLoss=90就是90%会丢包，也会出现移动瞬移卡顿</li>
+<li>Net PktOrder=1，乱序发包，会出现一定的移动瞬移，但不太明显</li>
+<li>Net PktDup=，重复发包，单位是百分比，Net
+PktDup=20表示20%会出现重复发包。</li>
+</ol>
+<p>[<a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/timy/p/9895354.html"><strong>[UE4]模拟网络延迟和丢包</strong>](https://www.cnblogs.com/timy/p/9895354.html)</a></p>
+<h1 id="serverexec">ServerExec</h1>
+<p>ServerExe相关实现:</p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231012144641355.png" /></p>
-<h1 id="pie_client">PIE_Client</h1>
-<p>分别创建两个<code>GameIntance</code>,
-客户端<code>GameInstance</code>+<code>DS GameInstance</code>.</p>
-<p>可以看到, 其有三个<code>World</code>, 分别是<code>editor</code>,
-<code>DS</code>, <code>Client</code>. 这种模式下,
-Actor会有<code>ROLE_Authority</code>和<code>ROLE_AutonomousProxy</code>以及<code>ROLE_SimulatedProxy</code>对应的实例.</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231012144447532.png"
-alt="image-20231012144447532" />
-<figcaption aria-hidden="true">image-20231012144447532</figcaption>
-</figure>
-<h1 id="创建关键函数">创建关键函数</h1>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114630407.png" /></p>
 <p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231012144912314.png" /></p>
-<p>这里不做详细解析. 只是暂时标注, 后续有时间会有详解.</p>
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114709854.png" /></p>
 
       
     </div>
@@ -817,8 +909,1702 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202310121449
 
 
 
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/13/UE/%E7%BD%91%E7%BB%9C/%E5%BC%80%E5%90%AFReplicate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/13/UE/%E7%BD%91%E7%BB%9C/%E5%BC%80%E5%90%AFReplicate/" class="post-title-link" itemprop="url">开启Replicate</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-13 16:56:01" itemprop="dateCreated datePublished" datetime="2023-11-13T16:56:01+08:00">2023-11-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-15 20:40:40" itemprop="dateModified" datetime="2023-11-15T20:40:40+08:00">2023-11-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/SpawnActor/" itemprop="url" rel="index"><span itemprop="name">SpawnActor</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>357</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1
+id="actor开启replicate"><code>Actor</code>开启<code>Replicate</code></h1>
+<p>UE中, 对于需要<code>Replicate</code>的<code>Actor</code>,
+需要将<code>AActor.bReplicates</code>设置为<code>true</code>.</p>
+<p>方法1:
+<code>SpawnActor</code>之后调用<code>AActor.SetReplicates</code>将其变成可<code>Replicate</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113170458249.png" /></p>
+<p>方法2:
+在构造函数中将<code>AActor.bReplicates</code>设置为<code>true</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113170547324.png" /></p>
+<p><code>AActor.bReplicates</code>控制的是哪里的流程?</p>
+<p>对于动态创建的<code>Actor</code>,
+在将其添加到<code>ReplicationGraph</code>的时候,
+会检测其是否需要<code>Replicate</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113174511881.png" /></p>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+<p style="line-height:1.5;">
+--UWorld::SpawnActor() <br> |--UWorld::AddNetworkActor() <br> | |--//
+遍历所有NetDriver, 并将Actor添加到其中 <br> |
+|--Driver-&gt;AddNetworkActor(Actor); <br> | |
+|--UNetDriver::AddNetworkActor() <br> | | |
+|--GetNetworkObjectList().FindOrAdd(Actor, this); <br> | | | |--//
+向ReplicationGraph中添加NetworkActor <br> | | |
+|--ReplicationDriver-&gt;AddNetworkActor(Actor); //
+UReplicationGraph::AddNetworkActor <br> | | | | |--//
+检测是否需要进行Replicate <br> | | | |
+|--IsActorValidForReplicationGather() <br> | | | | | |--<span
+style="color:red;">AActor.GetIsReplicated() // 检测AActor的Replication
+</span> <br> | | | | |--//
+添加Actor对应的描述信息FGlobalActorReplicationInfo <br> | | | |
+|--FGlobalActorReplicationInfo&amp; GlobalInfo =
+GlobalActorReplicationInfoMap.Get(Actor); <br> | | | | |--//
+设置Dormant属性 <br> | | | | |--GlobalInfo.bWantsToBeDormant =
+Actor-&gt;NetDormancy &gt; DORM_Awake; <br> | | | |
+|--UReplicationGraph::RouteAddNetworkActorToNodes() <br> | | | | | |--//
+针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中 <br>
+| | | | | |--AlwaysRelevantNode-&gt;NotifyAddNetworkActor(ActorInfo);
+<br> | | | | | |--// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner,
+添加到ActorsWithoutNetConnection中 <br> | | | | |
+|--ActorsWithoutNetConnection.Add(ActorInfo.Actor); <br> | | | | | |--//
+其他情况添加到GridNode中 <br> | | | | |
+|--GridNode-&gt;AddActor_Dormancy(ActorInfo, GlobalInfo); <br> | | | | |
+| |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy <br>
+| | | | | | |--// 如果要想要休眠, 调用AddActorInternal_Static函数 <br> |
+| | | | | |--AddActorInternal_Static(ActorInfo, ActorRepInfo, true);
+<br> | | | | | | | |--如果Actor没有Init,
+则添加到UReplicationGraphNode_GridSpatialization2D.PendingStaticSpatializedActors中.
+<br> | | | | | | | |--否则添加到Static中 <br> | | | | | | |
+|--UReplicationGraphNode_GridSpatialization2D.AddActorInternal_Static_Implementation()
+<br> | | | | | | |
+|--UReplicationGraphNode_GridSpatialization2D.AddActorInternal_Static_Implementation()
+<br> | | | | | | |--// 否则, 调用AddActorInternal_Dynamic <br> | | | | |
+| |--AddActorInternal_Dynamic(ActorInfo); <br> | | | | | | | |--//
+放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中
+<br> | | | | | | | |--DynamicSpatializedActors.Emplace(ActorInfo.Actor,
+ActorInfo); <br>
+</p>
+</td>
+</tr>
+</table>
+<h1
+id="actorcomponent开启replicate"><code>ActorComponent</code>开启<code>Replicate</code></h1>
+<p>UE中, 对于需要<code>Replicate</code>的<code>ActorComponent</code>,
+需要将<code>UActorComponent.bReplicates</code>设置为<code>true</code>.</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UActorComponent<span class="selector-class">.SetIsReplicatedByDefault</span> </span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113194229321.png" /></p>
+<h1
+id="自定义uobject开启replicate">自定义<code>UObject</code>开启<code>Replicate</code></h1>
+<p>参考:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/" title="自定义UObject进行Replicate">自定义UObject进行Replicate</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/11/UE/%E7%BD%91%E7%BB%9C/InitOnly%20RPC%20MulticastRPC%20BeginPlay%E7%9A%84%E9%A1%BA%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/11/UE/%E7%BD%91%E7%BB%9C/InitOnly%20RPC%20MulticastRPC%20BeginPlay%E7%9A%84%E9%A1%BA%E5%BA%8F/" class="post-title-link" itemprop="url">InitOnly RPC MulticastRPC(Reliable+Unreliable) BeginPlay的执行顺序</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-11 10:57:46" itemprop="dateCreated datePublished" datetime="2023-11-11T10:57:46+08:00">2023-11-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 14:37:39" itemprop="dateModified" datetime="2024-04-30T14:37:39+08:00">2024-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/%E6%97%B6%E5%BA%8F/" itemprop="url" rel="index"><span itemprop="name">时序</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231119110314263.png"
+alt="image-20231119110314263" />
+<figcaption aria-hidden="true">image-20231119110314263</figcaption>
+</figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/11/UE/%E7%BD%91%E7%BB%9C/InitOnly%20RPC%20MulticastRPC%20BeginPlay%E7%9A%84%E9%A1%BA%E5%BA%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5%E4%B8%AD,%20Package%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5%E4%B8%AD,%20Package%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD/" class="post-title-link" itemprop="url">网络同步中, Package异步加载</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-16 14:21:58" itemprop="dateModified" datetime="2023-11-16T14:21:58+08:00">2023-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="背景">背景</h1>
+<p>UE中加载机制是, 加载会有一个队列,
+一个同步加载会flush掉前面所有的异步加载, 进而造成卡顿. 例如:
+当前存在异步加载A和B, 此时我调用同步加载C, 会立即将A和B flush掉,
+然后执行C.</p>
+<p><strong>UE NetAsyncLoad大致流程:</strong></p>
+<p>在TickDispatch(收包)阶段,
+针对所有ExportNetGUID(这里就指其所对应的UObject, 下同)进行异步加载,
+并将其填入<code>PendingGuidResolves</code>中. 在接收Bunch中,
+如果需要等待GUID加载或者QueuedBunch还没处理完,
+就将该Bunch添加到QueueBunch中.</p>
+<p>在TickFlush(发包)阶段, 解析GUID,
+如果<code>PendingGuidResolves</code>为空, 并且其他条件也满足了,
+就会处理QueueBunches.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231116120153377.png" /></p>
+<p>可以看到上述流程中, 如果PendingGUID都已经被解析了,
+那么走的流程和正规流程没什么区别. 如果存在没有被解析的PendingGUID,
+则会将Bunch放入QueuedBunches中.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E5%90%8C%E6%AD%A5%E4%B8%AD,%20Package%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/" class="post-title-link" itemprop="url">自定义UObject进行Replicate</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/%E5%B1%9E%E6%80%A7%E5%90%8C%E6%AD%A5/" itemprop="url" rel="index"><span itemprop="name">属性同步</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>394</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>UE本身有一套自创的网络框架,
+在这个框架里UObject类型默认是无法进行属性同步的.
+如果想要UObject进行属性同步就必须进行一系列重写.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicateActor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicateActor/" class="post-title-link" itemprop="url">UE网络-ReplicateActor</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-03-05 16:26:15" itemprop="dateModified" datetime="2024-03-05T16:26:15+08:00">2024-03-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/ReplicateActor/" itemprop="url" rel="index"><span itemprop="name">ReplicateActor</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="概述">概述</h1>
+<p><code>ReplicateActor</code>分成三步:
+<code>SerializeNewActor</code>+<code>序列化属性</code>+<code>序列化删除的Objs</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230913110345472.png" /></p>
+<p>其中序列化属性中的属性又分成三类:
+<code>Actor自身属性</code>+<code>ActorComponent属性</code>+<code>SubObject属性</code>.
+每类属性的序列化都会调用同一个函数:
+<code>FObjectReplicator::ReplicateProperties</code>.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-ReplicateActor/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">UE4消息结构</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-15 20:18:41" itemprop="dateModified" datetime="2023-11-15T20:18:41+08:00">2023-11-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png"
+alt="BunchArchetype" />
+<figcaption aria-hidden="true">BunchArchetype</figcaption>
+</figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE4%E7%BD%91%E7%BB%9C%E4%B8%ADUObject%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE4%E7%BD%91%E7%BB%9C%E4%B8%ADUObject%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/" class="post-title-link" itemprop="url">UE4网络中UObject创建和销毁</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>839</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png" /></p>
+<p>本文中我们专注ContentBlockPayloadHeader和DeleteObject信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831143414189.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831154959105.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE4%E7%BD%91%E7%BB%9C%E4%B8%ADUObject%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" class="post-title-link" itemprop="url">RPC浅析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-14 17:01:04" itemprop="dateModified" datetime="2023-12-14T17:01:04+08:00">2023-12-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/RPC/" itemprop="url" rel="index"><span itemprop="name">RPC</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230712154008824.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/" class="post-title-link" itemprop="url">UE4 FastArray</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-16 10:49:09" itemprop="dateModified" datetime="2023-11-16T10:49:09+08:00">2023-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/FastArray/" itemprop="url" rel="index"><span itemprop="name">FastArray</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>19 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/UE4%E7%BD%91%E7%BB%9C-CustomDeltaProperty%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B.drawio1.png"
+alt="FastArray处理流程" />
+<figcaption aria-hidden="true">FastArray处理流程</figcaption>
+</figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/" class="post-title-link" itemprop="url">GUID延迟绑定</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/NetworkGUID/" itemprop="url" rel="index"><span itemprop="name">NetworkGUID</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>606</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="延迟绑定">延迟绑定</h1>
+<p>UE对UObject指针的映射是通过GUID进行的,
+例如当客户端ABasePlayerController.TestReplicationComp2需要根据DS传来的新数据进行赋值,
+这个值就是GUID其代表一个对象.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628172027340.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230628200508387.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/GUID%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/" class="post-title-link" itemprop="url">NetDormancy</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/NetDormancy/" itemprop="url" rel="index"><span itemprop="name">NetDormancy</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="dormancy定义">Dormancy定义</h1>
+<p>Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过.
+Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致.
+一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化,
+即可设置为Dormancy.</p>
+<p>Dormancy状态转换图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802161108281.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/NetDormancy/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/" class="post-title-link" itemprop="url">Geometry Queries(碰撞检测)--翻译</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/" itemprop="url" rel="index"><span itemprop="name">翻译</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/PhysX/" itemprop="url" rel="index"><span itemprop="name">PhysX</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BF%BB%E8%AF%91/PhysX/Geometry-Queries/" itemprop="url" rel="index"><span itemprop="name">Geometry Queries</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>21 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>原文链接<a
+target="_blank" rel="noopener" href="https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/3.3.4/Manual/GeometryQueries.html">Geometry
+Queries</a>.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/" class="post-title-link" itemprop="url">Channel的创建和销毁</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-03-13 19:38:22" itemprop="dateModified" datetime="2024-03-13T19:38:22+08:00">2024-03-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>客户端和DS通过Bunch.ChIndex相互映射关联.
+这样同一个Actor在每个端都会通过同一个Channel进行处理.</p>
+<h1 id="搭建测试用例">搭建测试用例</h1>
+<p>首先搭建一个能主动创建和销毁Channel的示例.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在DS端主动创建Character</span></span><br><span class="line"><span class="keyword">if</span> (ALSVCharacter==<span class="literal">nullptr</span> &amp;&amp; CreateCharacterFrameIndex ==<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex =<span class="number">1</span>;</span><br><span class="line">    FVector Loc = FVector::ZeroVector;</span><br><span class="line">    FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">    FActorSpawnParameters Par;</span><br><span class="line">    Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">    ALSVCharacter = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AALSVCharacter&gt;(AALSVCharacter::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在DS端主动销毁Character</span></span><br><span class="line"><span class="keyword">if</span> (CreateCharacterFrameIndex&gt;<span class="number">50</span>)</span><br><span class="line">&#123;</span><br><span class="line">    CreateCharacterFrameIndex = <span class="number">-1</span>;</span><br><span class="line">    ALSVCharacter-&gt;<span class="built_in">Destroy</span>();</span><br><span class="line">    ALSVCharacter = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2023/11/09/UE/%E7%BD%91%E7%BB%9C/FNetworkGUID%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/FNetworkGUID%E6%B5%85%E6%9E%90/" class="post-title-link" itemprop="url">NetworkGUID浅析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-11-09 18:04:11" itemprop="dateCreated datePublished" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-03-11 22:04:39" itemprop="dateModified" datetime="2024-03-11T22:04:39+08:00">2024-03-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/NetworkGUID/" itemprop="url" rel="index"><span itemprop="name">NetworkGUID</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>21 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230623171337907.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230629164038070.png" /></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/FNetworkGUID%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -829,8 +2615,8 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202310121449
 
 
 <div class="copyright">
-  &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -841,13 +2627,13 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202310121449
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">37k</span>
+    <span title="站点总字数">59k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:15</span>
+    <span title="站点阅读时长">3:36</span>
   </span>
 </div>
 <div class="busuanzi-count">

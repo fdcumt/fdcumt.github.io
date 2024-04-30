@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="概述 概述: FaceRotation表明由程序自定义接管. PhysicsRotation表明通过Lerp形式按照一定速率转向目标方向(速度方向或者Controller朝向). 并且是速度位置计算完成后, 才设置朝向.   bUseControllerRotationYaw+bUseControllerRotationPitch+bUseControllerRotationRoll,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="人物Rotation浅析">
+<meta property="og:url" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="概述 概述: FaceRotation表明由程序自定义接管. PhysicsRotation表明通过Lerp形式按照一定速率转向目标方向(速度方向或者Controller朝向). 并且是速度位置计算完成后, 才设置朝向.   bUseControllerRotationYaw+bUseControllerRotationPitch+bUseControllerRotationRoll,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415150707677.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415164820286.png">
+<meta property="article:published_time" content="2024-04-15T03:11:27.677Z">
+<meta property="article:modified_time" content="2024-04-22T03:14:38.867Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="人物Rotation浅析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415150707677.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/","path":"2024/04/15/UE/移动/人物Rotation浅析/","title":"人物Rotation浅析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>人物Rotation浅析 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AE"><span class="nav-number">2.</span> <span class="nav-text">关键数据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ucharactermovementcomponent"><span class="nav-number">2.1.</span> <span class="nav-text">UCharacterMovementComponent</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ballowphysicsrotationduringanimrootmotion"><span class="nav-number">2.1.1.</span> <span class="nav-text">bAllowPhysicsRotationDuringAnimRootMotion</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#busecontrollerdesiredrotation"><span class="nav-number">2.1.2.</span> <span class="nav-text">bUseControllerDesiredRotation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#borientrotationtomovement"><span class="nav-number">2.1.3.</span> <span class="nav-text">bOrientRotationToMovement</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rotationrate"><span class="nav-number">2.1.4.</span> <span class="nav-text">RotationRate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0computeorienttomovementrotation"><span class="nav-number">2.1.5.</span> <span class="nav-text">函数ComputeOrientToMovementRotation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#apawn"><span class="nav-number">2.2.</span> <span class="nav-text">APawn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#busecontrollerrotationyaw"><span class="nav-number">2.2.1.</span> <span class="nav-text">bUseControllerRotationYaw</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#busecontrollerrotationpitch"><span class="nav-number">2.2.2.</span> <span class="nav-text">bUseControllerRotationPitch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#busecontrollerrotationroll"><span class="nav-number">2.2.3.</span> <span class="nav-text">bUseControllerRotationRoll</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0facerotation"><span class="nav-number">2.2.4.</span> <span class="nav-text">函数FaceRotation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rotation%E6%B5%81%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">Rotation流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE"><span class="nav-number">4.</span> <span class="nav-text">问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#apawn.facerotation%E5%92%8Cucharactermovementcomponent.physicsrotation%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">4.1.</span> <span class="nav-text">APawn.FaceRotation和UCharacterMovementComponent.PhysicsRotation的区别</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">55</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="人物Rotation浅析 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          人物Rotation浅析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-04-15 11:11:27" itemprop="dateCreated datePublished" datetime="2024-04-15T11:11:27+08:00">2024-04-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-22 11:14:38" itemprop="dateModified" datetime="2024-04-22T11:14:38+08:00">2024-04-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">人物Rotation浅析</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="概述">概述</h1>
+<p><span style="color:red">概述:
+<code>FaceRotation</code>表明由程序自定义接管.
+<code>PhysicsRotation</code>表明通过Lerp形式按照一定速率转向目标方向(速度方向或者Controller朝向).
+并且是速度位置计算完成后, 才设置朝向. </span></p>
+<ol type="1">
+<li><code>bUseControllerRotationYaw</code>+<code>bUseControllerRotationPitch</code>+<code>bUseControllerRotationRoll</code>,
+<code>bOrientRotationToMovement</code>,
+<code>bUseControllerDesiredRotation</code>三者互斥.</li>
+<li>如果同时开启,
+<code>bOrientRotationToMovement</code>优先级高于<code>bUseControllerDesiredRotation</code></li>
+<li><code>FaceRotation</code>表明朝向有程序接管, 直接控制.</li>
+<li><code>PhysicsRotation</code>表示根据目标朝向, 平滑转动.
+目标朝向由<code>bOrientRotationToMovement</code>和<code>bUseControllerDesiredRotation</code>确定.
+速率由<code>RotationRate</code>决定.</li>
+</ol>
+<h1 id="关键数据">关键数据</h1>
+<h2 id="ucharactermovementcomponent">UCharacterMovementComponent</h2>
+<h3
+id="ballowphysicsrotationduringanimrootmotion">bAllowPhysicsRotationDuringAnimRootMotion</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在执行RootMotion期间, 是否允许执行PhysicsRotation</span></span><br><span class="line"><span class="built_in">uint8</span> bAllowPhysicsRotationDuringAnimRootMotion : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>默认情况下, RootMotion期间, 不允许执行<code>PhysicsRotation</code>,
+原因为动画直接控制人物朝向, 不需要在进行调整.</p>
+<figure>
+<img src="./assets/image-20240415150707677.png"
+alt="image-20240415150707677" />
+<figcaption aria-hidden="true">image-20240415150707677</figcaption>
+</figure>
+<p>除非指定允许执行<code>PhysicsRotation</code>, 否则RootMotion期间,
+不允许执行PhysicsRotation.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415150539086.png" /></p>
+<h3
+id="busecontrollerdesiredrotation">bUseControllerDesiredRotation</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, smoothly rotate the Character toward the Controller&#x27;s desired rotation (typically Controller-&gt;ControlRotation), </span></span><br><span class="line"><span class="comment">// using RotationRate as the rate of rotation change. Overridden by OrientRotationToMovement.</span></span><br><span class="line"><span class="comment">// Normally you will want to make sure that other settings are cleared, such as bUseControllerRotationYaw on the Character.</span></span><br><span class="line"><span class="comment">// 如果设置为true, 则将人物朝向调整到和Controller.ControlRotation一致.</span></span><br><span class="line"><span class="comment">// 使用RotationRate作为旋转的速率. 优先判断bOrientRotationToMovement, 然后在判断bUseControllerDesiredRotation</span></span><br><span class="line"><span class="comment">// 该变量与其他变量互斥, 例如Character身上的bUseControllerRotationYaw</span></span><br><span class="line">uint8 bUseControllerDesiredRotation:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165546137.png" /></p>
+<p>如果启用该功能,
+则人物朝向会平滑朝向Controller.ControlledRotation.</p>
+<p>该字段(<code>bUseControllerDesiredRotation</code>)和<code>APawn</code>的<code>bUseControllerRotationYaw</code>+<code>bUseControllerRotationPitch</code>+<code>bUseControllerRotationRoll</code>是互斥的.
+二者只能选其一, 否则可能会出现抖动(一般情况下不会).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415162444741.png" /></p>
+<p>当Base更新的时候, 也需要调整朝向.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415163339859.png" /></p>
+<h3 id="borientrotationtomovement">bOrientRotationToMovement</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, rotate the Character toward the direction of acceleration, </span></span><br><span class="line"><span class="comment">// using RotationRate as the rate of rotation change. Overrides UseControllerDesiredRotation.</span></span><br><span class="line"><span class="comment">// Normally you will want to make sure that other settings are cleared, such as bUseControllerRotationYaw on the Character.</span></span><br><span class="line"><span class="comment">// 该变量和其他变量互斥, 例如bUseControllerRotationYaw等</span></span><br><span class="line"><span class="comment">// 如果设置为true, 表示Character将Smooth朝着移动方向转动. 使用RotationRate作为Delta.</span></span><br><span class="line"><span class="comment">// 优先判断bOrientRotationToMovement, 然后在判断bUseControllerDesiredRotation</span></span><br><span class="line">uint8 bOrientRotationToMovement:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165546137.png" /></p>
+<p>该变量表示Character将Smooth朝着移动方向转动.
+使用RotationRate作为Delta.</p>
+<ol type="1">
+<li>base更新的时候, 刷新Rotation</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415163927951.png" /></p>
+<ol start="2" type="1">
+<li>平滑处理</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415164052974.png" /></p>
+<h3 id="rotationrate">RotationRate</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Change in rotation per second, used when UseControllerDesiredRotation or OrientRotationToMovement are true. </span></span><br><span class="line"><span class="comment">// Set a negative value for infinite rotation rate and instant turns. */</span></span><br><span class="line">FRotator RotationRate;</span><br></pre></td></tr></table></figure>
+<p>旋转速率, 根据该属性+<code>Delta</code>时间, 计算每帧旋转角度.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415164211867.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165526460.png" /></p>
+<h3
+id="函数computeorienttomovementrotation">函数<code>ComputeOrientToMovementRotation</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Compute a target rotation based on current movement. Used by PhysicsRotation() when bOrientRotationToMovement is true.</span></span><br><span class="line"><span class="comment">// Default implementation targets a rotation based on Acceleration.</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// @param CurrentRotation    - Current rotation of the Character</span></span><br><span class="line"><span class="comment">// @param DeltaTime        - Time slice for this movement</span></span><br><span class="line"><span class="comment">// @param DeltaRotation    - Proposed rotation change based simply on DeltaTime * RotationRate</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// @return The target rotation given current movement.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> FRotator <span class="title">ComputeOrientToMovementRotation</span><span class="params">(<span class="type">const</span> FRotator&amp; CurrentRotation, <span class="type">float</span> DeltaTime, FRotator&amp; DeltaRotation)</span> <span class="type">const</span></span>;</span><br></pre></td></tr></table></figure>
+<p>计算开启<code>bOrientRotationToMovement</code>后的目标朝向.</p>
+<ol type="1">
+<li>如果加速度不为0, 则使用加速度方向作为目标朝向.</li>
+<li>如果加速度为0, 则使用速度方向作为目标朝向.</li>
+<li>否则, 使用当前朝向作为目标朝向.</li>
+</ol>
+<figure>
+<img src="./assets/image-20240415164820286.png"
+alt="image-20240415164820286" />
+<figcaption aria-hidden="true">image-20240415164820286</figcaption>
+</figure>
+<h2 id="apawn">APawn</h2>
+<h3 id="busecontrollerrotationyaw">bUseControllerRotationYaw</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, this Pawn&#x27;s yaw will be updated to match the Controller&#x27;s ControlRotation yaw, if controlled by a PlayerController.</span></span><br><span class="line"><span class="comment">// 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.Yaw.</span></span><br><span class="line"><span class="built_in">uint32</span> bUseControllerRotationYaw:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165639945.png" /></p>
+<h3 id="busecontrollerrotationpitch">bUseControllerRotationPitch</h3>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> If true, this Pawn<span class="string">&#x27;s pitch will be updated to match the Controller&#x27;</span>s ControlRotation pitch, </span><br><span class="line"><span class="regexp">//</span> <span class="keyword">if</span> controlled by a PlayerController.</span><br><span class="line"><span class="regexp">//</span> 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.pitch.</span><br><span class="line">uint32 bUseControllerRotationPitch:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="busecontrollerrotationroll">bUseControllerRotationRoll</h3>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> If true, this Pawn<span class="string">&#x27;s roll will be updated to match the Controller&#x27;</span>s ControlRotation roll, </span><br><span class="line"><span class="regexp">//</span> <span class="keyword">if</span> controlled by a PlayerController.</span><br><span class="line"><span class="regexp">//</span> 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.roll.</span><br><span class="line">uint32 bUseControllerRotationRoll:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="函数facerotation">函数<code>FaceRotation</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Updates Pawn&#x27;s rotation to the given rotation, assumed to be the Controller&#x27;s ControlRotation.</span></span><br><span class="line"><span class="comment">// Respects the bUseControllerRotation* settings.</span></span><br><span class="line"><span class="comment">// 朝向给定Rotation, 一般情况下用于需要指定的朝向.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">FaceRotation</span><span class="params">(FRotator NewControlRotation, <span class="type">float</span> DeltaTime = <span class="number">0.f</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>根据给定Rotation, 直接设置Character朝向.
+即表示它的朝向受Controller的控制.
+最直观的表现是它不受到速度,加速度的影响, 有Controller直接设置.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415152834122.png" /></p>
+<ol type="1">
+<li>在DS强制设置客户端朝向的时候:<code>ClientSetRotation_Implementation</code></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153213236.png" /></p>
+<ol start="2" type="1">
+<li>无法忽略base朝向的时候(<code>bIgnoreBaseRotation</code>),
+即站在可移动物体上, 要根据base朝向调整人物朝向.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153415307.png" /></p>
+<ol start="3" type="1">
+<li>移动合包的时候, 也需要重新设置人物朝向.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153508789.png" /></p>
+<ol start="4" type="1">
+<li>PlayerController更新ControlledRotation时候<code>APlayerController::UpdateRotation</code></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153621612.png" /></p>
+<h1 id="rotation流程">Rotation流程</h1>
+<p>关键函数<code>UCharacterMovementComponent::PhysicsRotation</code>.
+核心:</p>
+<ol type="1">
+<li>根据<code>DeltaTime</code>+<code>RotationRate</code>计算<code>DeltaRot</code></li>
+<li>根据类型计算TargetRotation</li>
+<li>计算<code>FixTurn</code></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422111138684.png" /></p>
+<h1 id="问">问</h1>
+<h2
+id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><code>APawn.FaceRotation</code>和<code>UCharacterMovementComponent.PhysicsRotation</code>的区别</h2>
+<p>指定: <code>FaceRotation</code>是指定朝向, 每帧自己算,
+然后直接设置朝向. 如果需要平滑处理, 则需要自己在逻辑中添加.</p>
+<p>平滑: <code>PhysicsRotation</code>是计算目标Rotation,
+然后根据转速(<code>RotationRate</code>)平滑转过去.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/" rel="tag"># 人物Rotation浅析</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/04/12/UE/%E5%85%B6%E4%BB%96/%E6%9F%A5%E7%9C%8B%E6%A8%A1%E5%9E%8B%E7%A2%B0%E6%92%9E/" rel="prev" title="查看模型碰撞">
+                  <i class="fa fa-chevron-left"></i> 查看模型碰撞
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/04/15/UE/%E5%85%B6%E4%BB%96/%E6%B5%AE%E7%82%B9%E6%95%B0%E8%AF%A6%E8%A7%A3/" rel="next" title="浮点数详解">
+                  浮点数详解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">59k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
