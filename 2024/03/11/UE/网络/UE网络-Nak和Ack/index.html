@@ -20,32 +20,29 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="收到Nak, 会找到对应的Bunch, 然后设置为Resend.   image-20240311213144501  处理ReliableBunch.   image-20240311213221772  处理 SubObject RepKey   image-20240311213323200  处理GUID   image-2024031121334916">
+    <meta name="description" content="收到Nak, 会找到对应的Bunch, 然后设置为Resend.  处理ReliableBunch.  处理 SubObject RepKey  处理GUID">
 <meta property="og:type" content="article">
-<meta property="og:title" content="NoBodyNoOne">
+<meta property="og:title" content="UE网络-Nak和Ack">
 <meta property="og:url" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/index.html">
 <meta property="og:site_name" content="NoBodyNoOne">
-<meta property="og:description" content="收到Nak, 会找到对应的Bunch, 然后设置为Resend.   image-20240311213144501  处理ReliableBunch.   image-20240311213221772  处理 SubObject RepKey   image-20240311213323200  处理GUID   image-2024031121334916">
+<meta property="og:description" content="收到Nak, 会找到对应的Bunch, 然后设置为Resend.  处理ReliableBunch.  处理 SubObject RepKey  处理GUID">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/assets/image-20240311213144501.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/assets/image-20240311213221772.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/assets/image-20240311213323200.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/assets/image-20240311213349164.png">
 <meta property="article:published_time" content="2024-03-11T13:29:56.679Z">
-<meta property="article:modified_time" content="2024-03-11T13:33:50.201Z">
+<meta property="article:modified_time" content="2024-04-30T06:50:36.684Z">
 <meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="Nak和Ack">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/assets/image-20240311213144501.png">
 
 
 <link rel="canonical" href="https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/","path":"2024/03/11/UE/网络/UE网络-Nak和Ack/","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/03/11/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-Nak%E5%92%8CAck/","path":"2024/03/11/UE/网络/UE网络-Nak和Ack/","title":"UE网络-Nak和Ack"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title> | NoBodyNoOne</title>
+<title>UE网络-Nak和Ack | NoBodyNoOne</title><meta name="robots" content="noindex">
   
 
 
@@ -157,18 +154,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">41</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-count">39</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">55</span>
+        <span class="site-state-item-count">54</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -220,12 +217,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | NoBodyNoOne">
+      <meta itemprop="name" content="UE网络-Nak和Ack | NoBodyNoOne">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
+          UE网络-Nak和Ack
         </h1>
 
         <div class="post-meta-container">
@@ -235,9 +232,32 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-03-11 21:29:56 / 修改时间：21:33:50" itemprop="dateCreated datePublished" datetime="2024-03-11T21:29:56+08:00">2024-03-11</time>
+      <time title="创建时间：2024-03-11 21:29:56" itemprop="dateCreated datePublished" datetime="2024-03-11T21:29:56+08:00">2024-03-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 14:50:36" itemprop="dateModified" datetime="2024-04-30T14:50:36+08:00">2024-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/Nak%E5%92%8CAck/" itemprop="url" rel="index"><span itemprop="name">Nak和Ack</span></a>
+        </span>
     </span>
 
   
@@ -254,7 +274,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>34</span>
+      <span>26</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -272,30 +292,18 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>收到Nak, 会找到对应的Bunch, 然后设置为Resend.</p>
-<figure>
-<img src="./assets/image-20240311213144501.png"
-alt="image-20240311213144501" />
-<figcaption aria-hidden="true">image-20240311213144501</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311213144501.png" /></p>
 <p>处理ReliableBunch.</p>
-<figure>
-<img src="./assets/image-20240311213221772.png"
-alt="image-20240311213221772" />
-<figcaption aria-hidden="true">image-20240311213221772</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311213221772.png" /></p>
 <p>处理 SubObject RepKey</p>
-<figure>
-<img src="./assets/image-20240311213323200.png"
-alt="image-20240311213323200" />
-<figcaption aria-hidden="true">image-20240311213323200</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311213323200.png" /></p>
 <p>处理GUID</p>
-<figure>
-<img src="./assets/image-20240311213349164.png"
-alt="image-20240311213349164" />
-<figcaption aria-hidden="true">image-20240311213349164</figcaption>
-</figure>
-
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311213349164.png" /></p>
+<!-- flag of hidden posts -->
     </div>
 
     
@@ -321,21 +329,13 @@ alt="image-20240311213349164" />
   </div>
 </div>
 
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/Nak%E5%92%8CAck/" rel="tag"># Nak和Ack</a>
+          </div>
 
         
 
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/2024/03/04/UE/%E7%BD%91%E7%BB%9C/UpdateChangelistMgr%E8%AF%A6%E8%A7%A3/" rel="prev" title="UpdateChangelistMgr详解">
-                  <i class="fa fa-chevron-left"></i> UpdateChangelistMgr详解
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/2024/03/20/UE/%E7%A7%BB%E5%8A%A8/StepUp%E8%AF%A6%E8%A7%A3/" rel="next" title="StepUp详解">
-                  StepUp详解 <i class="fa fa-chevron-right"></i>
-                </a>
-            </div>
-          </div>
     </footer>
   </article>
 </div>
@@ -366,13 +366,13 @@ alt="image-20240311213349164" />
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">59k</span>
+    <span title="站点总字数">47k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:36</span>
+    <span title="站点阅读时长">2:49</span>
   </span>
 </div>
 <div class="busuanzi-count">
