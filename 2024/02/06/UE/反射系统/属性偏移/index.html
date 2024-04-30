@@ -20,33 +20,18 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="生成UClass 方法 如果能计算一个属性成员的偏移, 记录该偏移后, 根据指针指向位置, 偏移后可得该属性. 然后可以直接对该属性进行操作. 1234567891011121314151617181920212223#include &lt;iostream&gt;using namespace std;#define STRUCT_OFFSET( struc, member )">
+    <meta name="description" content="思考 如果能计算一个属性成员的偏移, 记录该偏移后, 根据指针指向位置, 偏移后可得该属性. 然后可以直接对该属性进行操作. 1234567891011121314151617181920212223#include &lt;iostream&gt;using namespace std;#define STRUCT_OFFSET( struc, member )    offsetof(s">
 <meta property="og:type" content="article">
 <meta property="og:title" content="属性偏移">
 <meta property="og:url" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/index.html">
 <meta property="og:site_name" content="NoBodyNoOne">
-<meta property="og:description" content="生成UClass 方法 如果能计算一个属性成员的偏移, 记录该偏移后, 根据指针指向位置, 偏移后可得该属性. 然后可以直接对该属性进行操作. 1234567891011121314151617181920212223#include &lt;iostream&gt;using namespace std;#define STRUCT_OFFSET( struc, member )">
+<meta property="og:description" content="思考 如果能计算一个属性成员的偏移, 记录该偏移后, 根据指针指向位置, 偏移后可得该属性. 然后可以直接对该属性进行操作. 1234567891011121314151617181920212223#include &lt;iostream&gt;using namespace std;#define STRUCT_OFFSET( struc, member )    offsetof(s">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240207095649764.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201210443.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201549676.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201724834.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201846590.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201917182.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206201943740.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206204103299.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206204357273.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206204445294.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206205454416.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206204946065.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206205515157.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240206205636587.png">
 <meta property="article:published_time" content="2024-02-06T12:10:01.668Z">
-<meta property="article:modified_time" content="2024-02-07T01:58:54.290Z">
+<meta property="article:modified_time" content="2024-04-30T07:42:07.412Z">
 <meta property="article:author" content="NoBodyNoOne">
 <meta property="article:tag" content="属性偏移">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/assets/image-20240207095649764.png">
 
 
 <link rel="canonical" href="https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/">
@@ -56,7 +41,7 @@
 <script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/02/06/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/","path":"2024/02/06/UE/反射系统/属性偏移/","title":"属性偏移"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>属性偏移 | NoBodyNoOne</title><meta name="robots" content="noindex">
+<title>属性偏移 | NoBodyNoOne</title>
   
 
 
@@ -156,7 +141,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%9F%E6%88%90uclass"><span class="nav-number">1.</span> <span class="nav-text">生成UClass</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ue%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">UE方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#uht%E5%9C%A8.gen.cpp%E4%B8%AD%E7%94%9F%E6%88%90implement_class"><span class="nav-number">3.1.</span> <span class="nav-text">UHT在*.gen.cpp中生成IMPLEMENT_CLASS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB"><span class="nav-number">3.2.</span> <span class="nav-text">属性偏移</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ue%E6%96%B9%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">UE方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#uht%E5%9C%A8.gen.cpp%E4%B8%AD%E7%94%9F%E6%88%90implement_class"><span class="nav-number">2.1.</span> <span class="nav-text">UHT在*.gen.cpp中生成IMPLEMENT_CLASS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB"><span class="nav-number">2.2.</span> <span class="nav-text">属性偏移</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -169,18 +154,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">41</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-count">39</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">53</span>
+        <span class="site-state-item-count">54</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -255,7 +240,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-02-07 09:58:54" itemprop="dateModified" datetime="2024-02-07T09:58:54+08:00">2024-02-07</time>
+      <time title="修改时间：2024-04-30 15:42:07" itemprop="dateModified" datetime="2024-04-30T15:42:07+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -285,7 +270,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>276</span>
+      <span>246</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -302,97 +287,55 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="生成uclass">生成UClass</h1>
-<h1 id="方法">方法</h1>
+    <div class="post-body" itemprop="articleBody"><h1 id="思考">思考</h1>
 <p>如果能计算一个属性成员的偏移, 记录该偏移后, 根据指针指向位置,
 偏移后可得该属性. 然后可以直接对该属性进行操作.</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STRUCT_OFFSET( struc, member )    offsetof(struc, member) <span class="comment">// 官方</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MEMBER_OFFSET( InClass, Member ) ((int)(reinterpret_cast<span class="string">&lt;int&gt;</span>(&amp;(((InClass*)0)-&gt;Member))))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestClass</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">int</span> x;</span><br><span class="line">    <span class="type">int</span> y;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    TestClass c;</span><br><span class="line">    <span class="type">int</span> Offset = <span class="built_in">MEMBER_OFFSET</span>(TestClass, y);</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span> *p = (<span class="type">unsigned</span> <span class="type">char</span>*) &amp; c;</span><br><span class="line">    <span class="type">int</span>* p1 = (<span class="type">int</span>*)(p + Offset);</span><br><span class="line">    *p1 = <span class="number">999</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;y:&quot;</span>&lt;&lt;c.y &lt;&lt; endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
 <h1 id="ue方式">UE方式</h1>
 <p>UE为什么可以通过指针和<code>FProperty</code>直接定位该属性?
 思考上文中的方法, 确实可以.</p>
-<figure>
-<img src="./assets/image-20240207095649764.png"
-alt="image-20240207095649764" />
-<figcaption aria-hidden="true">image-20240207095649764</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240207095649764.png" /></p>
 <p>注册UClass, 调用堆栈:</p>
-<figure>
-<img src="./assets/image-20240206201210443.png"
-alt="image-20240206201210443" />
-<figcaption aria-hidden="true">image-20240206201210443</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206201210443.png" /></p>
 <h2
 id="uht在.gen.cpp中生成implement_class">UHT在<code>*.gen.cpp</code>中生成<code>IMPLEMENT_CLASS</code></h2>
-<figure>
-<img src="./assets/image-20240206201549676.png"
-alt="image-20240206201549676" />
-<figcaption aria-hidden="true">image-20240206201549676</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206201549676.png" /></p>
 <p>查找<code>IMPLEMENT_CLASS</code>的定义可以看到这里会输入其大小.</p>
-<figure>
-<img src="./assets/image-20240206201724834.png"
-alt="image-20240206201724834" />
-<figcaption aria-hidden="true">image-20240206201724834</figcaption>
-</figure>
-<figure>
-<img src="./assets/image-20240206201846590.png"
-alt="image-20240206201846590" />
-<figcaption aria-hidden="true">image-20240206201846590</figcaption>
-</figure>
-<figure>
-<img src="./assets/image-20240206201917182.png"
-alt="image-20240206201917182" />
-<figcaption aria-hidden="true">image-20240206201917182</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206201724834.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202402062018465990.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206201917182.png" /></p>
 <p>最终会设置到<code>UStruct.PropertiesSize</code>上.</p>
-<figure>
-<img src="./assets/image-20240206201943740.png"
-alt="image-20240206201943740" />
-<figcaption aria-hidden="true">image-20240206201943740</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206201943740.png" /></p>
 <p>以<code>AHUD</code>为例:</p>
 <p>在生成UClass时候, 会调用<code>Z_Construct_UClass_AHUD</code></p>
-<figure>
-<img src="./assets/image-20240206204103299.png"
-alt="image-20240206204103299" />
-<figcaption aria-hidden="true">image-20240206204103299</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206204103299.png" /></p>
 <p>并且根据<code>Params.PropertyArray</code>构建所有FProperty.</p>
-<figure>
-<img src="./assets/image-20240206204357273.png"
-alt="image-20240206204357273" />
-<figcaption aria-hidden="true">image-20240206204357273</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206204357273.png" /></p>
 <p>即,
 在<code>HUD.gen.cpp</code>中查找<code>Z_Construct_UClass_AHUD_Statics::PropPointers</code>的来源.</p>
-<figure>
-<img src="./assets/image-20240206204445294.png"
-alt="image-20240206204445294" />
-<figcaption aria-hidden="true">image-20240206204445294</figcaption>
-</figure>
-<figure>
-<img src="./assets/image-20240206205454416.png"
-alt="image-20240206205454416" />
-<figcaption aria-hidden="true">image-20240206205454416</figcaption>
-</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206204445294.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206205454416.png" /></p>
 <h2 id="属性偏移">属性偏移</h2>
 <p>所以, 在创建FProperty的时候, 就已经知道其偏移位置了.</p>
-<figure>
-<img src="./assets/image-20240206204946065.png"
-alt="image-20240206204946065" />
-<figcaption aria-hidden="true">image-20240206204946065</figcaption>
-</figure>
-<figure>
-<img src="./assets/image-20240206205515157.png"
-alt="image-20240206205515157" />
-<figcaption aria-hidden="true">image-20240206205515157</figcaption>
-</figure>
-<figure>
-<img src="./assets/image-20240206205636587.png"
-alt="image-20240206205636587" />
-<figcaption aria-hidden="true">image-20240206205636587</figcaption>
-</figure>
-<!-- flag of hidden posts -->
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206204946065.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206205515157.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240206205636587.png" /></p>
+
     </div>
 
     
@@ -424,6 +367,18 @@ alt="image-20240206205636587" />
 
         
 
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/12/02/UE/%E7%A7%BB%E5%8A%A8/FHitResult%E8%AF%A6%E8%A7%A3/" rel="prev" title="UE4移动-FHitResult详解">
+                  <i class="fa fa-chevron-left"></i> UE4移动-FHitResult详解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/03/04/UE/%E7%BD%91%E7%BB%9C/UpdateChangelistMgr%E8%AF%A6%E8%A7%A3/" rel="next" title="UpdateChangelistMgr详解">
+                  UpdateChangelistMgr详解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
     </footer>
   </article>
 </div>
@@ -460,7 +415,7 @@ alt="image-20240206205636587" />
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:49</span>
+    <span title="站点阅读时长">2:50</span>
   </span>
 </div>
 <div class="busuanzi-count">

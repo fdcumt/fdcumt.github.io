@@ -27,15 +27,12 @@
 <meta property="og:site_name" content="NoBodyNoOne">
 <meta property="og:description" content="概述 概述: FaceRotation表明由程序自定义接管. PhysicsRotation表明通过Lerp形式按照一定速率转向目标方向(速度方向或者Controller朝向). 并且是速度位置计算完成后, 才设置朝向.   bUseControllerRotationYaw+bUseControllerRotationPitch+bUseControllerRotationRoll,">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415150707677.png">
-<meta property="og:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415164820286.png">
 <meta property="article:published_time" content="2024-04-15T03:11:27.677Z">
-<meta property="article:modified_time" content="2024-04-30T07:21:59.279Z">
+<meta property="article:modified_time" content="2024-04-30T07:42:39.401Z">
 <meta property="article:author" content="NoBodyNoOne">
 <meta property="article:tag" content="UE">
 <meta property="article:tag" content="人物Rotation浅析">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/assets/image-20240415150707677.png">
 
 
 <link rel="canonical" href="https://fdcumt.github.io/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/">
@@ -158,18 +155,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">41</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-count">39</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">53</span>
+        <span class="site-state-item-count">54</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -244,7 +241,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-30 15:21:59" itemprop="dateModified" datetime="2024-04-30T15:21:59+08:00">2024-04-30</time>
+      <time title="修改时间：2024-04-30 15:42:39" itemprop="dateModified" datetime="2024-04-30T15:42:39+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -315,7 +312,8 @@ id="ballowphysicsrotationduringanimrootmotion">bAllowPhysicsRotationDuringAnimRo
 <figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在执行RootMotion期间, 是否允许执行PhysicsRotation</span></span><br><span class="line"><span class="built_in">uint8</span> bAllowPhysicsRotationDuringAnimRootMotion : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
 <p>默认情况下, RootMotion期间, 不允许执行<code>PhysicsRotation</code>,
 原因为动画直接控制人物朝向, 不需要在进行调整.</p>
-<p><img src="./assets/image-20240415150707677.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415150707677.png" /></p>
 <p>除非指定允许执行<code>PhysicsRotation</code>, 否则RootMotion期间,
 不允许执行PhysicsRotation.</p>
 <p><img
@@ -366,7 +364,8 @@ id="函数computeorienttomovementrotation">函数<code>ComputeOrientToMovementRo
 <li>如果加速度为0, 则使用速度方向作为目标朝向.</li>
 <li>否则, 使用当前朝向作为目标朝向.</li>
 </ol>
-<p><img src="./assets/image-20240415164820286.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415164820286.png" /></p>
 <h2 id="apawn">APawn</h2>
 <h3 id="busecontrollerrotationyaw">bUseControllerRotationYaw</h3>
 <figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, this Pawn&#x27;s yaw will be updated to match the Controller&#x27;s ControlRotation yaw, if controlled by a PlayerController.</span></span><br><span class="line"><span class="comment">// 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.Yaw.</span></span><br><span class="line"><span class="built_in">uint32</span> bUseControllerRotationYaw:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
@@ -502,7 +501,7 @@ id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:49</span>
+    <span title="站点阅读时长">2:50</span>
   </span>
 </div>
 <div class="busuanzi-count">
