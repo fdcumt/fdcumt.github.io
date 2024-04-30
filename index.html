@@ -696,9 +696,15 @@ WithIdentical就是表明该结构体使用自定义比较函数.</p>
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-04-18 10:25:01 / 修改时间：10:27:51" itemprop="dateCreated datePublished" datetime="2024-04-18T10:25:01+08:00">2024-04-18</time>
+      <time title="创建时间：2024-04-18 10:25:01" itemprop="dateCreated datePublished" datetime="2024-04-18T10:25:01+08:00">2024-04-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 15:20:22" itemprop="dateModified" datetime="2024-04-30T15:20:22+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -725,7 +731,7 @@ WithIdentical就是表明该结构体使用自定义比较函数.</p>
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>134</span>
+      <span>133</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -745,15 +751,14 @@ WithIdentical就是表明该结构体使用自定义比较函数.</p>
     <div class="post-body" itemprop="articleBody">
           <p>仿照<code>CVarRepGraphConditionalBreakpointActorName</code>,
 添加自己需要条件段断点的地方.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> TAutoConsoleVariable&lt;FString&gt; <span class="title">CVarRepGraphConditionalBreakpointActorName</span><span class="params">(TEXT(<span class="string">&quot;Net.RepGraph.ConditionalBreakpointActorName&quot;</span>), TEXT(<span class="string">&quot;&quot;</span>), </span></span></span><br><span class="line"><span class="params"><span class="function">    TEXT(<span class="string">&quot;Helper CVar for debugging. Set this string to conditionally log/breakpoint various points in the repgraph pipeline. Useful for bugs like &#x27;why is this actor channel closing&#x27;&quot;</span>), ECVF_Default )</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用:</span></span><br><span class="line"><span class="function">FORCEINLINE <span class="type">bool</span> <span class="title">RepGraphConditionalActorBreakpoint</span><span class="params">(AActor* Actor, UNetConnection* NetConnection)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> !(UE_BUILD_SHIPPING)</span></span><br><span class="line">    <span class="keyword">if</span> (CVarRepGraphConditionalBreakpointActorName.<span class="built_in">GetValueOnGameThread</span>().<span class="built_in">Len</span>() &gt; <span class="number">0</span> &amp;&amp; <span class="built_in">GetNameSafe</span>(Actor).<span class="built_in">Contains</span>(CVarRepGraphConditionalBreakpointActorName.<span class="built_in">GetValueOnGameThread</span>()))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Alternatively, DebugActorConnectionPair can be set by code to catch a specific actor/connection pair </span></span><br><span class="line">    <span class="keyword">if</span> (DebugActorConnectionPair.Actor.<span class="built_in">Get</span>() == Actor &amp;&amp; (DebugActorConnectionPair.Connection == <span class="literal">nullptr</span> || DebugActorConnectionPair.Connection == NetConnection ))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>实践:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> FString BreakpointActorName;</span><br><span class="line"><span class="function"><span class="type">static</span> FAutoConsoleVariableRef <span class="title">CVarBreakpointActorName</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    TEXT(<span class="string">&quot;net.BreakpointActorName&quot;</span>),</span></span></span><br><span class="line"><span class="params"><span class="function">    BreakpointActorName,</span></span></span><br><span class="line"><span class="params"><span class="function">    TEXT(<span class="string">&quot;BreakpointActorName.&quot;</span>)</span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (BreakpointActorName.<span class="built_in">Len</span>() &gt; <span class="number">0</span> &amp;&amp; <span class="built_in">GetNameSafe</span>(Actor).<span class="built_in">Contains</span>(BreakpointActorName))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UE_LOG</span>(LogNet, Warning, <span class="built_in">TEXT</span>(<span class="string">&quot;UActorChannel::ReplicateActor Debug Actor[%s]&quot;</span>), *BreakpointActorName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="./assets/image-20240418102637952.png"
-alt="image-20240418102637952" />
-<figcaption aria-hidden="true">image-20240418102637952</figcaption>
-</figure>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/04/18/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-%E6%96%AD%E7%82%B9%E6%8C%87%E5%AE%9AActor/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1008,9 +1013,15 @@ alt="image-20240418102637952" />
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-04-15 14:25:21 / 修改时间：14:44:13" itemprop="dateCreated datePublished" datetime="2024-04-15T14:25:21+08:00">2024-04-15</time>
+      <time title="创建时间：2024-04-15 14:25:21" itemprop="dateCreated datePublished" datetime="2024-04-15T14:25:21+08:00">2024-04-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 15:22:29" itemprop="dateModified" datetime="2024-04-30T15:22:29+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1065,105 +1076,15 @@ class="math inline">\(e=E-127\)</span> .
 </ol>
 <p>可以得到浮点数的计算公式:<span
 class="math inline">\((-1)^{s}*1.M*2^{E-127} \quad (E&gt;0
-且E的所有位非全1)\)</span></p>
-<h1 id="规格化浮点数">规格化浮点数</h1>
-<p><strong>规格化浮点数: 指数位非全0,非全1.</strong></p>
-<p>最小的正规格化浮点数为<span class="math inline">\(1.0*2^{1-127} =
-2^{-126}\)</span>, 最大的负规格化浮点数为<span
-class="math inline">\(-1.0*2^{1-127} = -2^{-126}\)</span>.
-并且将所有能表示的数字按照从小到大排列后,
-发现该数列在远离0点的方向,数字之间的间距越来越大. 最小间距为<span
-class="math inline">\(2^{-149}\)</span>, 最大间距为最大与次大之间的差,
-即<span class="math inline">\((2-2^{-23})*2^{127}-(2-2^{-23}*2)*2^{127}
-= 2^{-23}*2^{127} = 2^{104}\)</span>.</p>
-<p>规格化浮点数范围为:<span class="math inline">\([-(2-2^{-23})*2^{127},
--2^{-126}] \cup [2^{-126}, (2-2^{-23})*2^{127}]\)</span>,
-且将能表示的数按照从大到小排列后, 两段数列, 距离0点越近, 差越小,
-精度越高.</p>
-<h1 id="非规格化浮点数">非规格化浮点数</h1>
-<p><strong>阶码全部为0即为非规格化浮点数.
-非规格化浮点数用于表示0以及靠近0的数.</strong></p>
-<ul>
-<li><strong>规格化浮点数:</strong>按照 且的所有位非全<span
-class="math inline">\((-1)^{s}*1.M*2^{E-127} \quad (E&gt;0
-且E的所有位非全1)\)</span>方式存储的浮点数.</li>
-<li><strong>非规格化浮点数</strong>:
-<strong>阶码为0的浮点数为非规格化浮点数, 即</strong><span
-class="math inline">\(E=0\)</span> . IEEE745规定,
-非规格化浮点数的指数偏移值比规约数指数偏移值小1, 即126.
-所以非规约浮点数的指数部分一定是<span
-class="math inline">\(2^{-126}\)</span>​​.</li>
-</ul>
-<p>$非规格化浮点数 = (-1)^{s}* 0.M*2^{-126} $​</p>
-<p>次小的尾数为000...1,即<span
-class="math inline">\(2^{-23}\)</span>,则次小的非规格化浮点数为<span
-class="math inline">\(2^{-23}*2^{-126} = 2^{-149}\)</span>,
-最大的非规格化浮点数为<span
-class="math inline">\((1-2^{-23})*2^{-126}\)</span>,并且如果将所有非规格化浮点数从小到大排列,
-会构成等差数列, 并且公差为<span
-class="math inline">\(2^{-149}\)</span>​.</p>
-<p>非规格化浮点数范围为:<span
-class="math inline">\([-(1-2^{-23})*2^{-126},
-(1-2^{-23})*2^{-126}]\)</span>, 我们再次查看规格化的浮点数范围:<span
-class="math inline">\([-(2-2^{-23})*2^{127}, -2^{-126}] \cup [2^{-126},
-(2-2^{-23})*2^{127}]\)</span>, 并且发现<span
-class="math inline">\((1-2^{-23})*2^{-126}\)</span> 与<span
-class="math inline">\(2^{-126}\)</span>的差值刚好是<span
-class="math inline">\(2^{-149}\)</span>, 恰好是非规格化浮点数的公差.
-这样可已将规格化浮点数和非规格化浮点数合并为<span
-class="math inline">\([-(2-2^{-23})*2^{127},
-(2-2^{-23})*2^{127}]\)</span>​ .</p>
-<p><strong>总结</strong>: 规格化和非规格化合并后的范围为: <span
-class="math inline">\([-(2-2^{-23})*2^{127},
-(2-2^{-23})*2^{127}]\)</span>,并且将所有能表示的数按照从小到大排列后,
-其中<span class="math inline">\([-2^{-126}, 2^{-126}]\)</span>
-的区间是等差数列, 公差为<span class="math inline">\(2^{-149}\)</span>,
-除此之外, 越向两端, 间隔越大, 且最大为<span
-class="math inline">\(2^{104}\)</span>​(最大与次大之间的差).</p>
-<p><img
-src="https://picx.zhimg.com/80/v2-25bf394102088ce3f911a6f18e763334_1440w.png?source=d16d100b" /></p>
-<h1 id="特殊数">特殊数</h1>
-<p><strong>指数位全部为1就是特殊数.</strong> 如果尾数位全部为0,
-根据符号位正负,表示为正无穷或者负无穷. 尾数位非全0, 则表示NaN, not any
-number(除以0等操作).</p>
-<h1 id="总结">总结</h1>
-<p><strong>所以对于浮点数有以下特点:</strong></p>
-<ol type="1">
-<li>最小浮点数为<span
-class="math inline">\(-(2-2^{-23})*2^{127}\)</span>,最大浮点数为:<span
-class="math inline">\(-(2-2^{-23})*2^{127}\)</span>.</li>
-<li>将所有浮点数按照从大到小依次排列,
-越靠近中心(0点),两个相邻数字之间差的绝对值越小, 最小为<span
-class="math inline">\(2^{-149}\)</span></li>
-<li><span
-class="math inline">\([2^{-126},2^{126}]\)</span>之间是等差分布的,
-且公差为<span class="math inline">\(2^{-149}\)</span>.</li>
-</ol>
-<p><strong>所以浮点数越靠近零点,精度越高,
-并且特殊说明一下在1附近的浮点数精度为:</strong><span
-class="math inline">\(2^{-23} = 1.19209289*10^{-7}\)</span>​</p>
-$
-<span class="math display">\[\begin{array} [b] {|c|c|c|c|c|}
-\hline      阶数(指数)    &amp; 尾数 &amp; 表示 &amp; 公式 &amp;范围
-&amp; 精度\\  \hline  非全0,非全1  &amp; 任意 &amp; 规格化浮点数
-&amp;  (-1)^{s}*1.M*2^{E-127} &amp; [-(2-2^{-23})*2^{127}, -2^{-126}]
-\cup [2^{-126}, (2-2^{-23})*2^{127}] &amp;
-向两端逐渐降低\\  \hline       全0    &amp; 任意 &amp; 非规格化浮点数
-&amp;(-1)^{s}* 0.M*2^{-126} &amp; [-(1-2^{-23})*2^{-126},
-(1-2^{-23})*2^{-126}] &amp; 2^{-149}\\  \hline       全1    &amp;
-全0  &amp; \pm \infty  &amp; 无 &amp; 无 &amp;
-无\\   \hline       全1   &amp; 非全0 &amp; NaN(NotAnyNumber) &amp; 无
-&amp; 无 &amp; 无\\  \hline \end{array}\]</span>
-<p>\ $</p>
-<h1 id="参考">参考</h1>
-<ol type="1">
-<li><a
-target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/IEEE_754#规约形式的浮点数">https://zh.wikipedia.org/wiki/IEEE_754#%E8%A7%84%E7%BA%A6%E5%BD%A2%E5%BC%8F%E7%9A%84%E6%B5%AE%E7%82%B9%E6%95%B0</a></li>
-<li>https://chai2010.cn/static-public/talks/ieee754.pdf</li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/cb377fd1a295">IEEE754规范: 四,
-非规格数, ±infinity, NaN</a></li>
-</ol>
-
+且E的所有位非全1)\)</span>​</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/04/15/UE/%E5%85%B6%E4%BB%96/%E6%B5%AE%E7%82%B9%E6%95%B0%E8%AF%A6%E8%A7%A3/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1225,7 +1146,7 @@ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/IEEE_754#规�
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-22 11:14:38" itemprop="dateModified" datetime="2024-04-22T11:14:38+08:00">2024-04-22</time>
+      <time title="修改时间：2024-04-30 15:21:59" itemprop="dateModified" datetime="2024-04-30T15:21:59+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1282,128 +1203,14 @@ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/IEEE_754#规�
 目标朝向由<code>bOrientRotationToMovement</code>和<code>bUseControllerDesiredRotation</code>确定.
 速率由<code>RotationRate</code>决定.</li>
 </ol>
-<h1 id="关键数据">关键数据</h1>
-<h2 id="ucharactermovementcomponent">UCharacterMovementComponent</h2>
-<h3
-id="ballowphysicsrotationduringanimrootmotion">bAllowPhysicsRotationDuringAnimRootMotion</h3>
-<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在执行RootMotion期间, 是否允许执行PhysicsRotation</span></span><br><span class="line"><span class="built_in">uint8</span> bAllowPhysicsRotationDuringAnimRootMotion : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p>默认情况下, RootMotion期间, 不允许执行<code>PhysicsRotation</code>,
-原因为动画直接控制人物朝向, 不需要在进行调整.</p>
-<figure>
-<img src="./assets/image-20240415150707677.png"
-alt="image-20240415150707677" />
-<figcaption aria-hidden="true">image-20240415150707677</figcaption>
-</figure>
-<p>除非指定允许执行<code>PhysicsRotation</code>, 否则RootMotion期间,
-不允许执行PhysicsRotation.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415150539086.png" /></p>
-<h3
-id="busecontrollerdesiredrotation">bUseControllerDesiredRotation</h3>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, smoothly rotate the Character toward the Controller&#x27;s desired rotation (typically Controller-&gt;ControlRotation), </span></span><br><span class="line"><span class="comment">// using RotationRate as the rate of rotation change. Overridden by OrientRotationToMovement.</span></span><br><span class="line"><span class="comment">// Normally you will want to make sure that other settings are cleared, such as bUseControllerRotationYaw on the Character.</span></span><br><span class="line"><span class="comment">// 如果设置为true, 则将人物朝向调整到和Controller.ControlRotation一致.</span></span><br><span class="line"><span class="comment">// 使用RotationRate作为旋转的速率. 优先判断bOrientRotationToMovement, 然后在判断bUseControllerDesiredRotation</span></span><br><span class="line"><span class="comment">// 该变量与其他变量互斥, 例如Character身上的bUseControllerRotationYaw</span></span><br><span class="line">uint8 bUseControllerDesiredRotation:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165546137.png" /></p>
-<p>如果启用该功能,
-则人物朝向会平滑朝向Controller.ControlledRotation.</p>
-<p>该字段(<code>bUseControllerDesiredRotation</code>)和<code>APawn</code>的<code>bUseControllerRotationYaw</code>+<code>bUseControllerRotationPitch</code>+<code>bUseControllerRotationRoll</code>是互斥的.
-二者只能选其一, 否则可能会出现抖动(一般情况下不会).</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415162444741.png" /></p>
-<p>当Base更新的时候, 也需要调整朝向.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415163339859.png" /></p>
-<h3 id="borientrotationtomovement">bOrientRotationToMovement</h3>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, rotate the Character toward the direction of acceleration, </span></span><br><span class="line"><span class="comment">// using RotationRate as the rate of rotation change. Overrides UseControllerDesiredRotation.</span></span><br><span class="line"><span class="comment">// Normally you will want to make sure that other settings are cleared, such as bUseControllerRotationYaw on the Character.</span></span><br><span class="line"><span class="comment">// 该变量和其他变量互斥, 例如bUseControllerRotationYaw等</span></span><br><span class="line"><span class="comment">// 如果设置为true, 表示Character将Smooth朝着移动方向转动. 使用RotationRate作为Delta.</span></span><br><span class="line"><span class="comment">// 优先判断bOrientRotationToMovement, 然后在判断bUseControllerDesiredRotation</span></span><br><span class="line">uint8 bOrientRotationToMovement:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165546137.png" /></p>
-<p>该变量表示Character将Smooth朝着移动方向转动.
-使用RotationRate作为Delta.</p>
-<ol type="1">
-<li>base更新的时候, 刷新Rotation</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415163927951.png" /></p>
-<ol start="2" type="1">
-<li>平滑处理</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415164052974.png" /></p>
-<h3 id="rotationrate">RotationRate</h3>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Change in rotation per second, used when UseControllerDesiredRotation or OrientRotationToMovement are true. </span></span><br><span class="line"><span class="comment">// Set a negative value for infinite rotation rate and instant turns. */</span></span><br><span class="line">FRotator RotationRate;</span><br></pre></td></tr></table></figure>
-<p>旋转速率, 根据该属性+<code>Delta</code>时间, 计算每帧旋转角度.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415164211867.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165526460.png" /></p>
-<h3
-id="函数computeorienttomovementrotation">函数<code>ComputeOrientToMovementRotation</code></h3>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Compute a target rotation based on current movement. Used by PhysicsRotation() when bOrientRotationToMovement is true.</span></span><br><span class="line"><span class="comment">// Default implementation targets a rotation based on Acceleration.</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// @param CurrentRotation    - Current rotation of the Character</span></span><br><span class="line"><span class="comment">// @param DeltaTime        - Time slice for this movement</span></span><br><span class="line"><span class="comment">// @param DeltaRotation    - Proposed rotation change based simply on DeltaTime * RotationRate</span></span><br><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="comment">// @return The target rotation given current movement.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> FRotator <span class="title">ComputeOrientToMovementRotation</span><span class="params">(<span class="type">const</span> FRotator&amp; CurrentRotation, <span class="type">float</span> DeltaTime, FRotator&amp; DeltaRotation)</span> <span class="type">const</span></span>;</span><br></pre></td></tr></table></figure>
-<p>计算开启<code>bOrientRotationToMovement</code>后的目标朝向.</p>
-<ol type="1">
-<li>如果加速度不为0, 则使用加速度方向作为目标朝向.</li>
-<li>如果加速度为0, 则使用速度方向作为目标朝向.</li>
-<li>否则, 使用当前朝向作为目标朝向.</li>
-</ol>
-<figure>
-<img src="./assets/image-20240415164820286.png"
-alt="image-20240415164820286" />
-<figcaption aria-hidden="true">image-20240415164820286</figcaption>
-</figure>
-<h2 id="apawn">APawn</h2>
-<h3 id="busecontrollerrotationyaw">bUseControllerRotationYaw</h3>
-<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, this Pawn&#x27;s yaw will be updated to match the Controller&#x27;s ControlRotation yaw, if controlled by a PlayerController.</span></span><br><span class="line"><span class="comment">// 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.Yaw.</span></span><br><span class="line"><span class="built_in">uint32</span> bUseControllerRotationYaw:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415165639945.png" /></p>
-<h3 id="busecontrollerrotationpitch">bUseControllerRotationPitch</h3>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> If true, this Pawn<span class="string">&#x27;s pitch will be updated to match the Controller&#x27;</span>s ControlRotation pitch, </span><br><span class="line"><span class="regexp">//</span> <span class="keyword">if</span> controlled by a PlayerController.</span><br><span class="line"><span class="regexp">//</span> 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.pitch.</span><br><span class="line">uint32 bUseControllerRotationPitch:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<h3 id="busecontrollerrotationroll">bUseControllerRotationRoll</h3>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> If true, this Pawn<span class="string">&#x27;s roll will be updated to match the Controller&#x27;</span>s ControlRotation roll, </span><br><span class="line"><span class="regexp">//</span> <span class="keyword">if</span> controlled by a PlayerController.</span><br><span class="line"><span class="regexp">//</span> 如果设置为true, pawn的rotation会更新到匹配Controller.ControlRotation.roll.</span><br><span class="line">uint32 bUseControllerRotationRoll:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<h3 id="函数facerotation">函数<code>FaceRotation</code></h3>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Updates Pawn&#x27;s rotation to the given rotation, assumed to be the Controller&#x27;s ControlRotation.</span></span><br><span class="line"><span class="comment">// Respects the bUseControllerRotation* settings.</span></span><br><span class="line"><span class="comment">// 朝向给定Rotation, 一般情况下用于需要指定的朝向.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">FaceRotation</span><span class="params">(FRotator NewControlRotation, <span class="type">float</span> DeltaTime = <span class="number">0.f</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>根据给定Rotation, 直接设置Character朝向.
-即表示它的朝向受Controller的控制.
-最直观的表现是它不受到速度,加速度的影响, 有Controller直接设置.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415152834122.png" /></p>
-<ol type="1">
-<li>在DS强制设置客户端朝向的时候:<code>ClientSetRotation_Implementation</code></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153213236.png" /></p>
-<ol start="2" type="1">
-<li>无法忽略base朝向的时候(<code>bIgnoreBaseRotation</code>),
-即站在可移动物体上, 要根据base朝向调整人物朝向.</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153415307.png" /></p>
-<ol start="3" type="1">
-<li>移动合包的时候, 也需要重新设置人物朝向.</li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153508789.png" /></p>
-<ol start="4" type="1">
-<li>PlayerController更新ControlledRotation时候<code>APlayerController::UpdateRotation</code></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240415153621612.png" /></p>
-<h1 id="rotation流程">Rotation流程</h1>
-<p>关键函数<code>UCharacterMovementComponent::PhysicsRotation</code>.
-核心:</p>
-<ol type="1">
-<li>根据<code>DeltaTime</code>+<code>RotationRate</code>计算<code>DeltaRot</code></li>
-<li>根据类型计算TargetRotation</li>
-<li>计算<code>FixTurn</code></li>
-</ol>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422111138684.png" /></p>
-<h1 id="问">问</h1>
-<h2
-id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><code>APawn.FaceRotation</code>和<code>UCharacterMovementComponent.PhysicsRotation</code>的区别</h2>
-<p>指定: <code>FaceRotation</code>是指定朝向, 每帧自己算,
-然后直接设置朝向. 如果需要平滑处理, 则需要自己在逻辑中添加.</p>
-<p>平滑: <code>PhysicsRotation</code>是计算目标Rotation,
-然后根据转速(<code>RotationRate</code>)平滑转过去.</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/04/15/UE/%E7%A7%BB%E5%8A%A8/%E4%BA%BA%E7%89%A9Rotation%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1457,9 +1264,15 @@ id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-04-12 09:44:13 / 修改时间：10:31:31" itemprop="dateCreated datePublished" datetime="2024-04-12T09:44:13+08:00">2024-04-12</time>
+      <time title="创建时间：2024-04-12 09:44:13" itemprop="dateCreated datePublished" datetime="2024-04-12T09:44:13+08:00">2024-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 15:23:20" itemprop="dateModified" datetime="2024-04-30T15:23:20+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1482,7 +1295,7 @@ id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>153</span>
+      <span>154</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -1500,7 +1313,8 @@ id="apawn.facerotation和ucharactermovementcomponent.physicsrotation的区别"><
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="前言">前言</h1>
+          <span id="more"></span>
+<h1 id="前言">前言</h1>
 <p>查看一个模型碰撞大致类型的方法:</p>
 <ol type="1">
 <li>show Collision</li>
@@ -1597,9 +1411,15 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202404121021
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-03-22 16:52:32 / 修改时间：17:01:58" itemprop="dateCreated datePublished" datetime="2024-03-22T16:52:32+08:00">2024-03-22</time>
+      <time title="创建时间：2024-03-22 16:52:32" itemprop="dateCreated datePublished" datetime="2024-03-22T16:52:32+08:00">2024-03-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 15:23:42" itemprop="dateModified" datetime="2024-04-30T15:23:42+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1622,7 +1442,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202404121021
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>131</span>
+      <span>132</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -1644,31 +1464,14 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202404121021
 <h2
 id="unetdriver.initialconnecttimeout">UNetDriver.InitialConnectTimeout</h2>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Amount of time to wait for a new net connection to be established before destroying the connection */</span></span><br><span class="line"><span class="comment">// 建立连接的超时时间</span></span><br><span class="line"><span class="type">float</span> InitialConnectTimeout;</span><br></pre></td></tr></table></figure>
-<h2 id="unetdriver.connectiontimeout">UNetDriver.ConnectionTimeout</h2>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment"> * Amount of time to wait before considering an established connection timed out.  </span></span><br><span class="line"><span class="comment"> * Typically shorter than the time to wait on a new connection because this connection</span></span><br><span class="line"><span class="comment"> * should already have been setup and any interruption should be trapped quicker.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">// 连接的超时时间</span></span><br><span class="line"><span class="type">float</span> ConnectionTimeout;</span><br></pre></td></tr></table></figure>
-<p>在函数<code>UNetConnection::GetTimeoutValue()</code>中使用.
-在函数<code>UNetConnection.Tick()</code>中,
-每帧检测上一次收包到现在的间隔时间是否超时.</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240322165651177.png"
-alt="image-20240322165651177" />
-<figcaption aria-hidden="true">image-20240322165651177</figcaption>
-</figure>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240322165756787.png"
-alt="image-20240322165756787" />
-<figcaption aria-hidden="true">image-20240322165756787</figcaption>
-</figure>
-<p>配置: 600秒超时</p>
-<figure>
-<img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240322170031973.png"
-alt="image-20240322170031973" />
-<figcaption aria-hidden="true">image-20240322170031973</figcaption>
-</figure>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/03/22/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1958,9 +1761,15 @@ alt="image-20240322170031973" />
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-11-29 10:38:07 / 修改时间：10:43:22" itemprop="dateCreated datePublished" datetime="2023-11-29T10:38:07+08:00">2023-11-29</time>
+      <time title="创建时间：2023-11-29 10:38:07" itemprop="dateCreated datePublished" datetime="2023-11-29T10:38:07+08:00">2023-11-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 15:24:00" itemprop="dateModified" datetime="2024-04-30T15:24:00+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1987,7 +1796,7 @@ alt="image-20240322170031973" />
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>51</span>
+      <span>52</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -2005,7 +1814,8 @@ alt="image-20240322170031973" />
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>相关代码:</p>
+          <span id="more"></span>
+<p>相关代码:</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 头文件:</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Stats/Stats2.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Stats/Stats.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义:</span></span><br><span class="line"><span class="built_in">DECLARE_STATS_GROUP</span>(<span class="built_in">TEXT</span>(<span class="string">&quot;BasePlayerControllerAAAAA&quot;</span>), STATGROUP_BasePlayerControllerAAAAA, STATCAT_Advanced);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span>    STATS</span></span><br><span class="line">    <span class="type">const</span> FString ___StatName = <span class="built_in">GetName</span>()+<span class="string">&quot;this Test Stat&quot;</span>;</span><br><span class="line">    <span class="type">const</span> TStatId StatId = FDynamicStats::<span class="built_in">CreateStatId</span>&lt;FStatGroup_STATGROUP_BasePlayerControllerAAAAA&gt;(___StatName);</span><br><span class="line">    <span class="function">FScopeCycleCounter <span class="title">CycleCounter</span><span class="params">(StatId)</span></span>;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// STATS</span></span></span><br></pre></td></tr></table></figure>
 <p>代码截图:</p>
 <p><img
@@ -2427,7 +2237,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-18 10:38:32" itemprop="dateModified" datetime="2024-04-18T10:38:32+08:00">2024-04-18</time>
+      <time title="修改时间：2024-04-30 15:24:27" itemprop="dateModified" datetime="2024-04-30T15:24:27+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -2462,7 +2272,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>251</span>
+      <span>252</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -2487,27 +2297,14 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/BunchArchetype.png
 <figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">log</span> LogNetTraffic <span class="keyword">off</span></span><br><span class="line"><span class="keyword">log</span> LogNetPackageMap <span class="keyword">off</span></span><br></pre></td></tr></table></figure>
 <p>开启DS端络相关日志:</p>
 <figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ServerExec <span class="built_in">log</span> LogNetTraffic <span class="built_in">log</span></span><br><span class="line">ServerExec <span class="built_in">log</span> LogNetPackageMap <span class="built_in">log</span></span><br></pre></td></tr></table></figure>
-<h1 id="丢包延迟">丢包/延迟</h1>
-<p>注意, 一下命令等号两端不能有空格</p>
-<ol type="1">
-<li>Net pktLag=，模拟延迟，单位是毫秒</li>
-<li>Net
-PktLagVariance=300，在模拟延迟的基础上，再上下浮动300毫秒。加上这个就会出现移动瞬移卡顿的效果</li>
-<li>Net PKtLoss=，丢包，单位是百分比，Net
-PKtLoss=90就是90%会丢包，也会出现移动瞬移卡顿</li>
-<li>Net PktOrder=1，乱序发包，会出现一定的移动瞬移，但不太明显</li>
-<li>Net PktDup=，重复发包，单位是百分比，Net
-PktDup=20表示20%会出现重复发包。</li>
-</ol>
-<p>[<a
-target="_blank" rel="noopener" href="https://www.cnblogs.com/timy/p/9895354.html"><strong>[UE4]模拟网络延迟和丢包</strong>](https://www.cnblogs.com/timy/p/9895354.html)</a></p>
-<h1 id="serverexec">ServerExec</h1>
-<p>ServerExe相关实现:</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114630407.png" /></p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231114114709854.png" /></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/14/UE/%E7%BD%91%E7%BB%9C/%E7%BD%91%E7%BB%9C%E6%97%A5%E5%BF%97,%E4%B8%A2%E5%8C%85,%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -2569,7 +2366,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311141147
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-11-15 20:40:40" itemprop="dateModified" datetime="2023-11-15T20:40:40+08:00">2023-11-15</time>
+      <time title="修改时间：2024-04-30 15:24:44" itemprop="dateModified" datetime="2024-04-30T15:24:44+08:00">2024-04-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -2596,7 +2393,7 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311141147
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>357</span>
+      <span>358</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -2618,78 +2415,14 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202311141147
 id="actor开启replicate"><code>Actor</code>开启<code>Replicate</code></h1>
 <p>UE中, 对于需要<code>Replicate</code>的<code>Actor</code>,
 需要将<code>AActor.bReplicates</code>设置为<code>true</code>.</p>
-<p>方法1:
-<code>SpawnActor</code>之后调用<code>AActor.SetReplicates</code>将其变成可<code>Replicate</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113170458249.png" /></p>
-<p>方法2:
-在构造函数中将<code>AActor.bReplicates</code>设置为<code>true</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113170547324.png" /></p>
-<p><code>AActor.bReplicates</code>控制的是哪里的流程?</p>
-<p>对于动态创建的<code>Actor</code>,
-在将其添加到<code>ReplicationGraph</code>的时候,
-会检测其是否需要<code>Replicate</code>.</p>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113174511881.png" /></p>
-<table>
-<tr>
-<td bgcolor="#D5E8D4">
-<p style="line-height:1.5;">
---UWorld::SpawnActor() <br> |--UWorld::AddNetworkActor() <br> | |--//
-遍历所有NetDriver, 并将Actor添加到其中 <br> |
-|--Driver-&gt;AddNetworkActor(Actor); <br> | |
-|--UNetDriver::AddNetworkActor() <br> | | |
-|--GetNetworkObjectList().FindOrAdd(Actor, this); <br> | | | |--//
-向ReplicationGraph中添加NetworkActor <br> | | |
-|--ReplicationDriver-&gt;AddNetworkActor(Actor); //
-UReplicationGraph::AddNetworkActor <br> | | | | |--//
-检测是否需要进行Replicate <br> | | | |
-|--IsActorValidForReplicationGather() <br> | | | | | |--<span
-style="color:red;">AActor.GetIsReplicated() // 检测AActor的Replication
-</span> <br> | | | | |--//
-添加Actor对应的描述信息FGlobalActorReplicationInfo <br> | | | |
-|--FGlobalActorReplicationInfo&amp; GlobalInfo =
-GlobalActorReplicationInfoMap.Get(Actor); <br> | | | | |--//
-设置Dormant属性 <br> | | | | |--GlobalInfo.bWantsToBeDormant =
-Actor-&gt;NetDormancy &gt; DORM_Awake; <br> | | | |
-|--UReplicationGraph::RouteAddNetworkActorToNodes() <br> | | | | | |--//
-针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中 <br>
-| | | | | |--AlwaysRelevantNode-&gt;NotifyAddNetworkActor(ActorInfo);
-<br> | | | | | |--// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner,
-添加到ActorsWithoutNetConnection中 <br> | | | | |
-|--ActorsWithoutNetConnection.Add(ActorInfo.Actor); <br> | | | | | |--//
-其他情况添加到GridNode中 <br> | | | | |
-|--GridNode-&gt;AddActor_Dormancy(ActorInfo, GlobalInfo); <br> | | | | |
-| |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy <br>
-| | | | | | |--// 如果要想要休眠, 调用AddActorInternal_Static函数 <br> |
-| | | | | |--AddActorInternal_Static(ActorInfo, ActorRepInfo, true);
-<br> | | | | | | | |--如果Actor没有Init,
-则添加到UReplicationGraphNode_GridSpatialization2D.PendingStaticSpatializedActors中.
-<br> | | | | | | | |--否则添加到Static中 <br> | | | | | | |
-|--UReplicationGraphNode_GridSpatialization2D.AddActorInternal_Static_Implementation()
-<br> | | | | | | |
-|--UReplicationGraphNode_GridSpatialization2D.AddActorInternal_Static_Implementation()
-<br> | | | | | | |--// 否则, 调用AddActorInternal_Dynamic <br> | | | | |
-| |--AddActorInternal_Dynamic(ActorInfo); <br> | | | | | | | |--//
-放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中
-<br> | | | | | | | |--DynamicSpatializedActors.Emplace(ActorInfo.Actor,
-ActorInfo); <br>
-</p>
-</td>
-</tr>
-</table>
-<h1
-id="actorcomponent开启replicate"><code>ActorComponent</code>开启<code>Replicate</code></h1>
-<p>UE中, 对于需要<code>Replicate</code>的<code>ActorComponent</code>,
-需要将<code>UActorComponent.bReplicates</code>设置为<code>true</code>.</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UActorComponent<span class="selector-class">.SetIsReplicatedByDefault</span> </span><br></pre></td></tr></table></figure>
-<p><img
-src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231113194229321.png" /></p>
-<h1
-id="自定义uobject开启replicate">自定义<code>UObject</code>开启<code>Replicate</code></h1>
-<p>参考:<a href="/2023/11/09/UE/%E7%BD%91%E7%BB%9C/%E8%87%AA%E5%AE%9A%E4%B9%89UObject%E8%BF%9B%E8%A1%8CReplicate/" title="自定义UObject进行Replicate">自定义UObject进行Replicate</a></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/11/13/UE/%E7%BD%91%E7%BB%9C/%E5%BC%80%E5%90%AFReplicate/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
