@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="关键类 FRepState 每个Connection中的每个Obj都有一份. 12345678910&#x2F;** Replication State that is unique Per Object Per Net Connection. *&#x2F;class FRepState : public FNoncopyable&amp;#123;private:    &#x2F;** May be null on con">
+<meta property="og:type" content="article">
+<meta property="og:title" content="属性对比">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/%E5%B1%9E%E6%80%A7%E5%AF%B9%E6%AF%94/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="关键类 FRepState 每个Connection中的每个Obj都有一份. 12345678910&#x2F;** Replication State that is unique Per Object Per Net Connection. *&#x2F;class FRepState : public FNoncopyable&amp;#123;private:    &#x2F;** May be null on con">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-15T02:54:54.080Z">
+<meta property="article:modified_time" content="2023-11-09T10:04:11.353Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="hidden">
+<meta property="article:tag" content="属性对比">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/%E5%B1%9E%E6%80%A7%E5%AF%B9%E6%AF%94/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/%E5%B1%9E%E6%80%A7%E5%AF%B9%E6%AF%94/","path":"2024/05/15/UE/网络/属性对比/","title":"属性对比"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>属性对比 | NoBodyNoOne</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%B1%BB"><span class="nav-number">1.</span> <span class="nav-text">关键类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#frepstate"><span class="nav-number">1.1.</span> <span class="nav-text">FRepState</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#freceivingrepstate"><span class="nav-number">1.1.1.</span> <span class="nav-text">FReceivingRepState</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fsendingrepstate"><span class="nav-number">1.1.2.</span> <span class="nav-text">FSendingRepState</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#frepchangedhistory.outpacketidrange"><span class="nav-number">1.2.</span> <span class="nav-text">FRepChangedHistory.OutPacketIdRange</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%85%E7%9A%84%E6%8B%86%E5%88%86%E4%B8%8E%E5%90%88%E5%B9%B6"><span class="nav-number">1.3.</span> <span class="nav-text">包的拆分与合并</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%8C%85"><span class="nav-number">1.3.1.</span> <span class="nav-text">分包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E5%8C%85"><span class="nav-number">1.3.2.</span> <span class="nav-text">合并包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">1.3.3.</span> <span class="nav-text">思考</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">2.</span> <span class="nav-text">注意</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%8F%E6%AC%A1%E9%83%BD%E8%A6%81%E5%90%88%E5%B9%B6changelist-%E6%9C%89%E5%BF%85%E8%A6%81%E5%90%97"><span class="nav-number">2.1.</span> <span class="nav-text">每次都要合并ChangeList,
+有必要吗?</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/%E5%B1%9E%E6%80%A7%E5%AF%B9%E6%AF%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="属性对比 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          属性对比
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:54" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-09 18:04:11" itemprop="dateModified" datetime="2023-11-09T18:04:11+08:00">2023-11-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>829</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="关键类">关键类</h1>
+<h2 id="frepstate">FRepState</h2>
+<p>每个Connection中的每个Obj都有一份.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Replication State that is unique Per Object Per Net Connection. */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FRepState</span> : <span class="keyword">public</span> FNoncopyable</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">/** May be null on connections that don&#x27;t receive properties. */</span></span><br><span class="line">    TUniquePtr&lt;FReceivingRepState&gt; ReceivingRepState;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** May be null on connections that don&#x27;t send properties. */</span></span><br><span class="line">    TUniquePtr&lt;FSendingRepState&gt; SendingRepState;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="freceivingrepstate">FReceivingRepState</h3>
+<p>DS和客户端都存在, 从其成员变量就可以看出, 其主要作用是查找UnmapGUID,
+以及属性变化通知(OnRep).</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Replication State needed to track received properties. */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FReceivingRepState</span> : <span class="keyword">public</span> FNoncopyable</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">FReceivingRepState</span>(FRepStateStaticBuffer&amp;&amp; InStaticBuffer);</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/** Latest state of all property data. Only valid on clients. */</span></span><br><span class="line">    FRepStateStaticBuffer StaticBuffer;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Map of Absolute Property Offset to GUID Reference for properties. */</span></span><br><span class="line">    FGuidReferencesMap GuidReferencesMap;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** List of properties that have RepNotifies that we will need to call on Clients. */</span></span><br><span class="line">    TArray&lt;FProperty*&gt; RepNotifies;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Holds MetaData (such as array index) for RepNotifies.</span></span><br><span class="line"><span class="comment">     * Only used for CustomDeltaProperties.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    TMap&lt;FProperty*, TArray&lt;uint8&gt;&gt; RepNotifyMetaData;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="fsendingrepstate">FSendingRepState</h3>
+<p>只有DS存在, 用与进行各端属性同步. 只有DS存在的原因是:
+只有DS才会进行Replication, 客户端只是接收.</p>
+<p>SendingRepState History中存储的是ChangedIndex,
+即哪一个属性发生了变化. 最后总是同步该属性当前值(最新的值).</p>
+<p>在FObjectReplicator.ReplicateProperties中调用FNetSerializeCB::UpdateChangelistMgr函数,
+将变化的属性放入FObjectReplicator.ChangelistMgr最后一个Item中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728152836039.png" /></p>
+<p>注意: 这里FSendingRepState.ChangeHistory只记录哪个Cmd发生了变化,
+并且永远在最后序列化最新的值.</p>
+<p>发送最新的值:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728170216952.png" /></p>
+<p>在属性同步(FRepLayout.UpdateChangelistHistory)时,
+发现有数据需要Resend, 则有选择性的进行重传.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727172557789.png" /></p>
+<p>在FObjectReplicator.ReceivedNak时候, 设置需要重传的HistoryItem.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727172856764.png" /></p>
+<h2
+id="frepchangedhistory.outpacketidrange">FRepChangedHistory.OutPacketIdRange</h2>
+<p>每次SendBunch都会设置其PacketId.
+并传给FObjectReplicator.PostSendBunch将其设置给FRepChangedHistory.OutPacketIdRange.
+这样每次发送都会将FRepChangedHistory和其PacketIdRange关联起来了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803203406825.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803203522981.png" /></p>
+<h2 id="包的拆分与合并">包的拆分与合并</h2>
+<p>https://www.zhyingkun.com/markdown/ue4network/</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803214715578.png" /></p>
+<h3 id="分包">分包</h3>
+<p>如果包体较大, 会将包分开发送. 单个包Bunch最大7625,
+大于该值就要分包.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803211023007.png" /></p>
+<p>将分的包依次发送:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803211059378.png" /></p>
+<h3 id="合并包">合并包</h3>
+<p>关键函数:UChannel.ReceivedNextBunch</p>
+<p>如果是PartialBunch, 则需检测是否合法:FInBunch.ChSequence必须是递增的,
+即连续接收到Partial1, Partial2, Partial3...Partialn. 否则直接丢弃.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803214859990.png" /></p>
+<p>FInBunch.ChSequence对于非Reliable包并不会传输, 即远端并不会设置,
+只有在接收端直接设置为PacketID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803215321982.png" /></p>
+<p>非ReliableBunch在发送的时候没有FOutBunch.ChSequence 这个选项,
+在代码中也未填充.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803215518497.png" /></p>
+<p>真正合并的地方:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230803215716902.png" /></p>
+<h3 id="思考">思考</h3>
+<p>如果一个包过大, 当网络不好的时候, 丢失的几率多大?</p>
+<p>答案: 比如一个Bunch过大, 分成3个Packet, 每个包丢失概率30%,
+则三个连续包不丢失概率为<span class="math inline">\({0.7}^3\)</span>,
+即这三个包不丢失概率为34.3%, 非常低.</p>
+<h1 id="注意">注意</h1>
+<h2 id="每次都要合并changelist-有必要吗">每次都要合并ChangeList,
+有必要吗?</h2>
+<p>在阶段, 每次都要MergeChangeList, 真的有必要吗?</p>
+<p>非常有必要.</p>
+<p>因为每次收到Nak后, 会将HistoryItem设置成bResend. 试想一下,
+如果连续丢包呢? 之前丢的包没传, 已丢失的数据时靠新包传输的,
+而新包如果再丢失, 旧数据怎么传输呢? 解决方式是合并ChangeList,
+将旧数据Change信息和新数据Change信息合并,
+这样就将旧数据Change的信息归结到新数据上,
+此时新数据的Changed信息已经包含旧数据的Changed信息了, 新数据丢失,
+根据新数据的Changed信息(已经包含旧数据Changed信息)重传就可以了.</p>
+<p>例如包<code>1号</code>包含属性<code>A</code>的修改,
+<code>2号</code>包包含属性<code>B</code>的修改, <code>1号</code>丢失,
+收到<code>1号</code>包的Nak,</p>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/hidden/" rel="tag"># hidden</a>
+              <a href="/tags/%E5%B1%9E%E6%80%A7%E5%AF%B9%E6%AF%94/" rel="tag"># 属性对比</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

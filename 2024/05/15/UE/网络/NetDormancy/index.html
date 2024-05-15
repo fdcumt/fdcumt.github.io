@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Dormancy定义 Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过. Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致. 一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化, 即可设置为Dormancy. Dormancy状态转换图:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NetDormancy">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/NetDormancy/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="Dormancy定义 Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过. Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致. 一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化, 即可设置为Dormancy. Dormancy状态转换图:">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-15T02:54:53.762Z">
+<meta property="article:modified_time" content="2024-05-13T12:49:21.688Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="NetDormancy">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/NetDormancy/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/NetDormancy/","path":"2024/05/15/UE/网络/NetDormancy/","title":"NetDormancy"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>NetDormancy | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#dormancy%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">Dormancy定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#dormancy%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">Dormancy使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#dormancy%E8%AF%A6%E8%A7%A3"><span class="nav-number">3.</span> <span class="nav-text">Dormancy详解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#addnetwork%E8%AF%A6%E7%BB%86%E6%B5%81%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">AddNetwork详细流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#awake%E5%88%B0pending"><span class="nav-number">3.2.</span> <span class="nav-text">Awake到Pending</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#startbecomingdormant"><span class="nav-number">3.2.1.</span> <span class="nav-text">StartBecomingDormant</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%97%AE-%E5%B7%B2%E7%BB%8Fstartbecomingdormant%E7%9A%84actor%E8%BF%98%E4%BC%9A%E8%BF%9B%E8%A1%8C%E5%B1%9E%E6%80%A7%E5%90%8C%E6%AD%A5%E5%90%97"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">问:
+已经StartBecomingDormant的Actor还会进行属性同步吗?</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#becomedormant"><span class="nav-number">3.2.2.</span> <span class="nav-text">BecomeDormant</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fulldormancy%E5%85%B3%E9%97%ADchannel"><span class="nav-number">3.3.</span> <span class="nav-text">FullDormancy关闭Channel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%B0%83%E7%94%A8closeup-%E8%BF%9B%E8%A1%8C%E6%B8%85%E7%90%86"><span class="nav-number">3.3.1.</span> <span class="nav-text">客户端调用CloseUp, 进行清理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E6%94%B6%E5%88%B0ack-closechannel"><span class="nav-number">3.3.2.</span> <span class="nav-text">DS收到Ack, CloseChannel</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fulldormancy%E5%88%B0pendingdormancy"><span class="nav-number">3.4.</span> <span class="nav-text">FullDormancy到PendingDormancy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dormancy-awake"><span class="nav-number">3.5.</span> <span class="nav-text">Dormancy-&gt;Awake</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86actor%E8%AE%BE%E7%BD%AE%E4%B8%BAdorm_awake%E4%BC%9A%E9%87%8D%E6%96%B0%E6%89%93%E5%BC%80channel"><span class="nav-number">3.5.1.</span> <span class="nav-text">将Actor设置为DORM_Awake会重新打开Channel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%94%B6%E5%88%B0bunch%E6%9F%A5%E6%89%BE%E5%AF%B9%E5%BA%94%E7%9A%84channel-%E6%B2%A1%E6%9C%89%E5%B0%B1%E5%88%9B%E5%BB%BA"><span class="nav-number">3.5.2.</span> <span class="nav-text">客户端收到Bunch,查找对应的channel,
+没有就创建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E5%9C%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%AD%E5%B0%86netdormancy%E8%AE%BE%E7%BD%AE%E4%B8%BAdorm_dormantall%E5%91%A2"><span class="nav-number">3.6.</span> <span class="nav-text">如果在构造函数中将NetDormancy设置为DORM_DormantAll呢?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A4%E6%96%ADactor%E6%98%AF%E5%90%A6%E8%BF%9B%E8%A1%8Cdormancy"><span class="nav-number">3.7.</span> <span class="nav-text">判断Actor是否进行Dormancy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE"><span class="nav-number">4.</span> <span class="nav-text">问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#dormancy%E6%9C%9F%E9%97%B4%E8%83%BD%E5%90%A6rpc"><span class="nav-number">4.1.</span> <span class="nav-text">Dormancy期间,能否RPC?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%BD%E5%90%A6s2c"><span class="nav-number">4.1.1.</span> <span class="nav-text">能否S2C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B1%9E%E6%80%A7%E6%B2%A1%E6%9C%89%E5%8F%98%E5%8C%96%E8%BF%98%E4%BC%9Areplicateactor%E5%91%A2"><span class="nav-number">4.1.2.</span> <span class="nav-text">为什么属性没有变化还会ReplicateActor呢?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%BD%E5%90%A6c2s"><span class="nav-number">4.1.3.</span> <span class="nav-text">能否C2S</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/NetDormancy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="NetDormancy | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NetDormancy
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:53" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:53+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-13 20:49:21" itemprop="dateModified" datetime="2024-05-13T20:49:21+08:00">2024-05-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/NetDormancy/" itemprop="url" rel="index"><span itemprop="name">NetDormancy</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>10 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="dormancy定义">Dormancy定义</h1>
+<p>Dormancy表示休眠, 即在Dormancy期间, Actor不进行属性同步, 直接略过.
+Dormancy的对象是Actor, 和Replication(ActorChannel)的单位一致.
+一般用于场景中不常发生变化的物体上, 如果预期其一定时间内不会发生变化,
+即可设置为Dormancy.</p>
+<p>Dormancy状态转换图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802161108281.png" /></p>
+<span id="more"></span>
+<p>Dormancy转换大致堆栈流程:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230802160012920.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Describes if an actor can enter a low network bandwidth dormant mode */</span></span><br><span class="line"><span class="built_in">UENUM</span>(BlueprintType)</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">ENetDormancy</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/** This actor can never go network dormant. */</span></span><br><span class="line">    <span class="function">DORM_Never <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Never&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor can go dormant, but is not currently dormant. Game code will tell it when it go dormant. */</span></span></span><br><span class="line"><span class="function">    DORM_Awake <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Awake&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor wants to go fully dormant for all connections. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantAll <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant All&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor may want to go dormant for some connections, GetNetDormancy() will be called to find out which. */</span></span></span><br><span class="line"><span class="function">    DORM_DormantPartial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Dormant Partial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function">    <span class="comment">/** This actor is initially dormant for all connection if it was placed in map. */</span></span></span><br><span class="line"><span class="function">    DORM_Initial <span class="title">UMETA</span><span class="params">(DisplayName = <span class="string">&quot;Initial&quot;</span>)</span>,</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">    DORM_MAX <span class="title">UMETA</span><span class="params">(Hidden)</span>,</span></span><br><span class="line"><span class="function">&#125;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Actor中的变量</span></span><br><span class="line"><span class="comment">/** Dormancy setting for actor to take itself off of the replication list without being destroyed on clients. */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>(BlueprintReadOnly, EditDefaultsOnly, Category=Replication)</span><br><span class="line">TEnumAsByte&lt;<span class="keyword">enum</span> <span class="title class_">ENetDormancy</span>&gt; NetDormancy;</span><br></pre></td></tr></table></figure>
+<p>可以看出, Actor使用NetDormancy变量实现Dormancy逻辑.
+其中DORM_Never和DORM_Awake都表示未休眠, 会进行属性同步,
+其他的变量表示休眠, 不进行属性同步.
+特殊的DORM_Initial表示放在地图中进行休眠的Actor.</p>
+<h1 id="dormancy使用">Dormancy使用</h1>
+<p>初始化时, 默认将NetDormancy设置成DORM_Awake,
+表示可以使用Dormancy.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724161130553.png" /></p>
+<p>如果想要启用Dormancy需要调用AActor.SetNetDormancy将其设置为Dormacy.
+后续会根据设置的状态, 进行处理.</p>
+<p>具体参考测试用例:https://github.com/fdcumt/ALSV.git</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731153740974.png" /></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 其中关键代码:</span></span><br><span class="line"><span class="comment">//TestNetDormancyActor.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;GameFramework/Actor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.generated.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">UCLASS</span>(BlueprintType, Blueprintable)</span><br><span class="line"><span class="keyword">class</span>  <span class="title class_">ATestNetDormancyActor</span> : <span class="keyword">public</span> AActor</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/** Default constructor for AActor */</span></span><br><span class="line">    <span class="built_in">ATestNetDormancyActor</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span> <span class="keyword">override</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Unreliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_Unreliable_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Client, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">S2C_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UFUNCTION</span>(Server, Reliable)</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">C2S_ChangeCharacterNumber</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>(Replicated)</span><br><span class="line">    int32 TestNumber = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    int32 LocalNumber = <span class="number">0</span>;</span><br><span class="line">    uint32 FrameNumber = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// TestNetDormancyActor.cpp </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;TestNetDormancyActor.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Net/UnrealNetwork.h&quot;</span></span></span><br><span class="line"></span><br><span class="line">ATestNetDormancyActor::<span class="built_in">ATestNetDormancyActor</span>()</span><br><span class="line">: <span class="built_in">AActor</span>()</span><br><span class="line">&#123;</span><br><span class="line">    bReplicates = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">//NetDormancy = ENetDormancy::DORM_DormantAll;</span></span><br><span class="line"></span><br><span class="line">    PrimaryActorTick.bCanEverTick = <span class="literal">true</span>;</span><br><span class="line">    PrimaryActorTick.TickGroup = TG_PrePhysics;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::Tick</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">Tick</span>(DeltaSeconds);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++FrameNumber;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">        if (FrameNumber%20==19)</span></span><br><span class="line"><span class="comment">        &#123;</span></span><br><span class="line"><span class="comment">            ++TestNumber;</span></span><br><span class="line"><span class="comment">            FlushNetDormancy();</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        else */</span><span class="keyword">if</span> (FrameNumber % <span class="number">20</span> == <span class="number">10</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">S2C_Unreliable_ChangeCharacterNumber</span>();</span><br><span class="line">            <span class="comment">//S2C_ChangeCharacterNumber();</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_AutonomousProxy)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">C2S_ChangeCharacterNumber</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::GetLifetimeReplicatedProps</span><span class="params">(TArray&lt;FLifetimeProperty&gt;&amp; OutLifetimeProps)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Super::<span class="built_in">GetLifetimeReplicatedProps</span>(OutLifetimeProps);</span><br><span class="line">    <span class="built_in">DOREPLIFETIME</span>(ATestNetDormancyActor, TestNumber);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_Unreliable_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::S2C_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ATestNetDormancyActor::C2S_ChangeCharacterNumber_Implementation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ++LocalNumber;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 并在ABasePlayerController.tick中添加:</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetLocalRole</span>() == ENetRole::ROLE_Authority)</span><br><span class="line">    &#123;</span><br><span class="line">        ++LocalFrameIndex;</span><br><span class="line">        <span class="keyword">if</span> (TestNetDormancyActor == <span class="literal">nullptr</span> &amp;&amp; LocalFrameIndex==<span class="number">3</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            FVector Loc = FVector::ZeroVector;</span><br><span class="line">            FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">            FActorSpawnParameters Par;</span><br><span class="line">            Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">            TestNetDormancyActor = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;ATestNetDormancyActor&gt;(ATestNetDormancyActor::<span class="built_in">StaticClass</span>(), Loc, Rot, Par);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetNetDormancy</span>(ENetDormancy::DORM_DormantAll);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">            TestNetDormancyActor-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>在SpawnActor时会将其添加到指定Node节点中.
+在调用UReplicationGraph::AddNetworkActor时候,
+会设置Actor对应的GlobalInfo.bWantsToBeDormant,
+检测其是否需要进行一次属性同步.
+例如如果在构造函数中将其设置为ENetDormancy::DORM_DormantAll, 即是这样,
+也应该进行一次属性同步, 将初始化的信息同步到远端.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724171546754.png" /></p>
+<p>创建之后, 然后将其设置为ENetDormancy::DORM_DormantAll.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230724163540441.png" /></p>
+<p>当属性发生变化的时候调用FlushActorDormancy, 触发一次属性同步.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726102844002.png" /></p>
+<h1 id="dormancy详解">Dormancy详解</h1>
+<p>那么在这期间, Dormant究竟是怎么执行的, 它有什么逻辑呢?
+下面开始寻根溯源.</p>
+<h2 id="addnetwork详细流程">AddNetwork详细流程</h2>
+<p>根据上面的示例, 在ActorSpawn时候,
+会添加到DynamicSpatializedActors中.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// ActorSpawn时候, 将Actor添加到ReplicationNode中</span></span><br><span class="line">--UWorld::<span class="built_in">SpawnActor</span>()</span><br><span class="line"> |--UWorld::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | |--<span class="comment">// 遍历所有NetDriver, 并将Actor添加到其中</span></span><br><span class="line"> | |--Driver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | |--UNetDriver::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | |--<span class="built_in">GetNetworkObjectList</span>().<span class="built_in">FindOrAdd</span>(Actor, <span class="keyword">this</span>);</span><br><span class="line"> | | | |--<span class="comment">// 向ReplicationGraph中添加NetworkActor</span></span><br><span class="line"> | | | |--ReplicationDriver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 添加Actor对应的描述信息FGlobalActorReplicationInfo</span></span><br><span class="line"> | | | | |--FGlobalActorReplicationInfo&amp; GlobalInfo = GlobalActorReplicationInfoMap.<span class="built_in">Get</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 设置Dormant属性</span></span><br><span class="line"> | | | | |--GlobalInfo.bWantsToBeDormant = Actor-&gt;NetDormancy &gt; DORM_Awake;</span><br><span class="line"> | | | | |--UReplicationGraph::<span class="built_in">RouteAddNetworkActorToNodes</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中</span></span><br><span class="line"> | | | | | |--AlwaysRelevantNode-&gt;<span class="built_in">NotifyAddNetworkActor</span>(ActorInfo);</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner, 添加到ActorsWithoutNetConnection中</span></span><br><span class="line"> | | | | | |--ActorsWithoutNetConnection.<span class="built_in">Add</span>(ActorInfo.Actor);</span><br><span class="line"> | | | | | |--<span class="comment">// 其他情况添加到GridNode中</span></span><br><span class="line"> | | | | | |--GridNode-&gt;<span class="built_in">AddActor_Dormancy</span>(ActorInfo, GlobalInfo);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy</span><br><span class="line"> | | | | | | |--<span class="comment">// 如果要想要休眠, 调用AddActorInternal_Static函数</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Static</span>(ActorInfo, ActorRepInfo, <span class="literal">true</span>);</span><br><span class="line"> | | | | | | |--<span class="comment">// 否则, 调用AddActorInternal_Dynamic</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Dynamic</span>(ActorInfo);</span><br><span class="line"> | | | | | | | |--<span class="comment">// 放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中</span></span><br><span class="line"> | | | | | | | |--DynamicSpatializedActors.<span class="built_in">Emplace</span>(ActorInfo.Actor, ActorInfo);</span><br></pre></td></tr></table></figure>
+<p>可以看出,
+最终将Actor放入了放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中.
+在每帧tick时候, 会将同步到其他端.</p>
+<h2 id="awake到pending">Awake到Pending</h2>
+<p><code>SetNetDormancy(ENetDormancy::DORM_DormantAll);</code>会将Actor由Awake状态转换到pending状态.</p>
+<h3 id="startbecomingdormant">StartBecomingDormant</h3>
+<p>在SetNetDormancy流程中, 有几个关键点:</p>
+<ol type="1">
+<li><p>将ActorRepInfo.bWantsToBeDormant设置为true.</p></li>
+<li><p>将Actor放入Cell的UReplicationGraphNode_DormancyNode中.
+表明不再进行Gather了.
+但是会在UReplicationGraphNode_ConnectionDormancyNode中Gather</p></li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy堆栈</span></span><br><span class="line">--AActor.<span class="built_in">SetNetDormancy</span>()</span><br><span class="line"> |--NetDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>(<span class="keyword">this</span>, OldDormancy);</span><br><span class="line"> | |--ReplicationDriver-&gt;<span class="built_in">NotifyActorDormancyChange</span>()</span><br><span class="line"> | | |--ActorRepInfo-&gt;bWantsToBeDormant = bNewWantsToBeDormant;</span><br><span class="line"> | | |--ActorRepInfo-&gt;Events.DormancyChange.<span class="built_in">Broadcast</span>(Actor, *ActorRepInfo, CurrentDormancy, OldDormancyState);</span><br><span class="line"> | | | |--<span class="comment">// 在UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy中注册的回调函数</span></span><br><span class="line"> | | | |--UReplicationGraphNode_GridSpatialization2D::<span class="built_in">OnNetDormancyChange</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static</span>()</span><br><span class="line"> | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">AddActorInternal_Static_Implementation</span>()</span><br><span class="line"> | | | | | | |--StaticSpatializedActors.<span class="built_in">Emplace</span>(Actor, <span class="built_in">FCachedStaticActorInfo</span>(ActorInfo, bDormancyDriven));</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">PutStaticActorIntoCell</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将Actor放入对应的Cell中</span></span><br></pre></td></tr></table></figure>
+<p>在同一帧的TickFlush GatherActor时候,
+会在UReplicationGraphNode_ConnectionDormancyNode中将Actor Gather出来.
+针对DormancyActor会有如下流程(如是DS第一帧, 会有截断, 但是一般情况不会.
+这里只说一般情况). 可以看出, Gather之后,
+Actor会执行StartBecomingDormant, 准备进行休眠状态.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy同一帧, TickFlush GatherActor的流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--UNetDriver.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | |--UReplicationGraph.<span class="built_in">ServerReplicateActors</span>()</span><br><span class="line"> | | |--UReplicationGraphNode_GridSpatialization2D.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | |--UReplicationGraphNode_ActorList.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | |--UReplicationGraphNode_DormancyNode.<span class="built_in">GatherActorListsForConnection</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 如果ConnectionNode为空还要进行创建</span></span><br><span class="line"> | | | | | |--ConnectionNode = <span class="built_in">CreateConnectionNode</span>(Params);</span><br><span class="line"> | | | | | | |--这里会将UReplicationGraphNode_DormancyNode中UReplicationGraphNode_ActorList.ReplicateActorList完全拷贝一份</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">DeepCopyActorListsFrom</span>(<span class="keyword">this</span>);</span><br><span class="line"> | | | | | | |--ConnectionNode-&gt;<span class="built_in">InitConnectionNode</span>(RepGraphConnection, Params.ReplicationFrameNum);</span><br><span class="line"> | | | | | |--<span class="comment">//UReplicationGraphNode_ConnectionDormancyNode收集Actor</span></span><br><span class="line"> | | | | | |--ConnectionNode-&gt;<span class="built_in">GatherActorListsForConnection</span>(Params);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_ConnectionDormancyNode.<span class="built_in">ConditionalGatherDormantActorsForConnection</span>()</span><br><span class="line"> | | | | | | | |--<span class="comment">// 将node添加到OutGatheredReplicationLists中</span></span><br><span class="line"> | | | | | | | |--Params.OutGatheredReplicationLists.<span class="built_in">AddReplicateActorList</span>(ConnectionList);</span><br><span class="line"> | | |--UReplicationGraph.<span class="built_in">ReplicateActorListsForConnections_Default</span>()</span><br><span class="line"> | | | |--UReplicationGraph.<span class="built_in">ReplicateSingleActor</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 针对GlobalActorInfo.bWantsToBeDormant要进行StartBecomingDormant</span></span><br><span class="line"> | | | | |--UActorChannel.<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | |--FObjectReplicator::<span class="built_in">StartBecomingDormant</span>()</span><br><span class="line"> | | | | | | |--bLastUpdateEmpty = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">true</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--Connection-&gt;<span class="built_in">StartTickingChannel</span>(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<p>DS第一帧截断原因:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727164750246.png" /></p>
+<h4 id="问-已经startbecomingdormant的actor还会进行属性同步吗">问:
+已经StartBecomingDormant的Actor还会进行属性同步吗?</h4>
+<p>每帧还会将BecomeDormant的Actor Gather出来. 但是, 不会进行属性同步了.
+因为, 他没有发生变化:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172151474.png" /></p>
+<p>如果发生丢包, 还会进行同步, 并且这里BitsWritten会大于0,
+有数据进行网络传输.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230728172233340.png" /></p>
+<h3 id="becomedormant">BecomeDormant</h3>
+<p>在ActorChannelTick的时候, 每帧检测是否满足Dormancy的条件, 如果满足,
+直接进入Dormancy.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AActor.SetNetDormancy之后的BecomeDormant流程</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection </span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
+<p><span style="color:red">ReadyForDormancy:
+该函数可以判断Actor在某个Connection上,
+是否将数据传输完成(远端已经Ack)</span></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">FObjectReplicator::ReadyForDormancy</span><span class="params">(<span class="type">bool</span> bSuppressLogs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">GetObject</span>() == <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">UE_LOG</span>(LogRep, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;ReadyForDormancy: Object == nullptr&quot;</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;		<span class="comment">// Technically, we don&#x27;t want to hold up dormancy, but the owner needs to clean us up, so we warn</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Can&#x27;t go dormant until last update produced no new property updates</span></span><br><span class="line">    <span class="comment">// 上一次Update必须是空的, 即上一次没有任何更新</span></span><br><span class="line">    <span class="keyword">if</span> (!bLastUpdateEmpty)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] Not ready for dormancy. bLastUpdateEmpty = false&quot;</span>), OwningChannel-&gt;ChIndex);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FSendingRepState* SendingRepState = RepState.<span class="built_in">IsValid</span>() ? RepState-&gt;<span class="built_in">GetSendingRepState</span>() : <span class="literal">nullptr</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;HistoryStart != SendingRepState-&gt;HistoryEnd)</span><br><span class="line">        &#123; <span class="comment">// 所有数据都ack了</span></span><br><span class="line">            <span class="comment">// We have change lists that haven&#x27;t been acked</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;NumNaks &gt; <span class="number">0</span>)</span><br><span class="line">        &#123; <span class="comment">// 没有丢包</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!SendingRepState-&gt;bOpenAckedCalled)</span><br><span class="line">        &#123; <span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (SendingRepState-&gt;PreOpenAckHistory.<span class="built_in">Num</span>() &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;<span class="comment">// 没有调用过OpenAckedCalled</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Can&#x27;t go dormant if there are unAckd property updates</span></span><br><span class="line">        <span class="keyword">for</span> (FPropertyRetirement&amp; Retirement : SendingRepState-&gt;Retirement)</span><br><span class="line">        &#123; <span class="comment">// 针对Delta Properties类型, 所有消息也要被Ack才可以</span></span><br><span class="line">            <span class="keyword">if</span> (Retirement.Next != <span class="literal">nullptr</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (!bSuppressLogs)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">UE_LOG</span>(LogRepTraffic, Verbose, <span class="built_in">TEXT</span>(<span class="string">&quot;    [%d] OutAckPacketId: %d First: %d Last: %d &quot;</span>), OwningChannel-&gt;ChIndex, OwningChannel-&gt;Connection-&gt;OutAckPacketId, Retirement.OutPacketIdRange.First, Retirement.OutPacketIdRange.Last);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>bLastUpdateEmpty为true, 下图是bLastUpdateEmpty刷新的地方</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729143356134-1690612543416-1.png" /></p>
+<ol start="2" type="1">
+<li>SendingRepState-&gt;HistoryStart必须和SendingRepState-&gt;HistoryEnd相同</li>
+</ol>
+<p>即已经发送的数据全部被ack了, 并且没有丢包情况.
+因为History代表已经发送的历史, 每次UpdateChangelistHistory时候,
+会根据AckPacketId清理History数据. 当所有history数据清理干净之后,
+就表示所有数据都已经发送完成了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145842644.png" /></p>
+<ol start="3" type="1">
+<li>SendingRepState必须全部都Ack了. 这里处理丢包情况,
+即所有丢包数据都已经重发了.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729144839069.png" /></p>
+<p>重发丢包数据:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729145012879.png" /></p>
+<ol start="4" type="1">
+<li><p>bOpenAckedCalled和PreOpenAckHistory:
+所有SpawnActor的ack都收到了.</p></li>
+<li><p>SendingRepState-&gt;Retirement用于记录DeltaProperty的历史.
+这个也要全部ack后才能Dormancy.</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729150134647.png" /></p>
+<p>并且根据上述堆栈,
+可以看到BecomeDormant最后设置FConnectionReplicateActorInfo.bDormantOnConnection为true.
+即GatherActor也不会收集到DormancyActor了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151417230.png" /></p>
+<h2 id="fulldormancy关闭channel">FullDormancy关闭Channel</h2>
+<p>通过如下堆栈可以看出Dormancy CloseBunch并不会将Actor等对象销毁,
+仅仅是将Channel回收了.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ActorChannel进入DormancyClose流程, 向客户端发送DormancyClose Bunch</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | | |--CloseBunch.bReliable = <span class="number">1</span>;</span><br><span class="line"> | | | | | | | | |--CloseBunch.CloseReason = Reason;</span><br><span class="line"> | | | | | | | | |--<span class="built_in">SendBunch</span>( &amp;CloseBunch, <span class="number">0</span> );</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection = <span class="literal">true</span></span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
+<p>该堆栈还需要注意一点:<code>FConnectionReplicateActorInfo.bDormantOnConnection = true</code>,
+该Actor会在某个<code>UReplicationGraphNode_ConnectionDormancyNode</code>下次gather的过程中,
+将其剔除(参考下图).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513195112259.png" /></p>
+<p>回收Channel:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729160949280.png" /></p>
+<h3 id="客户端调用closeup-进行清理">客户端调用CloseUp, 进行清理</h3>
+<p>在清理的过程中, 需要清理Channel的所有资源, 然后将Channel回收.
+这些资源包括但不限于ReplicationMap, ActorReplication数据等.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154619790.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154133521.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154332928.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154353306.png" /></p>
+<h3 id="ds收到ack-closechannel">DS收到Ack, CloseChannel</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154810659.png" /></p>
+<p>DS收到Ack后, 根据ChannelIndex对Channel进行Close.
+清理并回收Channel.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729154922529.png" /></p>
+<p>触发UNetReplicationGraphConnection::NotifyActorChannelCleanedUp进行清理:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155152475.png" /></p>
+<p>清理ReplicatorMap相关信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729155216575.png" /></p>
+<h2
+id="fulldormancy到pendingdormancy">FullDormancy到PendingDormancy</h2>
+<p><strong>FlushActorDormancy主动唤醒</strong>.
+FlushActorDormancy会主动唤醒处在FullDormancy的Channel,
+然后进去PendingDormancy状态, 等待数据全部传输完成之后,
+再次进行FullDormancy状态.</p>
+<p><strong>注意在此过程中, 如果Channel销毁了, 会进行重建.</strong></p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// Actor调用AActor.FlushNetDormancy详细堆栈</span><br><span class="line">--AActor.FlushNetDormancy()</span><br><span class="line"> |<span class="string">--UNetDriver.FlushActorDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationDriver.FlushNetDormancy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.LastFlushNetDormancyFrame = ReplicationGraphFrame;</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GlobalInfo.Events.DormancyFlush.Broadcast(Actor, GlobalInfo);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_DormancyNode.OnActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">-- // 针对所有DormancyNode中存储的UReplicationGraphNode_ConnectionDormancyNode, 进行处理</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraphNode_ConnectionDormancyNode::NotifyActorDormancyFlush()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--ReplicateActorList.Add(ActorInfo.Actor);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有Connection, 设置bDormantOnConnection为false</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Info-&gt;bDormantOnConnection = false</span></span><br></pre></td></tr></table></figure>
+<p>触发下图这些DormancyNode的回调</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729151645834.png" /></p>
+<p>从上图可以看出,
+FlushActorDormancy会将Actor放入UReplicationGraphNode_ConnectionDormancyNode的ReplicateActorList中,
+然后和StartBecomingDormant类似, 进行同步后,
+等待该Actor所有数据同步完成之后, 进入休眠.</p>
+<h2 id="dormancy-awake">Dormancy-&gt;Awake</h2>
+<h3
+id="将actor设置为dorm_awake会重新打开channel">将Actor设置为<code>DORM_Awake</code>会重新打开Channel</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161125894.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161117873.png" /></p>
+<h3
+id="客户端收到bunch查找对应的channel-没有就创建">客户端收到Bunch,查找对应的channel,
+没有就创建</h3>
+<p>根据ChannelIndex索引Channel, 由于Channel时新建的,
+所以其对应的Actor为空, 然后根据GUID去查找对应的Actor.
+最后将Actor和Channel绑定.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161341483.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729161334222.png" /></p>
+<h2
+id="如果在构造函数中将netdormancy设置为dorm_dormantall呢">如果在构造函数中将NetDormancy设置为DORM_DormantAll呢?</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727111411075.png" /></p>
+<p>和SetNetDormancy流程一样, 这里不再赘述.</p>
+<h2 id="判断actor是否进行dormancy">判断Actor是否进行Dormancy</h2>
+<p><code>ShouldActorGoDormant</code></p>
+<h1 id="问">问</h1>
+<h2 id="dormancy期间能否rpc">Dormancy期间,能否RPC?</h2>
+<h3 id="能否s2c">能否S2C</h3>
+<p>能进行RPC, 并且会创建新的Channel,
+而且在RPC之前还会进行ReplicateActor.</p>
+<p>构建测试用例:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152252964.png" /></p>
+<p>并且, S2C_ChangeCharacterNumber为Reliable.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731152322984.png" /></p>
+<p>在RPC过程中, 会首先创建ActorChannel, 然后ReplicateActor,
+最后才会RPC.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729163913372.png"
+alt="image-20230729163913372" />
+<figcaption aria-hidden="true">image-20230729163913372</figcaption>
+</figure>
+<p>只要是Channel刚创建的, 就会首先进行ReplicateActor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164013067.png" /></p>
+<p>注意在这这个过程中, 是不会触发Dormancy流程的,
+只进行了ReliableReplicateActor+Reliable/UnReliable的RPC.</p>
+<p>这里还要特意说一下, 针对Dormancy期间的S2C,
+都会发送Reliable的ReplicateActor包, 由于是ReliableBunch,
+其可靠性由Driver自己保证. 针对UnreliableRPC, 其Bunch为非Reliable,
+所以丢就丢了, 不会重发.</p>
+<h3
+id="为什么属性没有变化还会replicateactor呢">为什么属性没有变化还会ReplicateActor呢?</h3>
+<p>由于为新打开的Channel, 所以设置为Init, 并设定为ReliableBunch.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155041019.png" /></p>
+<p>序列化Actor的GUID, 并强制设置为Dirty.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731155009635.png" /></p>
+<p>填充Bunch中的SerializeNewActor消息, 然后进行发送.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230731162337718.png" /></p>
+<h3 id="能否c2s">能否C2S</h3>
+<p>不能, 因为Dormancy, 会销毁Channel, 无法进行RPC.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164830954.png" /></p>
+<p>测试关键代码:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230729164937129.png" /></p>
+<h1 id="总结">总结</h1>
+<ol type="1">
+<li>Dormancy的单位是Actor.</li>
+<li>Dormancy会销毁Channel, 所以当其休眠的时候, 不会发生属性同步.</li>
+<li>如果发送RPC, 只有DS向客户端发送的RPC可以执行, C2S会直接丢弃.
+并且所有S2C的RPC都会调用, ReplicateActor 进行一次属性同步.</li>
+<li>对于属性不常发生变化的Actor,
+在构造函数的时候将其设置成Dormancy.</li>
+<li>对于一段时间内属性不发生变化的Actor,
+手动将其设置成Dormancy(<code>TestNetDormancyActor-&gt;SetNetDormancy(ENetDormancy::DORM_DormantAll);</code>).</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/NetDormancy/" rel="tag"># NetDormancy</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/InitOnly%20RPC%20MulticastRPC%20BeginPlay%E7%9A%84%E9%A1%BA%E5%BA%8F/" rel="prev" title="InitOnly RPC MulticastRPC(Reliable+Unreliable) BeginPlay的执行顺序">
+                  <i class="fa fa-chevron-left"></i> InitOnly RPC MulticastRPC(Reliable+Unreliable) BeginPlay的执行顺序
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/PlayNetMode/" rel="next" title="PlayNetMode">
+                  PlayNetMode <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

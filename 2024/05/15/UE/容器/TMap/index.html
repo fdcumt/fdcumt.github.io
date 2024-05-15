@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="概述 先了解TSet, 再看TMap.  原理是一样的, 也是索引层+值层, 按照这个思路会很好理解, 剩下的就是维护这两个层的数据正确. TMap是继承自TMapBase, 最终操作的也是其成员变量ElementSetType Pairs, 即TSet类型. TMap将Element类型设置为typedef TPair&lt;KeyType, ValueType&gt; Eleme">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE-TMap">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E5%AE%B9%E5%99%A8/TMap/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="概述 先了解TSet, 再看TMap.  原理是一样的, 也是索引层+值层, 按照这个思路会很好理解, 剩下的就是维护这两个层的数据正确. TMap是继承自TMapBase, 最终操作的也是其成员变量ElementSetType Pairs, 即TSet类型. TMap将Element类型设置为typedef TPair&lt;KeyType, ValueType&gt; Eleme">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-15T02:54:48.598Z">
+<meta property="article:modified_time" content="2024-04-30T04:11:01.889Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="Container">
+<meta property="article:tag" content="TMap">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E5%AE%B9%E5%99%A8/TMap/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E5%AE%B9%E5%99%A8/TMap/","path":"2024/05/15/UE/容器/TMap/","title":"UE-TMap"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE-TMap | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%8F%98%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">关键变量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#find"><span class="nav-number">2.1.</span> <span class="nav-text">Find</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#findoradd"><span class="nav-number">2.2.</span> <span class="nav-text">FindOrAdd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#contains"><span class="nav-number">2.3.</span> <span class="nav-text">Contains</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#remove"><span class="nav-number">2.4.</span> <span class="nav-text">Remove</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#operator"><span class="nav-number">2.5.</span> <span class="nav-text">operator[]</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE"><span class="nav-number">3.</span> <span class="nav-text">问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#tmap%E6%98%AF%E5%90%A6%E4%B9%9F%E9%9C%80%E8%A6%81%E5%AE%9A%E4%B9%89gettypehash%E5%87%BD%E6%95%B0%E5%91%A2"><span class="nav-number">3.1.</span> <span class="nav-text">TMap是否也需要定义GetTypeHash函数呢?</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E5%AE%B9%E5%99%A8/TMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE-TMap | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE-TMap
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:48" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:48+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 12:11:01" itemprop="dateModified" datetime="2024-04-30T12:11:01+08:00">2024-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/Container/" itemprop="url" rel="index"><span itemprop="name">Container</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>362</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="概述">概述</h1>
+<p><span style="color:red;">先了解<code>TSet</code>,
+再看<code>TMap</code>.  原理是一样的, 也是索引层+值层,
+按照这个思路会很好理解, 剩下的就是维护这两个层的数据正确.</span></p>
+<p><code>TMap</code>是继承自<code>TMapBase</code>,
+最终操作的也是其成员变量<code>ElementSetType Pairs</code>,
+即<code>TSet</code>类型.
+<code>TMap</code>将<code>Element</code>类型设置为<code>typedef TPair&lt;KeyType, ValueType&gt; ElementType;</code>,
+即Pair类型.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912193952646.png" /></p>
+<span id="more"></span>
+<p>重写<code>BaseKeyFuncs</code>, 实现<code>TDefaultMapKeyFuncs</code>,
+自定义关键函数<code>GetSetKey</code>和<code>Matches</code>,
+来进行获取<code>Key</code>和<code>KeyHash</code>以及比较等操作. 这样,
+其Element内容就和整个类解耦了.</p>
+<p>前向声明(<code>ContainersFwd.h</code>):</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311163240688.png" /></p>
+<p>实现:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912194205939.png" /></p>
+<h1 id="关键变量">关键变量</h1>
+<p>从TMap的整体构建来看,
+其所有函数都是对<code>ElementSetType Pairs</code>进行操作,
+其实就是对<code>TSet</code>的封装.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> TPair&lt;KeyType, ValueType&gt; ElementType;</span><br><span class="line"><span class="keyword">typedef</span> TSet&lt;ElementType, KeyFuncs, SetAllocator&gt; ElementSetType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** A set of the key-value pairs in the map. */</span></span><br><span class="line">ElementSetType Pairs;</span><br></pre></td></tr></table></figure>
+<h2 id="find">Find</h2>
+<p>详见<code>TSet.Find</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195115734.png" /></p>
+<h2 id="findoradd">FindOrAdd</h2>
+<p>先进行<code>Find</code>, 如果没<code>Find</code>到,
+则进行<code>Add</code>, 返回<code>Add</code>结果.
+<code>Add</code>最终调用的是<code>TSet.EmplaceByHash</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195217492.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912195251885.png" /></p>
+<p>从上述代码可以看出,
+<code>FindOrAdd</code>比<code>Find</code>+<code>Add</code>少算一次<code>KeyHash</code>,
+并且从使用方式上比<code>Find</code>+<code>Add</code>更简洁.
+所以推荐使用<code>FindOrAdd</code>.</p>
+<h2 id="contains">Contains</h2>
+<p>详见<code>TSet.Contains</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200401412.png" /></p>
+<h2 id="remove">Remove</h2>
+<p>详见<code>TSet.Remove</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912200432209.png" /></p>
+<h2 id="operator">operator[]</h2>
+<p>其核心还是调用<code>TSet.Find</code>.
+查询到<code>Item.Value</code>并且返回其引用, 进而可以直接进行操作.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912191924488.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230912192013741.png" /></p>
+<h1 id="问">问</h1>
+<h2
+id="tmap是否也需要定义gettypehash函数呢">TMap是否也需要定义<code>GetTypeHash</code>函数呢?</h2>
+<p>TSet和TMap都需要, 否则就会报错, 因为添加新元素和对比的时候,
+需要调用该类型的GetTypeHash.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/Container/" rel="tag"># Container</a>
+              <a href="/tags/TMap/" rel="tag"># TMap</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E5%8F%8D%E5%B0%84%E7%B3%BB%E7%BB%9F/%E5%B1%9E%E6%80%A7%E5%81%8F%E7%A7%BB/" rel="prev" title="属性偏移">
+                  <i class="fa fa-chevron-left"></i> 属性偏移
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E5%AE%B9%E5%99%A8/TSet/" rel="next" title="UE-TSet">
+                  UE-TSet <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

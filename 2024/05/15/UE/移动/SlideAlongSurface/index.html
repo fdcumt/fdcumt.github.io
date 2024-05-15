@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="关键变量和函数 bMaintainHorizontalGroundVelocity 1234&#x2F;&#x2F; If true, walking movement always maintains horizontal velocity when moving up ramps, &#x2F;&#x2F; which causes movement up ramps to be faster parallel to the r">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SlideAlongSurface">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="关键变量和函数 bMaintainHorizontalGroundVelocity 1234&#x2F;&#x2F; If true, walking movement always maintains horizontal velocity when moving up ramps, &#x2F;&#x2F; which causes movement up ramps to be faster parallel to the r">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/assets/image-20240326200650289.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/assets/image-20240326210557897.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/assets/image-20240326204307301.png">
+<meta property="article:published_time" content="2024-05-15T02:54:48.881Z">
+<meta property="article:modified_time" content="2024-04-30T06:48:45.442Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE4">
+<meta property="article:tag" content="移动">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/assets/image-20240326200650289.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/","path":"2024/05/15/UE/移动/SlideAlongSurface/","title":"SlideAlongSurface"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SlideAlongSurface | NoBodyNoOne</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%8F%98%E9%87%8F%E5%92%8C%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">关键变量和函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#bmaintainhorizontalgroundvelocity"><span class="nav-number">1.1.</span> <span class="nav-text">bMaintainHorizontalGroundVelocity</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fvectorvectorplaneproject"><span class="nav-number">1.2.</span> <span class="nav-text">FVector::VectorPlaneProject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ucharactermovementcomponenthandleslopeboosting"><span class="nav-number">1.3.</span> <span class="nav-text">UCharacterMovementComponent::HandleSlopeBoosting</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">流程图</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#section"><span class="nav-number">2.1.</span> <span class="nav-text"></span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/SlideAlongSurface/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="SlideAlongSurface | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SlideAlongSurface
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:48" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:48+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 14:48:45" itemprop="dateModified" datetime="2024-04-30T14:48:45+08:00">2024-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE4/" itemprop="url" rel="index"><span itemprop="name">UE4</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE4/%E7%A7%BB%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">移动</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>449</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="关键变量和函数">关键变量和函数</h1>
+<h2
+id="bmaintainhorizontalgroundvelocity">bMaintainHorizontalGroundVelocity</h2>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If true, walking movement always maintains horizontal velocity when moving up ramps, </span></span><br><span class="line"><span class="comment">// which causes movement up ramps to be faster parallel to the ramp surface.</span></span><br><span class="line"><span class="comment">// If false, then walking movement maintains velocity magnitude parallel to the ramp surface.</span></span><br><span class="line"><span class="built_in">uint8</span> bMaintainHorizontalGroundVelocity:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="fvectorvectorplaneproject">FVector::VectorPlaneProject</h2>
+<p>假设人物朝着斜坡<span class="math inline">\(AB\)</span>位移<span
+class="math inline">\(S\)</span>, 在遇到斜坡的时候应该怎么处理呢?
+其中一种处理方式是:</p>
+<ol type="1">
+<li>将位移<span class="math inline">\(S\)</span>分解成垂直于斜坡的<span
+class="math inline">\(S_1\)</span>和平行于斜坡的<span
+class="math inline">\(S_2\)</span></li>
+<li>在移动过程中相当于位移<span
+class="math inline">\(S\)</span>被斜坡吃掉了位移<span
+class="math inline">\(S_1\)</span>, 移动了位移<span
+class="math inline">\(S_2\)</span></li>
+</ol>
+<figure>
+<img src="./assets/image-20240326200650289.png"
+alt="image-20240326200650289" />
+<figcaption aria-hidden="true">image-20240326200650289</figcaption>
+</figure>
+<p>用代码的方式表示为:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> FVector <span class="title">FVector::VectorPlaneProject</span><span class="params">(<span class="type">const</span> FVector&amp; V, <span class="type">const</span> FVector&amp; PlaneNormal)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> V - V.<span class="built_in">ProjectOnToNormal</span>(PlaneNormal);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2
+id="ucharactermovementcomponenthandleslopeboosting">UCharacterMovementComponent::HandleSlopeBoosting</h2>
+<p>针对<code>Falling</code>如果按照<code>FVector::VectorPlaneProject</code>的方式处理,
+可能会出现该物体本来应该是下落, 但是实际上沿着斜坡上升的情况. 例如:
+物体本应该沿着点<span class="math inline">\(J\)</span>下落到点<span
+class="math inline">\(K\)</span>, 但是由于与斜坡<span
+class="math inline">\(ED\)</span>发生了碰撞, 出现沿着斜坡上升到点<span
+class="math inline">\(P\)</span>的情况.
+针对这种情况我们应该怎么处理呢?</p>
+<figure>
+<img src="./assets/image-20240326210557897.png"
+alt="image-20240326210557897" />
+<figcaption aria-hidden="true">image-20240326210557897</figcaption>
+</figure>
+<p>处理流程:</p>
+<p>具体代码:</p>
+<p>处理斜坡上升情况, 该函数主要用于下落过程中, 遇到斜坡不允许上升.</p>
+<figure>
+<img src="./assets/image-20240326204307301.png"
+alt="image-20240326204307301" />
+<figcaption aria-hidden="true">image-20240326204307301</figcaption>
+</figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">FVector <span class="title">UCharacterMovementComponent::HandleSlopeBoosting</span><span class="params">(<span class="type">const</span> FVector&amp; SlideResult, <span class="type">const</span> FVector&amp; Delta, <span class="type">const</span> <span class="type">float</span> Time, <span class="type">const</span> FVector&amp; Normal, <span class="type">const</span> FHitResult&amp; Hit)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FVector Result = SlideResult;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (Result.Z &gt; <span class="number">0.f</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// Don&#x27;t move any higher than we originally intended.</span></span><br><span class="line">        <span class="type">const</span> <span class="type">float</span> ZLimit = Delta.Z * Time;</span><br><span class="line">        <span class="keyword">if</span> (Result.Z - ZLimit &gt; KINDA_SMALL_NUMBER)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (ZLimit &gt; <span class="number">0.f</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// Rescale the entire vector (not just the Z component) otherwise we change the direction and likely head right back into the impact.</span></span><br><span class="line">                <span class="type">const</span> <span class="type">float</span> UpPercent = ZLimit / Result.Z;</span><br><span class="line">                Result *= UpPercent;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// We were heading down but were going to deflect upwards. Just make the deflection horizontal.</span></span><br><span class="line">                Result = FVector::ZeroVector;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Make remaining portion of original result horizontal and parallel to impact normal.</span></span><br><span class="line">            <span class="type">const</span> FVector RemainderXY = (SlideResult - Result) * <span class="built_in">FVector</span>(<span class="number">1.f</span>, <span class="number">1.f</span>, <span class="number">0.f</span>);</span><br><span class="line">            <span class="type">const</span> FVector NormalXY = Normal.<span class="built_in">GetSafeNormal2D</span>();</span><br><span class="line">            <span class="type">const</span> FVector Adjust = Super::<span class="built_in">ComputeSlideVector</span>(RemainderXY, <span class="number">1.f</span>, NormalXY, Hit);</span><br><span class="line">            Result += Adjust;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="流程图">流程图</h1>
+<h2 id="section"></h2>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE4/" rel="tag"># UE4</a>
+              <a href="/tags/%E7%A7%BB%E5%8A%A8/" rel="tag"># 移动</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

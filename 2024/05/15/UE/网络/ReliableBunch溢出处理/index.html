@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="什么是ReliableBunch溢出 当DS日志显示:SendBunch: Reliable partial bunch overflows reliable buffer!, 即当前未响应的ReliableBunch过多, 造成DS关闭了连接. 1SendBunch: Reliable partial bunch overflows reliable buffer! SendBunch时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ReliableBunch溢出处理">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="什么是ReliableBunch溢出 当DS日志显示:SendBunch: Reliable partial bunch overflows reliable buffer!, 即当前未响应的ReliableBunch过多, 造成DS关闭了连接. 1SendBunch: Reliable partial bunch overflows reliable buffer! SendBunch时">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-15T02:54:53.802Z">
+<meta property="article:modified_time" content="2023-12-01T08:46:40.016Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="ReliableBunch溢出">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/","path":"2024/05/15/UE/网络/ReliableBunch溢出处理/","title":"ReliableBunch溢出处理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ReliableBunch溢出处理 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFreliablebunch%E6%BA%A2%E5%87%BA"><span class="nav-number">1.</span> <span class="nav-text">什么是ReliableBunch溢出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%90%8E%E6%80%8E%E4%B9%88%E8%B0%83%E8%AF%95"><span class="nav-number">2.</span> <span class="nav-text">溢出后怎么调试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E5%91%BD%E4%BB%A4"><span class="nav-number">2.1.</span> <span class="nav-text">开启命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A1%AB%E5%85%85foutbunch.debugstring"><span class="nav-number">2.2.</span> <span class="nav-text">填充FOutBunch.DebugString</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81rpc%E6%97%B6%E5%A1%AB%E5%85%85"><span class="nav-number">2.2.1.</span> <span class="nav-text">发送RPC时填充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replicateactor%E6%97%B6%E5%A1%AB%E5%85%85"><span class="nav-number">2.2.2.</span> <span class="nav-text">ReplicateActor时填充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%8C%85%E6%97%B6%E5%80%99%E5%A1%AB%E5%85%85"><span class="nav-number">2.2.3.</span> <span class="nav-text">分包时候填充</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E6%97%B6-%E8%BE%93%E5%87%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">2.3.</span> <span class="nav-text">溢出时, 输出信息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#sendbunch%E6%97%B6%E6%BA%A2%E5%87%BA"><span class="nav-number">2.3.1.</span> <span class="nav-text">SendBunch时溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81rpc%E6%97%B6%E6%BA%A2%E5%87%BA"><span class="nav-number">2.3.2.</span> <span class="nav-text">发送RPC时溢出</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BA%A2%E5%87%BA%E5%8E%9F%E5%9B%A0"><span class="nav-number">3.</span> <span class="nav-text">溢出原因</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%BF%9E%E8%BF%98%E4%BC%9A%E6%BA%A2%E5%87%BA%E5%90%97"><span class="nav-number">3.1.</span> <span class="nav-text">重连还会溢出吗</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E5%B9%B6reliablebunch"><span class="nav-number">4.</span> <span class="nav-text">合并ReliableBunch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%AF%E5%90%A6%E5%8F%AF%E4%BB%A5%E5%90%88%E5%B9%B6"><span class="nav-number">4.1.</span> <span class="nav-text">是否可以合并</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%85%81%E8%AE%B8merge"><span class="nav-number">4.1.1.</span> <span class="nav-text">函数允许Merge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E6%9C%89exportguid%E7%9A%84bunch%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">4.1.2.</span> <span class="nav-text">具有ExportGUID的Bunch,不能合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AB%E6%9C%89foutbunch.bhasmustbemappedguids%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">4.1.3.</span> <span class="nav-text">含有FOutBunch.bHasMustBeMappedGUIDs不能合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#chindexreliable"><span class="nav-number">4.1.4.</span> <span class="nav-text">ChIndex+Reliable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#connection%E5%BC%80%E5%90%AFallowmerge"><span class="nav-number">4.1.5.</span> <span class="nav-text">Connection开启AllowMerge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.6.</span> <span class="nav-text">其他条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.1.7.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A7bunch%E6%80%8E%E4%B9%88%E5%92%8C%E6%96%B0bunch%E5%90%88%E5%B9%B6"><span class="nav-number">4.2.</span> <span class="nav-text">旧Bunch怎么和新Bunch合并</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reliablebunch%E9%93%BE%E8%A1%A8%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="nav-number">4.3.</span> <span class="nav-text">ReliableBunch链表怎么处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sendbuffer%E4%B8%AD%E6%95%B0%E6%8D%AE%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="nav-number">4.4.</span> <span class="nav-text">SendBuffer中数据怎么处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%8F%98%E9%87%8F"><span class="nav-number">4.5.</span> <span class="nav-text">相关变量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#unetconnection.lastend"><span class="nav-number">4.5.1.</span> <span class="nav-text">UNetConnection.LastEnd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unetconnection.lastout"><span class="nav-number">4.5.2.</span> <span class="nav-text">UNetConnection.LastOut</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unetconnection.laststart"><span class="nav-number">4.5.3.</span> <span class="nav-text">UNetConnection.LastStart</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unetconnection.lastoutbunch"><span class="nav-number">4.5.4.</span> <span class="nav-text">UNetConnection.LastOutBunch</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">测试用例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AAactor%E4%BA%A4%E6%9B%BF%E5%8F%91%E9%80%81rpc"><span class="nav-number">6.1.</span> <span class="nav-text">两个Actor交替发送RPC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AAactor%E4%BA%A4%E6%9B%BF%E5%8F%91%E9%80%81reliablerpc%E5%92%8Cunreliablerpc%E4%B8%8D%E8%A1%8C"><span class="nav-number">6.2.</span> <span class="nav-text">一个Actor交替发送ReliableRPC和UnreliableRPC(不行)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#unetconnection.queuedbits"><span class="nav-number">6.2.1.</span> <span class="nav-text">UNetConnection.QueuedBits</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">6.2.1.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9B%B4%E6%94%B9"><span class="nav-number">6.2.1.2.</span> <span class="nav-text">更改</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-2"><span class="nav-number">6.2.2.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ReliableBunch溢出处理 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ReliableBunch溢出处理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:53" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:53+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-12-01 16:46:40" itemprop="dateModified" datetime="2023-12-01T16:46:40+08:00">2023-12-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/ReliableBunch%E6%BA%A2%E5%87%BA/" itemprop="url" rel="index"><span itemprop="name">ReliableBunch溢出</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="什么是reliablebunch溢出">什么是ReliableBunch溢出</h1>
+<p>当DS日志显示:<code>SendBunch: Reliable partial bunch overflows reliable buffer!</code>,
+即当前未响应的<code>ReliableBunch</code>过多, 造成DS关闭了连接.</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SendBunch:</span> Reliable <span class="keyword">partial</span> bunch overflows reliable buffer!</span><br></pre></td></tr></table></figure>
+<p>SendBunch时触发Overflow.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127211542330.png" /></p>
+<p>SendRPC时触发Overflow</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129091215487.png" /></p>
+<span id="more"></span>
+<h1 id="溢出后怎么调试">溢出后怎么调试</h1>
+<p>溢出原因是<code>Unack ReliableBunch</code>过多造成的, 那么,
+我怎么才能知道当前有哪些<code>ReliableBunch</code>没有<code>ACK</code>呢?
+UE本身已经有相关功能: 当溢出时,
+打印出所有<code>ReliableBunch</code>信息.
+如果知道当前有哪些<code>ReliableBunch</code>, 那么就可以通过查看逻辑,
+来排查为什么会突然发送过多的<code>ReliableBunch</code>,
+再进一步处理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127211647465.png" /></p>
+<p>进一步分析发现, 其打印的是<code>FOutBunch.DebugString</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127114143774.png" /></p>
+<h2 id="开启命令">开启命令</h2>
+<p>开启命令:<code>net.Reliable.Debug</code>后,
+在非<code>UE_BUILD_SHIPPING || UE_BUILD_TEST</code>下会记录<code>ReliableBunch</code>
+<code>Debug</code>信息.</p>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">TAutoConsoleVariable&lt;int32&gt; CVarNetReliableDebug(</span><br><span class="line">    <span class="name">TEXT</span>(<span class="string">&quot;net.Reliable.Debug&quot;</span>),</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    TEXT(<span class="string">&quot;Print all reliable bunches sent over the network\n&quot;</span>)</span><br><span class="line">    TEXT(<span class="string">&quot; 0: no print.\n&quot;</span>)</span><br><span class="line">    TEXT(<span class="string">&quot; 1: Print bunches as they are sent.\n&quot;</span>)</span><br><span class="line">    TEXT(<span class="string">&quot; 2: Print reliable bunch buffer each net update&quot;</span>),</span><br><span class="line">    ECVF_Default)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127115328314.png" /></p>
+<ul>
+<li><code>net.Reliable.Debug 0</code>: 默认, 不记录,
+也不输出任何信息.</li>
+<li><code>net.Reliable.Debug 1</code>:
+仅仅输出当前<code>ReliableBunch</code>信息, 并且在Overflow时候,
+会输出当前具体有哪些ReliableBunch没有ACK.</li>
+<li><code>net.Reliable.Debug 2</code>: 每次发送ReliableBunch时,
+都会输出当前<code>ActorChannel</code>没有ACK的ReliableBunch信息.
+并且在Overflow时候, 会输出当前具体有哪些ReliableBunch没有ACK.</li>
+<li><code>net.Reliable.Debug 3</code>: 仅仅在Overflow时候,
+输出当前具体有哪些ReliableBunch没有ACK.(任何大于2的数值都可以,
+这里选择3)</li>
+</ul>
+<h2
+id="填充foutbunch.debugstring">填充<code>FOutBunch.DebugString</code></h2>
+<h3 id="发送rpc时填充">发送RPC时填充</h3>
+<p><code>UNetDriver.ProcessRemoteFunctionForChannelPrivate</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127115028558.png" /></p>
+<h3 id="replicateactor时填充"><code>ReplicateActor</code>时填充</h3>
+<p><code>UActorChannel.ReplicateActor</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127115059988.png" /></p>
+<h3 id="分包时候填充">分包时候填充</h3>
+<p><code>UChannel.SendBunch</code>. <span style="color:red;">注意:
+一个分Bunch是1M的. </span></p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">日志:</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">1</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">2</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">3</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">4</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">5</span>]: <span class="number">2.28</span> RPC: ...</span><br><span class="line"><span class="symbol">LogNetTraffic:</span> Warning: <span class="keyword">Out</span>: Partial[<span class="number">6</span>]: <span class="number">2.28</span> RPC: ...</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128170608865.png" /></p>
+<h2 id="溢出时-输出信息">溢出时, 输出信息</h2>
+<p>当Unack ReliableBunch超过<code>RELIABLE_BUFFER</code>(256)时,
+会将Connection关闭.</p>
+<h3 id="sendbunch时溢出">SendBunch时溢出</h3>
+<p>如果一个Bunch含有GUID, 当发送Bunch时候, 会生成GUIDBunch+Bunch,
+如果此时超过256,
+会在<code>UChannel::SendBunch</code>中CloseConnection.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UE_LOG</span>(LogNetPartialBunch, Warning, <span class="built_in">TEXT</span>(<span class="string">&quot;SendBunch: Reliable partial bunch overflows reliable buffer! %s&quot;</span>), *<span class="built_in">Describe</span>() );</span><br><span class="line"><span class="built_in">UE_LOG</span>(LogNetPartialBunch, Warning, <span class="built_in">TEXT</span>(<span class="string">&quot;Num OutgoingBunches: %d. NumOutRec: %d&quot;</span>), OutgoingBunches.<span class="built_in">Num</span>(), NumOutRec );</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127115600544.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127115610697.png" /></p>
+<h3 id="发送rpc时溢出">发送RPC时溢出</h3>
+<p>当发送RPC时候, 也有可能触发Overflow.
+会在<code>UNetDriver::ProcessRemoteFunctionForChannelPrivate</code>函数中CloseConnection.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128200046379.png" /></p>
+<p>Bunch
+Error的原因是在FOutBunch构造函数中判断当前ActorChannel的NumOutRec是否overflow,
+:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128215941365.png" /></p>
+<h1 id="溢出原因">溢出原因</h1>
+<p>从代码上看, 是因为<code>UChannel.NumOutRec</code>过多了,
+即没有<code>ACK</code>的<code>ReliableBunch</code>累计到一定程度了,
+很严重, 需要关闭<code>Connection</code>. <span
+style="color:red;">任意一个ActionChannel累计的<code>Unack</code> <code>ReliableBunch</code>过多都会造成整个<code>Connection</code>的关闭. </span></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127121847298.png" /></p>
+<h2 id="重连还会溢出吗">重连还会溢出吗</h2>
+<p>由于溢出后, <code>Connection</code>已经关闭(销毁了),
+重连后会新建Connection, 之前Connection的数据全部丢失, 所以,
+重连后会不会溢出全看重连逻辑.</p>
+<h1 id="合并reliablebunch">合并<code>ReliableBunch</code></h1>
+<p>是不是每个<code>ReliableBunch</code>都独占一个<code>NumOutRec</code>呢?
+即每发送一个<code>ReliableBunch</code>,
+都会将<code>NumOutRec</code>加1?</p>
+<p>答: 不是的. 如果可以合并, 会优先合并Bunch, 佐证代码:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127140519900.png" /></p>
+<h2 id="是否可以合并">是否可以合并</h2>
+<p>判断ReliableBunch是否可以合并是多方面的.</p>
+<h3 id="函数允许merge">函数允许Merge</h3>
+<p>调用该函数, 必须允许Merge:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127200059782.png" /></p>
+<h3
+id="具有exportguid的bunch不能合并">具有ExportGUID的Bunch,不能合并</h3>
+<p>如果一个Bunch需要ExportGUID, 会在该Bunch之前放一个ExportBunch.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127200535283.png" /></p>
+<h3
+id="含有foutbunch.bhasmustbemappedguids不能合并">含有<code>FOutBunch.bHasMustBeMappedGUIDs</code>不能合并</h3>
+<p><code>MustBeMappedGUID</code>用于加载资源.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127202859798.png" /></p>
+<h3 id="chindexreliable">ChIndex+Reliable</h3>
+<p>ChannelIndex必须相同, 必须是Relaible的.
+即必须是同一个ActorChannel的ReliableBunch才能合并</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127203040518.png" /></p>
+<h3 id="connection开启allowmerge">Connection开启AllowMerge</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127203108290.png" /></p>
+<h3 id="其他条件">其他条件</h3>
+<ol type="1">
+<li><p>合并前提必须是之前就存数据, 否则没有合并目标.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127203209146.png" /></p></li>
+<li><p>记录的待发送的SendBuffer必须和之前一致.
+必须是连续的ReliableBunch,
+如果中间插入UnreliableBunch则不能合并.</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127203541982.png" /></p>
+<ol start="3" type="1">
+<li>有可合并的空间, 即合并之后不能超过bunch的最大限度.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127203751480.png" /></p>
+<h3 id="总结">总结</h3>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+可以合并的条件: <br>   1. 函数输入开启Merge <br>   2.
+Connection允许Merge <br>   3. 同一个ActorChannel,
+ReliableBunch必须是连续的, 中间不能插入任何其他Bunch <br>   4.
+之前必须有Bunch, 才能将当前Bunch合并到之前的Bunch. <br>   5.
+合并后大小必须小于单个Bunch上限(如果超了还得分Bunch, 就没必要合并了)
+<br>
+</td>
+</tr>
+</table>
+<h2 id="旧bunch怎么和新bunch合并">旧Bunch怎么和新Bunch合并</h2>
+<p>使用<code>UNetConnection.LastOut</code>存储之前的Bunch, 如果条件允许,
+将当前Bunch与之前bunch合并, 并替代之前的bunch. 详见:<a
+href="#UNetConnection.LastOut">UNetConnection.LastOut</a></p>
+<h2 id="reliablebunch链表怎么处理">ReliableBunch链表怎么处理</h2>
+<p>使用<code>UNetConnection.LastOutBunch</code>代表ReliableBunch链表中最后一个Bunch,
+如果可以合并,
+将<code>UNetConnection.LastOutBunch</code>赋值为此Bunch和新Bunch合并后的bunch.
+详见: <a
+href="#UNetConnection.LastOutBunch">UNetConnection.LastOutBunch</a>.</p>
+<h2 id="sendbuffer中数据怎么处理">SendBuffer中数据怎么处理</h2>
+<p>使用<code>UNetConnection.LastStart</code>记录可合并Bunch之前的SendBuffer数据,
+每当有可合并Bunch到来时,
+可以根据<code>UNetConnection.LastStart</code>把SendBuffer中之前可合并的Bunch剔除掉.
+详见: <a
+href="#UNetConnection.LastStart">UNetConnection.LastStart</a>.</p>
+<h2 id="相关变量">相关变量</h2>
+<h3 id="unetconnection.lastend">UNetConnection.LastEnd</h3>
+<p>记录之前的<code>UNetConnection.SendBuffer</code>.
+用于和当前的SendBuffer比较, 如果一致, 则表示可以合并, 不一致则不能合并.
+<span style="color:red;">用该变量限制ReliableBunch必须是连续的,
+比如中间插入了一个UnreliableBunch则不能合并. </span></p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FBitWriterMark  LastEnd; <span class="comment">// Most recently sent bunch end.</span></span><br></pre></td></tr></table></figure>
+<p>在<code>UChannel.SendBunch</code>时,
+<code>UNetConnection.LastEnd</code>会设置成<code>UNetConnection.SendBuffer</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127172114128.png" /></p>
+<p>在<code>UNetConnection::FlushNet</code>时,
+会将<code>UNetConnection.LastEnd</code>置空, 意思是, 如果真的发送了,
+lastEnd就是空的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127171938260.png" /></p>
+<p>但是为什么还要和<code>UNetConnection.SendBuffer</code>比较呢?
+能合并的条件必须是上次的SendBuffer还没发送出去,
+可以将当前的Bunch合并到这个SendBuffer里面.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127173258040.png" /></p>
+<h3 id="unetconnection.lastout">UNetConnection.LastOut</h3>
+<p>可以把它看成已经存储到SendBuffer中, 但是还没有发送出去的Bunch,
+这个bunch可能是单个Bunch, 也可能是合并后的Bunch, 并且如果条件允许,
+还可以和当前Bunch合并成新的Bunch. 将新Bunch
+merge到<code>UNetConnection.LastOut</code>中,
+然后UNetConnection.LastOut又指向Merge后的bunch.</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FOutBunch    LastOut<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127174947503.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127175949744.png" /></p>
+<h3 id="unetconnection.laststart">UNetConnection.LastStart</h3>
+<p>最近发送的Bunch, 用它记录之前的SendBuffer.
+每当一个可与之前Bunch合并的Bunch到来时,
+将SendBuffer中之前Bunch的数据清除掉,
+然后发送之前Bunch和新Bunch合并的Bunch. 这个行为是可重复的.</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FBitWriterMark  LastStart;    <span class="comment">// Most recently sent bunch start.</span></span><br></pre></td></tr></table></figure>
+<p>记录之前SendBuffer数据.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127190200001.png" /></p>
+<p>将SendBuffer恢复到发送上一个Bunch之前的样子,
+即在SendBuffer中剔除上一个Bunch.
+因为新的Bunch已经和上一个Bunch合并成最新的Bunch, 一起发送.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127190602662.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127190743463.png" /></p>
+<p>合并之后, 将之前的Bunch从SendBuffer中剔除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127191119723.png" /></p>
+<h3 id="unetconnection.lastoutbunch">UNetConnection.LastOutBunch</h3>
+<p>UE中每个ActorChannel都有一个ReliableBunch链表,
+里面存储着待Ack的ReliableBunch, 以便丢包后重发. 针对可合并的bunch,
+需要记录链表中最后一个bunch, 如果有一个可以合并的Bunch来到,
+可以将其合并到链表的最后一个Bunch中. 具体逻辑就是:</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Most recent outgoing bunch.</span></span><br><span class="line">FOutBunch*        LastOutBunch;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231127194317192.png" /></p>
+<h1 id="总结-1">总结</h1>
+<p>由于远端没有及时响应, 导致<code>ReliableBunch</code>积累过多,
+当超过256时, UE会关闭连接. UE为了减少ReliableBunch个数,
+默认增加了合并机制.
+当同一个ActorChannel处理的ReliableBunch可合并时(ReliableBunch必须是连续的),
+进行合并. 合并后作为一个Bunch进行发送.</p>
+<h1 id="测试用例">测试用例</h1>
+<p>构建重现Overflow的测试代码:</p>
+<h2 id="两个actor交替发送rpc">两个Actor交替发送RPC</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">FVector Loc = FVector::ZeroVector;</span><br><span class="line">FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">FActorSpawnParameters Par;</span><br><span class="line">Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">UClass* pClass = <span class="built_in">LoadObject</span>&lt;UClass&gt;(<span class="keyword">this</span>, <span class="built_in">TEXT</span>(<span class="string">&quot;Blueprint&#x27;/Game/Test/TestRepFlow/BPTestRepFlowSpawnedActor.BPTestRepFlowSpawnedActor_C&#x27;&quot;</span>));</span><br><span class="line">TestRepFlowSpawnedActor = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AActor&gt;(pClass, Loc, Rot, Par);</span><br><span class="line">TestRepFlowSpawnedActor-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">TestRepFlowSpawnedActor-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">TestRepFlowSpawnedActor12 = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AActor&gt;(pClass, Loc, Rot, Par);</span><br><span class="line">TestRepFlowSpawnedActor12-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">TestRepFlowSpawnedActor12-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (ATestRepFlowSpawnedActor *pTestRepFlowSpawnedActor = <span class="built_in">Cast</span>&lt;ATestRepFlowSpawnedActor&gt;(TestRepFlowSpawnedActor))</span><br><span class="line">&#123;</span><br><span class="line">    ATestRepFlowSpawnedActor* pTestRepFlowSpawnedActor12 = <span class="built_in">Cast</span>&lt;ATestRepFlowSpawnedActor&gt;(TestRepFlowSpawnedActor12);</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;mTestNumber = <span class="number">998</span>;</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp = <span class="built_in">NewObject</span>&lt;UTestRepFlowSpawnedCmp&gt;(pTestRepFlowSpawnedActor, UTestRepFlowSpawnedCmp::<span class="built_in">StaticClass</span>());</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp-&gt;<span class="built_in">RegisterComponent</span>();</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp-&gt;TestNumber = <span class="number">999</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (int32 i = <span class="number">0</span>; i &lt; <span class="number">300</span>; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">       <span class="comment">// for test overflow</span></span><br><span class="line">        pTestRepFlowSpawnedActor-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;S2C_TestRealiableFunc();</span></span><br><span class="line">        pTestRepFlowSpawnedActor12-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;ServerMulti_TestReliableFunc();</span></span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;ServerMulti_TestUnreliableFunc();</span></span><br><span class="line">    &#125;</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">    <span class="built_in">DebugLogALSV</span>(<span class="string">&quot;ATestRepFlowActor::Tick Spawn TestRepFlowSpawnedCmp FrameIndex[%lu]&quot;</span>, GFrameNumber);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行堆栈后,
+会在函数<code>UNetDriver.ProcessRemoteFunctionForChannelPrivate</code>中CloseConnection:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128195854028.png" /></p>
+<p>BunchError的原因:ActorChannel内ReliableBunch Overflow了</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128200315759.png" /></p>
+<h2
+id="一个actor交替发送reliablerpc和unreliablerpc不行">一个Actor交替发送ReliableRPC和UnreliableRPC(不行)</h2>
+<p><span style="color:red;">这种方法不会造成ReliableBunch Overflow.
+</span></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">FVector Loc = FVector::ZeroVector;</span><br><span class="line">FRotator Rot = FRotator::ZeroRotator;</span><br><span class="line">FActorSpawnParameters Par;</span><br><span class="line">Par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;</span><br><span class="line">UClass* pClass = <span class="built_in">LoadObject</span>&lt;UClass&gt;(<span class="keyword">this</span>, <span class="built_in">TEXT</span>(<span class="string">&quot;Blueprint&#x27;/Game/Test/TestRepFlow/BPTestRepFlowSpawnedActor.BPTestRepFlowSpawnedActor_C&#x27;&quot;</span>));</span><br><span class="line">TestRepFlowSpawnedActor = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AActor&gt;(pClass, Loc, Rot, Par);</span><br><span class="line">TestRepFlowSpawnedActor-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">TestRepFlowSpawnedActor-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">TestRepFlowSpawnedActor12 = <span class="built_in">GetWorld</span>()-&gt;<span class="built_in">SpawnActor</span>&lt;AActor&gt;(pClass, Loc, Rot, Par);</span><br><span class="line">TestRepFlowSpawnedActor12-&gt;<span class="built_in">SetAutonomousProxy</span>(<span class="literal">true</span>);</span><br><span class="line">TestRepFlowSpawnedActor12-&gt;<span class="built_in">SetOwner</span>(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (ATestRepFlowSpawnedActor *pTestRepFlowSpawnedActor = <span class="built_in">Cast</span>&lt;ATestRepFlowSpawnedActor&gt;(TestRepFlowSpawnedActor))</span><br><span class="line">&#123;</span><br><span class="line">    ATestRepFlowSpawnedActor* pTestRepFlowSpawnedActor12 = <span class="built_in">Cast</span>&lt;ATestRepFlowSpawnedActor&gt;(TestRepFlowSpawnedActor12);</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;mTestNumber = <span class="number">998</span>;</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp = <span class="built_in">NewObject</span>&lt;UTestRepFlowSpawnedCmp&gt;(pTestRepFlowSpawnedActor, UTestRepFlowSpawnedCmp::<span class="built_in">StaticClass</span>());</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp-&gt;<span class="built_in">RegisterComponent</span>();</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;TestRepFlowSpawnedCmp-&gt;TestNumber = <span class="number">999</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (int32 i = <span class="number">0</span>; i &lt; <span class="number">300</span>; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">       <span class="comment">// for test overflow</span></span><br><span class="line">        pTestRepFlowSpawnedActor-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;S2C_TestRealiableFunc();</span></span><br><span class="line">        pTestRepFlowSpawnedActor12-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;ServerMulti_TestReliableFunc();</span></span><br><span class="line">        <span class="comment">//pTestRepFlowSpawnedActor-&gt;ServerMulti_TestUnreliableFunc();</span></span><br><span class="line">    &#125;</span><br><span class="line">    pTestRepFlowSpawnedActor-&gt;<span class="built_in">S2C_TestRealiableFunc</span>();</span><br><span class="line">    <span class="built_in">DebugLogALSV</span>(<span class="string">&quot;ATestRepFlowActor::Tick Spawn TestRepFlowSpawnedCmp FrameIndex[%lu]&quot;</span>, GFrameNumber);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>原因: 在发送UnreliableRPC时候, 直接丢弃了. 丢弃的原因是流量超发了,
+DS端一次性发这么多对方接受不了.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// Bunch Overflow, 不能发送unreliable RPC堆栈</span><br><span class="line">--ABasePlayerController.Tick</span><br><span class="line">|<span class="string">--AActor.ProcessEvent.if.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string">--UObject.ProcessEvent.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--AActor.CallRemoteFunction.if.for.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.ProcessRemoteFunction.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.ProcessRemoteFunction.if </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// If we&#x27;re saturated and it&#x27;s not a reliable multicast, drop it.</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--if (!(bIsReliable </span>||<span class="string"> IsConnectionReady(Connection)))</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--&#123;</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--    return true;</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--&#125;</span></span><br></pre></td></tr></table></figure>
+<h3 id="unetconnection.queuedbits">UNetConnection.QueuedBits</h3>
+<p>为了更好理解<code>UReplicationGraph::IsConnectionReady</code>函数,
+这里单门说一下<code>UNetConnection.QueuedBits</code>.
+它是为了限制带宽用的. 即不能超量发送, 要适应接受方的带宽.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UReplicationGraph::IsConnectionReady</span><span class="params">(UNetConnection* Connection)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (CVar_RepGraph_DisableBandwithLimit)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Connection-&gt;QueuedBits + Connection-&gt;SendBuffer.<span class="built_in">GetNumBits</span>() &lt;= <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="初始化">初始化</h4>
+<p>初始化时为0.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231129092418257.png" /></p>
+<h4 id="更改">更改</h4>
+<p>在<code>UNetConnection.FlushNet</code>中,
+发送<code>SendBuffer</code>之后, 会将当前Packet的bit数,
+累加到<code>UNetConnection.QueuedBits</code>中.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128204057394.png"
+alt="image-20231128204057394" />
+<figcaption aria-hidden="true">image-20231128204057394</figcaption>
+</figure>
+<p>并且在每次Tick时候, 根据网络Tick频率和当前网络速度,
+预计后续能发送的数据大小.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20231128204547769.png" /></p>
+<h3 id="总结-2">总结</h3>
+<p>一个Actor交替发送ReliableRPC和UnreliableRPC, 不能触发Overflow,
+在发送Unreliable RPC的时候, 由于远端带宽限制,
+DS检测到<code>IsConnectionReady</code>为false, 即流量超发了,
+远端无法收到. 进而直接丢弃UnreliableRPC.
+导致看似ReliableRPC与UnreliableRPC交替发送, 其实只发送了ReliableRPC.
+而ReliableBunch如果满足条件会合并的, 恰好测试用例满足了合并的条件,
+即合并了. 所以, 没有触发Overflow</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/ReliableBunch%E6%BA%A2%E5%87%BA/" rel="tag"># ReliableBunch溢出</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/PlayNetMode/" rel="prev" title="PlayNetMode">
+                  <i class="fa fa-chevron-left"></i> PlayNetMode
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/REPNOTIFY_Always%E7%9A%84%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B,%20%E4%B8%80%E6%AC%A1%E5%90%8C%E6%AD%A5%E4%BC%9A%E8%A7%A6%E5%8F%91%E4%B8%A4%E6%AC%A1OnRep/" rel="next" title="REPNOTIFY_Always的指针类型, 一次同步会触发两次OnRep">
+                  REPNOTIFY_Always的指针类型, 一次同步会触发两次OnRep <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

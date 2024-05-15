@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言 ReplicationGraph主要是针对每次都需要同步大量Actor这个痛点进行优化, 其思想是:  尽可能的剔除不需要同步的Actor. 尽可能快的筛选出需要同步的Actor. 尽可能降低Actor的同步频率.  其核心思想是构建一套Actor筛选(Gather)机制, 可以高效快速筛选本帧必须同步的Actor, 剔除那些不需要或者暂时不需要同步的Actor.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ReplicationGraph">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="前言 ReplicationGraph主要是针对每次都需要同步大量Actor这个痛点进行优化, 其思想是:  尽可能的剔除不需要同步的Actor. 尽可能快的筛选出需要同步的Actor. 尽可能降低Actor的同步频率.  其核心思想是构建一套Actor筛选(Gather)机制, 可以高效快速筛选本帧必须同步的Actor, 剔除那些不需要或者暂时不需要同步的Actor.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240510203520558.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240510203629371.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240513192121651.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240513192151519.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240513193038600.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240513165735591.png">
+<meta property="article:published_time" content="2024-05-15T02:54:53.822Z">
+<meta property="article:modified_time" content="2024-05-14T08:09:51.976Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="hidden">
+<meta property="article:tag" content="RPC">
+<meta property="article:tag" content="ReplicationGraph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/assets/image-20240510203520558.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/","path":"2024/05/15/UE/网络/ReplicationGraph/","title":"ReplicationGraph"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ReplicationGraph | NoBodyNoOne</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%90%AFreplicationgraph"><span class="nav-number">2.</span> <span class="nav-text">开启ReplicationGraph</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEreplicationdriverclassname"><span class="nav-number">2.1.</span> <span class="nav-text">设置ReplicationDriverClassName</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%91%E5%AE%9Acreatereplicationdriverdelegate"><span class="nav-number">2.2.</span> <span class="nav-text">绑定CreateReplicationDriverDelegate</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#replicationgraph%E6%B5%85%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">ReplicationGraph浅析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#globalnodes"><span class="nav-number">3.2.</span> <span class="nav-text">GlobalNodes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89node"><span class="nav-number">3.2.1.</span> <span class="nav-text">添加自定义Node</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#connectionnodes"><span class="nav-number">3.3.</span> <span class="nav-text">ConnectionNodes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89node-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">添加自定义Node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">3.3.2.</span> <span class="nav-text">注意</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91node%E4%B8%AD%E6%B7%BB%E5%8A%A0actor"><span class="nav-number">3.4.</span> <span class="nav-text">向Node中添加Actor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#uworld.listen%E6%97%B6%E5%B0%86actor%E6%B7%BB%E5%8A%A0%E5%88%B0node%E4%B8%AD"><span class="nav-number">3.4.1.</span> <span class="nav-text">UWorld.Listen时将Actor添加到Node中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87setreplicates%E6%96%B9%E5%BC%8F%E6%B7%BB%E5%8A%A0actor"><span class="nav-number">3.4.2.</span> <span class="nav-text">通过SetReplicates方式添加Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.4.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8Enode%E4%B8%AD%E5%88%A0%E9%99%A4actor"><span class="nav-number">3.5.</span> <span class="nav-text">从Node中删除Actor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#netdrivershutdown%E8%BF%9B%E8%A1%8C%E6%B8%85%E7%90%86"><span class="nav-number">3.5.1.</span> <span class="nav-text">NetDriverShutDown进行清理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#destroyactor"><span class="nav-number">3.5.2.</span> <span class="nav-text">DestroyActor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gatheractor%E5%B9%B6replicaton"><span class="nav-number">3.6.</span> <span class="nav-text">GatherActor并Replicaton</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gatheractor"><span class="nav-number">3.6.1.</span> <span class="nav-text">GatherActor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E7%AD%9B%E9%80%89%E9%80%BB%E8%BE%91"><span class="nav-number">3.6.2.</span> <span class="nav-text">进一步筛选逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%91%E7%9C%A0%E4%B8%8D%E8%BF%9B%E8%A1%8C%E5%90%8C%E6%AD%A5"><span class="nav-number">3.6.2.1.</span> <span class="nav-text">休眠不进行同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%9D%E7%A6%BB%E5%89%94%E9%99%A4"><span class="nav-number">3.6.2.2.</span> <span class="nav-text">距离剔除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E8%B6%85%E6%97%B6%E5%B8%A7%E6%95%B0"><span class="nav-number">3.6.2.3.</span> <span class="nav-text">更新超时帧数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E9%A5%A5%E9%A5%BF%E7%B3%BB%E6%95%B0"><span class="nav-number">3.6.2.4.</span> <span class="nav-text">添加饥饿系数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E9%95%BF%E6%97%B6%E9%97%B4%E6%B2%A1%E6%9C%89replication-%E5%B0%B1%E4%BC%9A%E5%85%B3%E9%97%ADchannel"><span class="nav-number">3.6.3.</span> <span class="nav-text">如果长时间没有Replication,
+就会关闭Channel</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#connectiondata.replicationperiodframe"><span class="nav-number">3.6.3.1.</span> <span class="nav-text">ConnectionData.ReplicationPeriodFrame</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">3.7.</span> <span class="nav-text">思考</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E4%B8%80%E4%B8%AAactor%E4%BB%85%E6%8C%87%E5%AE%9A%E4%BA%BA%E5%8F%AF%E8%A7%81%E6%80%8E%E4%B9%88%E5%8A%9E"><span class="nav-number">3.7.1.</span> <span class="nav-text">如果一个Actor仅指定人可见怎么办?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E4%B8%80%E4%B8%AAactor%E6%8C%87%E5%AE%9A%E4%BA%86relevantconnection-%E5%9C%A8destroy%E4%B9%8B%E5%89%8D%E8%BF%98%E8%83%BD%E6%94%B9%E5%8F%98%E5%90%97"><span class="nav-number">3.7.2.</span> <span class="nav-text">如果一个Actor指定了RelevantConnection,
+在Destroy之前还能改变吗?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AAactor%E8%83%BD%E5%90%A6%E5%AD%98%E6%94%BE%E5%9C%A8%E5%A4%9A%E4%B8%AAgraphnode%E4%B8%AD"><span class="nav-number">3.7.3.</span> <span class="nav-text">一个Actor能否存放在多个GraphNode中?</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%B1%BB%E7%AE%80%E8%BF%B0"><span class="nav-number">4.</span> <span class="nav-text">关键类简述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraph"><span class="nav-number">4.1.</span> <span class="nav-text">UReplicationGraph</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#replicationgraphframe"><span class="nav-number">4.1.1.</span> <span class="nav-text">ReplicationGraphFrame</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#globalgraphnodes"><span class="nav-number">4.1.2.</span> <span class="nav-text">GlobalGraphNodes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#globalactorreplicationinfomap"><span class="nav-number">4.1.3.</span> <span class="nav-text">GlobalActorReplicationInfoMap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#replicationgraphconnection"><span class="nav-number">4.2.</span> <span class="nav-text">ReplicationGraphConnection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89unetreplicationgraphconnection"><span class="nav-number">4.2.1.</span> <span class="nav-text">自定义UNetReplicationGraphConnection</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#factorreplisttype"><span class="nav-number">4.3.</span> <span class="nav-text">FActorRepListType</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#factorreplistrefview"><span class="nav-number">4.4.</span> <span class="nav-text">FActorRepListRefView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fconnectionreplicationactorinfo"><span class="nav-number">4.5.</span> <span class="nav-text">FConnectionReplicationActorInfo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#lastrepframenum"><span class="nav-number">4.5.1.</span> <span class="nav-text">LastRepFrameNum</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#forcenetupdateframe"><span class="nav-number">4.5.2.</span> <span class="nav-text">ForceNetUpdateFrame</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fglobalactorreplicationinfo"><span class="nav-number">4.6.</span> <span class="nav-text">FGlobalActorReplicationInfo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bwantstobedormant"><span class="nav-number">4.6.1.</span> <span class="nav-text">bWantsToBeDormant</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fnetviewer"><span class="nav-number">4.7.</span> <span class="nav-text">FNetViewer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fnetviewer.connection"><span class="nav-number">4.7.1.</span> <span class="nav-text">FNetViewer.Connection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fnetviewer.inviewer"><span class="nav-number">4.7.2.</span> <span class="nav-text">FNetViewer.InViewer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fnetviewer.viewtarget"><span class="nav-number">4.7.3.</span> <span class="nav-text">FNetViewer.ViewTarget</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fnetviewer.viewlocation"><span class="nav-number">4.7.4.</span> <span class="nav-text">FNetViewer.ViewLocation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fnetviewer.viewdir"><span class="nav-number">4.7.5.</span> <span class="nav-text">FNetViewer.ViewDir</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fconnectiongatheractorlistparameters"><span class="nav-number">4.8.</span> <span class="nav-text">FConnectionGatherActorListParameters</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%85%E6%9E%90node%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">浅析Node类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode"><span class="nav-number">5.1.</span> <span class="nav-text">UReplicationGraphNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_alwaysrelevant"><span class="nav-number">5.2.</span> <span class="nav-text">UReplicationGraphNode_AlwaysRelevant</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_gridspatialization2d"><span class="nav-number">5.3.</span> <span class="nav-text">UReplicationGraphNode_GridSpatialization2D</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E5%B8%83%E5%B1%80"><span class="nav-number">5.3.1.</span> <span class="nav-text">节点布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA"><span class="nav-number">5.3.2.</span> <span class="nav-text">创建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%80%E6%AF%81"><span class="nav-number">5.4.</span> <span class="nav-text">销毁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E5%91%98"><span class="nav-number">5.4.1.</span> <span class="nav-text">成员</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#staticspatializedactors"><span class="nav-number">5.4.1.1.</span> <span class="nav-text">StaticSpatializedActors</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%8A%82%E7%82%B9"><span class="nav-number">5.4.2.</span> <span class="nav-text">添加节点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0dormancy%E9%9D%99%E6%80%81-actor"><span class="nav-number">5.4.2.1.</span> <span class="nav-text">添加Dormancy(静态) Actor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%8A%A8%E6%80%81actor"><span class="nav-number">5.4.2.2.</span> <span class="nav-text">添加动态Actor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gatheractorlist"><span class="nav-number">5.4.3.</span> <span class="nav-text">GatherActorList</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8dormancynode%E4%B8%ADgatheractor"><span class="nav-number">5.4.3.1.</span> <span class="nav-text">在DormancyNode中GatherActor</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8%E5%8A%A8%E6%80%81%E8%8A%82%E7%82%B9%E4%B8%ADgatheractor"><span class="nav-number">5.4.3.2.</span> <span class="nav-text">在动态节点中GatherActor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="nav-number">5.4.4.</span> <span class="nav-text">删除节点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A0%E9%99%A4dormancy%E9%9D%99%E6%80%81%E8%8A%82%E7%82%B9"><span class="nav-number">5.4.4.1.</span> <span class="nav-text">删除Dormancy(静态)节点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E5%8A%A8%E6%80%81%E8%8A%82%E7%82%B9"><span class="nav-number">5.4.4.2.</span> <span class="nav-text">删除动态节点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_gridcell"><span class="nav-number">5.5.</span> <span class="nav-text">UReplicationGraphNode_GridCell</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0actor"><span class="nav-number">5.5.1.</span> <span class="nav-text">添加Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4actor"><span class="nav-number">5.5.2.</span> <span class="nav-text">删除Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B6%E9%9B%86actor"><span class="nav-number">5.5.3.</span> <span class="nav-text">收集Actor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_actorlist"><span class="nav-number">5.6.</span> <span class="nav-text">UReplicationGraphNode_ActorList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_actorlistfrequencybuckets"><span class="nav-number">5.7.</span> <span class="nav-text">UReplicationGraphNode_ActorListFrequencyBuckets</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0actor-1"><span class="nav-number">5.7.1.</span> <span class="nav-text">添加Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4actor-1"><span class="nav-number">5.7.2.</span> <span class="nav-text">删除Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B6%E9%9B%86actor-1"><span class="nav-number">5.7.3.</span> <span class="nav-text">收集Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#balance-bucket"><span class="nav-number">5.7.4.</span> <span class="nav-text">Balance Bucket</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_dynamicspatialfrequency"><span class="nav-number">5.8.</span> <span class="nav-text">UReplicationGraphNode_DynamicSpatialFrequency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_connectiondormancynode"><span class="nav-number">5.9.</span> <span class="nav-text">UReplicationGraphNode_ConnectionDormancyNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_dormancynode"><span class="nav-number">5.10.</span> <span class="nav-text">UReplicationGraphNode_DormancyNode</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0dormancyactor"><span class="nav-number">5.10.1.</span> <span class="nav-text">添加DormancyActor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#actor-dormancy%E7%8A%B6%E6%80%81%E5%8F%91%E7%94%9F%E5%8F%98%E5%8C%96"><span class="nav-number">5.10.2.</span> <span class="nav-text">Actor Dormancy状态发生变化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4dormancyactor"><span class="nav-number">5.10.3.</span> <span class="nav-text">删除DormancyActor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_tearoff_forconnection"><span class="nav-number">5.11.</span> <span class="nav-text">UReplicationGraphNode_TearOff_ForConnection</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ureplicationgraphnode_alwaysrelevant_forconnection"><span class="nav-number">5.12.</span> <span class="nav-text">UReplicationGraphNode_AlwaysRelevant_ForConnection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0actor-2"><span class="nav-number">5.12.1.</span> <span class="nav-text">添加Actor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4actor-2"><span class="nav-number">5.12.2.</span> <span class="nav-text">删除Actor</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E8%B0%83%E8%AF%95%E4%BF%A1%E6%81%AF"><span class="nav-number">6.</span> <span class="nav-text">显示调试信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%A9%E5%B1%95"><span class="nav-number">7.</span> <span class="nav-text">扩展</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%92%E8%89%B2%E5%8F%AF%E8%A7%81%E8%8C%83%E5%9B%B4%E5%8A%A8%E6%80%81%E5%8F%98%E5%8C%96"><span class="nav-number">7.1.</span> <span class="nav-text">角色可见范围动态变化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AA%E6%9C%89%E9%98%9F%E5%86%85%E5%8F%AF%E8%A7%81"><span class="nav-number">7.2.</span> <span class="nav-text">只有队内可见</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E5%8C%96"><span class="nav-number">8.</span> <span class="nav-text">优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8serverreplicateactors%E9%98%B6%E6%AE%B5-%E9%81%8D%E5%8E%86%E6%89%80%E6%9C%89actorchannel%E5%88%A4%E6%96%AD%E7%9B%B8%E5%85%B3%E6%80%A7"><span class="nav-number">8.1.</span> <span class="nav-text">在ServerReplicateActors阶段,
+遍历所有ActorChannel判断相关性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8cell%E8%BE%B9%E7%BC%98%E7%A7%BB%E5%8A%A8-%E4%BC%9A%E5%8F%8D%E5%A4%8D%E9%94%80%E6%AF%81dormancyactor"><span class="nav-number">8.2.</span> <span class="nav-text">在Cell边缘移动,
+会反复销毁DormancyActor</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E9%85%8D%E7%BD%AE"><span class="nav-number">9.</span> <span class="nav-text">额外配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEds-tick%E9%A2%91%E7%8E%87"><span class="nav-number">9.1.</span> <span class="nav-text">设置DS Tick频率</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#unetdriver.maxnettickrate"><span class="nav-number">9.1.1.</span> <span class="nav-text">UNetDriver.MaxNetTickRate</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEspatialbias"><span class="nav-number">9.2.</span> <span class="nav-text">设置SpatialBias</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E7%94%A8"><span class="nav-number">10.</span> <span class="nav-text">引用</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/ReplicationGraph/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ReplicationGraph | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ReplicationGraph
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:53" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:53+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-14 16:09:51" itemprop="dateModified" datetime="2024-05-14T16:09:51+08:00">2024-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/ReplicationGraph/" itemprop="url" rel="index"><span itemprop="name">ReplicationGraph</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>23 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言">前言</h1>
+<p>ReplicationGraph主要是针对每次都需要同步大量Actor这个痛点进行优化,
+其思想是:</p>
+<ol type="1">
+<li>尽可能的剔除不需要同步的Actor.</li>
+<li>尽可能快的筛选出需要同步的Actor.</li>
+<li>尽可能降低Actor的同步频率.</li>
+</ol>
+<p>其核心思想是构建一套Actor筛选(Gather)机制,
+可以高效快速筛选本帧必须同步的Actor,
+剔除那些不需要或者暂时不需要同步的Actor.</p>
+<span id="more"></span>
+<h1 id="开启replicationgraph">开启ReplicationGraph</h1>
+<p>首先需要开启插件才能使用.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230714115102079.png" /></p>
+<p>每个NetDriver中都存有ReplicationDriver对象, 如果开启ReplicationGraph,
+则对ReplicationDriver进行创建.
+ReplicationGraph负责筛选需要同步的Actor.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 创建ReplicationDriver的堆栈</span><br><span class="line">--UWorld.Listen()</span><br><span class="line"> |<span class="string">--UIpNetDriver.InitListen()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UIpNetDriver.InitBase()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.InitBase()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationDriver.CreateReplicationDriver()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--如果CreateReplicationDriverDelegate绑定了自定义创建时间, 则执行该行为</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--否则根据ReplicationDriverClass创建统一ReplicationDriver</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230717111353954.png" /></p>
+<p>设置ReplicatonDriver有两种方式, 并且这两种方法是互斥的,
+只能二者择其一.</p>
+<h2
+id="设置replicationdriverclassname">设置ReplicationDriverClassName</h2>
+<p>该方式简单, 只需要设置ReplicationDriverClassName,
+全局都可以进行使用.</p>
+<p>在DefaultEngine.ini配置ReplicationDriverClassName</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> DefaultEngine.ini</span><br><span class="line">[<span class="regexp">/Script/</span>OnlineSubsystemUtils.IpNetDriver]</span><br><span class="line">ReplicationDriverClassName=<span class="string">&quot;/Script/ReplicationGraph.BasicReplicationGraph&quot;</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230714120156766.png" /></p>
+<h2
+id="绑定createreplicationdriverdelegate">绑定CreateReplicationDriverDelegate</h2>
+<p>如果需要根据地图创建不同的Replication,
+则需要绑定UReplicationDriver.CreateReplicationDriverDelegate事件.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230717104325744.png" /></p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">示例:</span><br><span class="line">UReplicationDriver::CreateReplicationDriverDelegate<span class="function"><span class="params">()</span>.<span class="title">BindLambda</span><span class="params">([](UNetDriver* ForNetDriver, <span class="keyword">const</span> FURL&amp; URL, UWorld* World) -&gt; UReplicationDriver*</span></span></span><br><span class="line"><span class="params"><span class="function">    &#123;</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">return</span> NewObject&lt;UMyReplicationDriverClass&gt;(GetTransientPackage());</span></span></span><br><span class="line"><span class="params"><span class="function">    &#125;)</span>;</span></span><br></pre></td></tr></table></figure>
+<h1 id="replicationgraph浅析">ReplicationGraph浅析</h1>
+<h2 id="架构">架构</h2>
+<p>UE使用UDP进行数据传输. 用NetworkDriver作为网络驱动, 管理所有网络连接.
+每个链接用一个Connection表示. 每个Connection有包含一个ControlChannel,
+一个VoiceChannel, 和多个ActorChannel.
+每个ActorChannel又和ReplicationActor一一对应. <strong>但是一个大项目,
+又有过多的Actor需要同步,
+为了解决每次将所有Actor都同步导致DS性能压力过大的问题,
+ReplicationGraph应运而生.</strong>
+ReplicationGraph是在Connection和NetworkDriver中插入了一个管理器,
+其作用是为了管理需要同步的Actor, 尽可能少同步, 间隔同步Actor.
+即其功能主要是<strong>筛选(UE称为Gather)</strong>当前帧必要同步的Actor,
+非必要的Actor不进行同步, 如果能充分利用好筛选机制,
+可以有效减轻DS网络同步的压力.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230718164510639.png" /></p>
+<h2 id="globalnodes">GlobalNodes</h2>
+<p><strong>GlobalNodes指全局节点, 每个Connection都会用到的节点.</strong>
+ReplicationGraph使用UReplicationGraph.GlobalGraphNodes存储所有全局节点,
+并且每次都会从全局节点中筛选Actor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230718205206908.png" /></p>
+<p>UReplicationGraphNode节点创建初始化, 并添加到GlobalNodes中</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 节点创建初始化, 并添加到GlobalNodes中</span></span><br><span class="line">--UWorld.<span class="built_in">Listen</span>()</span><br><span class="line"> |--UIpNetDriver.<span class="built_in">InitListen</span>()</span><br><span class="line"> | |--UIpNetDriver.<span class="built_in">InitBase</span>()</span><br><span class="line"> | | |--UNetDriver.<span class="built_in">InitBase</span>()</span><br><span class="line"> | | | |--UNetDriver.<span class="built_in">SetReplicationDriver</span>()</span><br><span class="line"> | | | | |--UReplicationGraph.<span class="built_in">InitForNetDriver</span>()</span><br><span class="line"> | | | | | |--UBasicReplicationGraph.<span class="built_in">InitGlobalGraphNodes</span>()</span><br><span class="line"> | | | | | | |--<span class="comment">//创建UReplicationGraphNode_GridSpatialization2D节点并添加到GlobalNodes中</span></span><br><span class="line"> | | | | | | |--GridNode = <span class="built_in">CreateNewNode</span>&lt;UReplicationGraphNode_GridSpatialization2D&gt;();</span><br><span class="line"> | | | | | | | |--NewObject Node</span><br><span class="line"> | | | | | | | |--UReplicationGraph.<span class="built_in">InitNode</span>()</span><br><span class="line"> | | | | | | | | |--Node-&gt;<span class="built_in">Initialize</span>(GraphGlobals);</span><br><span class="line"> | | | | | | | | |-- UReplicationGraphNode.bRequiresPrepareForReplicationCall必须在构造函数中设置, 不支持动态修改.</span><br><span class="line"> | | | | | | | | |-- 如果UReplicationGraphNode.bRequiresPrepareForReplicationCall为<span class="literal">true</span>, 还会在每帧Replication之前, 调用UReplicationGraphNode.<span class="built_in">PrepareForReplication</span>()</span><br><span class="line"> | | | | | | |--<span class="built_in">AddGlobalGraphNode</span>(GridNode)</span><br><span class="line"> | | | | | | |--<span class="comment">// 创建UReplicationGraphNode_ActorList节点并添加到GlobalNodes中</span></span><br><span class="line"> | | | | | | | |--GlobalGraphNodes.<span class="built_in">Add</span>(GraphNode);</span><br><span class="line"> | | | | | | |--AlwaysRelevantNode = <span class="built_in">CreateNewNode</span>&lt;UReplicationGraphNode_ActorList&gt;();</span><br><span class="line"> | | | | | | | |--NewObject Node</span><br><span class="line"> | | | | | | | |--UReplicationGraph.<span class="built_in">InitNode</span>()</span><br><span class="line"> | | | | | | | | |--Node-&gt;<span class="built_in">Initialize</span>(GraphGlobals);</span><br><span class="line"> | | | | | | | | |-- UReplicationGraphNode.bRequiresPrepareForReplicationCall必须在构造函数中设置, 不支持动态修改.</span><br><span class="line"> | | | | | | | | |-- 如果UReplicationGraphNode.bRequiresPrepareForReplicationCall为<span class="literal">true</span>, 还会在每帧Replication之前, 调用UReplicationGraphNode.<span class="built_in">PrepareForReplication</span>()</span><br><span class="line"> | | | | | | |--<span class="built_in">AddGlobalGraphNode</span>(AlwaysRelevantNode);</span><br><span class="line"> | | | | | | | |--GlobalGraphNodes.<span class="built_in">Add</span>(GraphNode);</span><br></pre></td></tr></table></figure>
+<p>可以看到, node创建之后直接进行初始化, 并添加到GlobalNode中.
+而且如果需要在Replicatie之前每帧调用,
+还会添加到UReplicationGraph.PrepareForReplicationNodes中. <strong>注意:
+UReplicationGraphNode.bRequiresPrepareForReplicationCall必须在构造函数中设置,
+不支持动态修改.</strong></p>
+<h3 id="添加自定义node">添加自定义Node</h3>
+<p>从上述流程可以看出, 如果想要向GlobalNode添加自定义节点,
+需要重写UReplicationGraph::InitGlobalGraphNodes.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230719195554209.png" /></p>
+<h2 id="connectionnodes">ConnectionNodes</h2>
+<p><strong>ConnectionNode是指针对某一个链接的特定节点,
+对其他Connection不可见.</strong>
+其存放在UNetReplicationGraphConnection.ConnectionGraphNodes中.
+ConnectionNode是依赖Connection存在的,
+其放在UNetReplicationGraphConnection.ConnectionGraphNodes中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230719103542363.png" /></p>
+<p>UReplicationGraphNode节点创建初始化,
+并添加到UNetReplicationGraphConnection.ConnectionGraphNodes中.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// UNetReplicationGraphConnection创建, 初始化并添加UReplicationGraphNode</span></span><br><span class="line">--UIpNetDriver.<span class="built_in">TickDispatch</span>()</span><br><span class="line"> |--UIpNetDriver.<span class="built_in">ProcessConnectionlessPacket</span>()</span><br><span class="line"> | |--UNetDriver.<span class="built_in">AddClientConnection</span>()</span><br><span class="line"> | | |--UReplicationGraph.<span class="built_in">AddClientConnection</span>()</span><br><span class="line"> | | | |--UReplicationGraph.<span class="built_in">CreateClientConnectionManagerInternal</span>()</span><br><span class="line"> | | | | |--UNetReplicationGraphConnection* NewConnectionManager = <span class="built_in">NewObject</span>&lt;UNetReplicationGraphConnection&gt;(<span class="keyword">this</span>, ReplicationConnectionManagerClass.<span class="built_in">Get</span>());</span><br><span class="line"> | | | | |--NewConnectionManager-&gt;<span class="built_in">InitForGraph</span>(<span class="keyword">this</span>);</span><br><span class="line"> | | | | |--NewConnectionManager-&gt;<span class="built_in">InitForConnection</span>(Connection);</span><br><span class="line"> | | | | |--UBasicReplicationGraph.<span class="built_in">InitConnectionGraphNodes</span>(NewConnectionManager);</span><br><span class="line"> | | | | | |--UReplicationGraph.<span class="built_in">InitConnectionGraphNodes</span>()</span><br><span class="line"> | | | | | | |--<span class="comment">// 创建TearOffNode</span></span><br><span class="line"> | | | | | | |--ConnectionManager-&gt;TearOffNode = <span class="built_in">CreateNewNode</span>&lt;UReplicationGraphNode_TearOff_ForConnection&gt;();</span><br><span class="line"> | | | | | | |--ConnectionManager-&gt;<span class="built_in">AddConnectionGraphNode</span>(ConnectionManager-&gt;TearOffNode);</span><br><span class="line"> | | | | | |--UReplicationGraphNode_AlwaysRelevant_ForConnection* AlwaysRelevantNodeForConnection = <span class="built_in">CreateNewNode</span>&lt;UReplicationGraphNode_AlwaysRelevant_ForConnection&gt;();</span><br><span class="line"> | | | | | |--<span class="built_in">AddConnectionGraphNode</span>(AlwaysRelevantNodeForConnection, RepGraphConnection);</span><br><span class="line"> | | | | | |--AlwaysRelevantForConnectionList.<span class="built_in">Emplace</span>(RepGraphConnection-&gt;NetConnection, AlwaysRelevantNodeForConnection);</span><br></pre></td></tr></table></figure>
+<h3 id="添加自定义node-1">添加自定义Node</h3>
+<p>从上面堆栈可以看出如果想要添加自定义Node,
+需要重写UReplicationGraph::InitConnectionGraphNodes.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230719195842066.png" /></p>
+<h3 id="注意">注意</h3>
+<p>理论上来讲,
+只有针对某个Connection可见的Actor应该直接放在UNetReplicationGraphConnection中.
+当Actor Spawn时,
+直接放入connectionGraph中的UReplicationGraphNode_AlwaysRelevant_ForConnection,
+当删除的时候,
+从UReplicationGraphNode_AlwaysRelevant_ForConnection中删除.
+但是UE中的实现是, 添加中转站,
+在添加的时候临时放入了UBasicReplicationGraph.ActorsWithoutNetConnection,
+然后在UBasicReplicationGraph::ServerReplicateActors时候将其分配到指定connectionGraphNode中.<strong>UE这么做的原因是为了提高效率,
+避免循环遍历查找对应的Connection.
+而且将通过UBasicReplicationGraph.AlwaysRelevantForConnectionList查找对应的GraphNode,
+可以提高Cache命中.</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720110310765.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720110225060.png" /></p>
+<p><strong>启发: 通过以上分析, 可以得出, 如果想要添加自定义节点,
+可以将其直接放在UBasicReplicationGraph中,
+通过查找方式找到对应node节点.</strong></p>
+<h2 id="向node中添加actor">向Node中添加Actor</h2>
+<p>向Node中添加Actor的时机有两种, 一种是在World刚启动时候,
+遍历world中所有Actor添加到Node中.
+另一种是动态SetReplicates的Actor时添加到Node中.</p>
+<h3
+id="uworld.listen时将actor添加到node中">UWorld.Listen时将Actor添加到Node中</h3>
+<p>DS在World初始化时, UWorld.Listen期间, 将遍历所有Actor,
+如果为Replication, 则将其添加到Node中</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// UWorld.Listen时将Actor添加到Node中</span><br><span class="line">--UWorld.Listen()</span><br><span class="line"> |<span class="string">--UIpNetDriver.InitListen()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UIpNetDriver.InitBase()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.InitBase()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.SetReplicationDriver()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.InitializeActorsInWorld()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.InitializeForWorld()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">-- // 遍历world中所有Actor, 如果需要Replication, 则添加到Node中</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.AddNetworkActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.RouteAddNetworkActorToNodes()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UBasicReplicationGraph.RouteAddNetworkActorToNodes()</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720113125360.png" /></p>
+<h3
+id="通过setreplicates方式添加actor">通过SetReplicates方式添加Actor</h3>
+<p>在函数SetReplicates中,
+会触发UWorld.AddNetworkActor将其添加到Node中</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AActor.SetReplicates方式将Actor添加到Node中</span></span><br><span class="line">--AActor.<span class="built_in">SetReplicates</span>()</span><br><span class="line"> |--UWorld.<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | |--<span class="built_in">ForEachNetDrive</span>()</span><br><span class="line"> | | |--UNetDriver.<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | |--UReplicationGraph.<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | | |--UBasicReplicationGraph.<span class="built_in">RouteAddNetworkActorToNodes</span>()</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720112558172.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720112525688.png" /></p>
+<h3 id="总结">总结</h3>
+<ol type="1">
+<li>针对所有Connection都需要Replication的类型:</li>
+</ol>
+<p>和Level相关的Actor,
+会放入FStreamingLevelActorListCollection.StreamingLevelLists中.
+和level无关的Actor放入了UReplicationGraphNode_ActorList.ReplicationActorList中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720210652092.png" /></p>
+<ol start="2" type="1">
+<li>只在某些Connection中Replication类型:</li>
+</ol>
+<p>只在某些Connection中Replication的类型,
+需要放入UReplicationGraphNode_AlwaysRelevant_ForConnection中,
+但是和Level相关的Actor,
+会放入FStreamingLevelActorListCollection.StreamingLevelLists中.
+和level无关的Actor放入了UReplicationGraphNode_ActorList.ReplicationActorList中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720210835983.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720211008639.png" /></p>
+<h2 id="从node中删除actor">从Node中删除Actor</h2>
+<p>删除分两种, 一种是当WorldDestroy时, 清理NetDriver,
+会将Node连同里面的Actor一并清理掉(自动GC). 另一种是主动DestroyActor.</p>
+<h3 id="netdrivershutdown进行清理">NetDriverShutDown进行清理</h3>
+<p>在ShutDown时, 如果pawn没有清理, 会清理PlayerController中的Pawn,
+然后是PlayerController. 其他的Actor依赖GC自动清理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720153000689.png" /></p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// 当NetDriver shutdown时, 销毁playercontroller</span><br><span class="line">--UNetDriver.Shutdown()</span><br><span class="line"> |<span class="string">--// 遍历所有Connection, 进行销毁</span></span><br><span class="line"><span class="string"> </span>|<span class="string">--获取PlayerController的Pawn, 进行销毁</span></span><br><span class="line"><span class="string"> </span>|<span class="string">--// 清理Connection</span></span><br><span class="line"><span class="string"> </span>|<span class="string">--UIpConnection.CleanUp()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.CleanUp()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetConnection.DestroyOwningActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--OwningActor-&gt;OnNetCleanup(this);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--APlayerController.OnNetCleanup()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--AActor.Destroy()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UWorld.DestroyActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.NotifyActorDestroyed()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.RemoveNetworkActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.RemoveNetworkActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UBasicReplicationGraph.RouteRemoveNetworkActorToNodes()</span></span><br></pre></td></tr></table></figure>
+<h3 id="destroyactor">DestroyActor</h3>
+<p>在DestoryActor时, 会删除其在网络中的Node节点.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Destroy时删除其对应Node</span><br><span class="line">--AActor.Destroy()</span><br><span class="line"> |<span class="string">--UWorld.DestroyActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.NotifyActorDestroyed()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--遍历所有Connection, destroy该Actor对应的Channel</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Channel-&gt;Close(EChannelCloseReason::Destroyed);</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.RemoveNetworkActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.RemoveNetworkActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UBasicReplicationGraph.RouteRemoveNetworkActorToNodes()</span></span><br></pre></td></tr></table></figure>
+<p>在DestroyActor时, 先关闭Channel, 再删除ReplicationGraph中的Node.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720155614505.png" /></p>
+<h2 id="gatheractor并replicaton">GatherActor并Replicaton</h2>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// ReplicationGraph ReplicateActor堆栈:</span><br><span class="line">--UNetDriver.TickFlush()</span><br><span class="line"> |<span class="string">--UNetDriver.ServerReplicateActors()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.ServerReplicateActors()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Gather Global nodeActor</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--Gather Connection Node Actor</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.ReplicateActorListsForConnections_Default()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.ReplicateSingleActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.ReplicateActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.ReplicateProperties()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.ReplicateProperties()</span></span><br></pre></td></tr></table></figure>
+<p>上述流程用流程图方式表示为:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230718172454023.png" /></p>
+<p>可以明显看出, 使用ReplicationGraph Replication
+Actor的流程大致分成三个阶段:
+GatherActor-&gt;ReplicateActor-&gt;ReplicateDestructionActor(CloseChannel).
+而这其中, ReplicationGraph主要的功能是提供了一个框架,
+用于快速高效筛选出针对该Connection需要同步的Actor.
+并且该框架还可以进行扩展, 甚至可以利用这个思想,
+自己写一套更适合项目的筛选框架.
+ReplicationGraph可以简单的理解为其最大的作用就是高效筛选.</p>
+<h3 id="gatheractor">GatherActor</h3>
+<p>从以下代码可以看出, GatherActor是有具体Node决定的, 在整体架构逻辑中,
+只是每次遍历所有Node, 所以这里要注意, 对于Node节点的构建一定要慎重.
+对于具体Gather方式, 后续分析每个Node类的时候会详细说明,
+这里不再赘述.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720162348489.png" /></p>
+<h3 id="进一步筛选逻辑">进一步筛选逻辑</h3>
+<p>在UReplicationGraph::ReplicateActorListsForConnections_Default中会进一步筛选,
+并对筛选的结果进行属性同步. 首先遍历所有GatherActorList,
+针对每个Actor计算权重, 权重(AccumulatedPriority)越小, 越先进行同步.
+下面浅析具体步骤:</p>
+<h4 id="休眠不进行同步">休眠不进行同步</h4>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721120605139.png" /></p>
+<h4 id="距离剔除">距离剔除</h4>
+<p>剔除距离之外的Actor,并且距离越近, 系数越小, 优先进行同步.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721120801804.png" /></p>
+<h4 id="更新超时帧数">更新超时帧数</h4>
+<p>详细参考:<a
+href="#ConnectionData.ReplicationPeriodFrame">如果长时间没有Replication,
+就会关闭Channel</a></p>
+<h4 id="添加饥饿系数">添加饥饿系数</h4>
+<p>添加饥饿系数, 越多帧数没有同步, 越饥饿, 饥饿系数越小, 优先级越高,
+越有可能提前同步.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721120939398.png" /></p>
+<h3
+id="如果长时间没有replication-就会关闭channel">如果长时间没有Replication,
+就会关闭Channel</h3>
+<p>丢失相关性, 需要关闭掉Channel.
+即ReplicationGraph通过Frame来记录更新间隔, 如果超过一定帧数,
+就会强制关闭Channel.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720213928141.png" /></p>
+<p>关闭时间的计算方式:
+当前帧数+Replication间隔周期(ConnectionData.ReplicationPeriodFrame)+ActorChannel超时帧数(GlobalData.Settings.ActorChannelFrameTimeout)+全局ActorChannel超时帧数(GlobalActorChannelFrameNumTimeout),
+为了防止复数出现,还做了保底校验:在ConnectionData.ActorChannelCloseFrameNum,
+NewCloseFrameNum中取做大的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721103220087.png" /></p>
+<h4
+id="connectiondata.replicationperiodframe">ConnectionData.ReplicationPeriodFrame</h4>
+<p>ConnectionData.ReplicationPeriodFrame源自FConnectionReplicationActorInfo-&gt;UNetReplicationGraphConnection.ActorInfoMap中的元素.
+而UNetReplicationGraphConnection.ActorInfoMap,
+在NotifyActorChannelAdded期间,
+会将Actor添加到UNetReplicationGraphConnection.ActorInfoMap中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721103901433.png" /></p>
+<p>而其信息都是从FPerConnectionActorInfoMap.GlobalMap中获取的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721104013435.png" /></p>
+<p>其结构如下图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721114041727.png" /></p>
+<p>其中关键的, 并且外部可以设置的是ClassInfo.ReplicationPeriodFrame,
+它是根据ActorCDO-&gt;NetUpdateFrequency计算而来.
+DSMaxTick频率/网络更新频率. 假设DS tick最大频率为30帧/s,
+而ActorCDO-&gt;NetUpdateFrequency设置为15次/s,
+则其更新频率为每两帧(30/15)更新一次.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721114404166.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721114649916.png" /></p>
+<h2 id="思考">思考</h2>
+<h3
+id="如果一个actor仅指定人可见怎么办">如果一个Actor仅指定人可见怎么办?</h3>
+<p>新建一个GraphNode类, 只存储某几个Connection可见的Actor.
+一个常见的例子是小队内部某个Actor可见. 可以创建一个TeamNode类型,
+然后根据Connection去判断是否可见. 需要考虑的是小队内部成员可以动态变动,
+那么当小队成员退出时候, 需要销毁其Channel(参见:<a
+href="#如果一个Actor指定了RelevantConnection,%20在Destroy之前还能改变吗">如果一个Actor指定了RelevantConnection,
+在Destroy之前还能改变吗</a>).</p>
+<h3
+id="如果一个actor指定了relevantconnection-在destroy之前还能改变吗">如果一个Actor指定了RelevantConnection,
+在Destroy之前还能改变吗?</h3>
+<p>从ReplicationGraph中看来, 目前不支持, 如果需要中途可变,
+则需要修改引擎代码, 增加ChangeRelevant的逻辑, 并且需要注意的是,
+还要关闭之前的Channel, 再打开新的channel. 关闭Channel需要手动,
+打开channel是引擎自动执行的.</p>
+<p>手动关闭channel的代码可以参考:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230720161842777.png" /></p>
+<h3
+id="一个actor能否存放在多个graphnode中">一个Actor能否存放在多个GraphNode中?</h3>
+<p>当然可以, 但是最好不要这样做.
+ReplicationGraph的初衷是减少Gather时CPU的消耗,
+不要因为使用了ReplicationGraph导致性能反而下降了.</p>
+<p><strong>最好</strong>是每个Actor有其自己所归属的Node,
+并且针对某个Connection可以快速判断当前该Actor是否需要Replication.</p>
+<h1 id="关键类简述">关键类简述</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/1715667420277sfafd-9.png" /></p>
+<h2 id="ureplicationgraph">UReplicationGraph</h2>
+<p>是ReplicationGraph模块, 用于管理整体ReplicationGraph的流程.</p>
+<h3 id="replicationgraphframe">ReplicationGraphFrame</h3>
+<p>Replication更新的帧数, 每更新一次, ReplicationGraphFrame加一.</p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/** Internal frame counter <span class="keyword">for</span> replication. This <span class="built_in">is</span> only updated <span class="keyword">by</span> us. </span><br><span class="line">    The one <span class="keyword">of</span> UNetDriver can be updated <span class="keyword">by</span> RPC calls <span class="built_in">and</span> </span><br><span class="line">    <span class="built_in">is</span> only used <span class="keyword">to</span> invalidate <span class="keyword">shared</span> <span class="keyword">property</span> CLs/serialiation data. */</span><br><span class="line">uint32 ReplicationGraphFrame = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721154114644.png" /></p>
+<h3 id="globalgraphnodes">GlobalGraphNodes</h3>
+<p>记录当前Network的所有Actor. 用于剔除重复添加和重复删除.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** A list of nodes that can add actors to all connections. </span></span><br><span class="line"><span class="comment">    They don&#x27;t necessarily *have to* add actors to each connection, </span></span><br><span class="line"><span class="comment">    but they will get a chance to. These are added via ::AddGlobalGraphNode  */</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line">TArray&lt;UReplicationGraphNode*&gt; GlobalGraphNodes;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230725105057650.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230725105201242.png" /></p>
+<h3
+id="globalactorreplicationinfomap">GlobalActorReplicationInfoMap</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FGlobalActorReplicationInfoMap GlobalActorReplicationInfoMap;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化堆栈:</span></span><br><span class="line">UWorld.Listen </span><br><span class="line">--UIpNetDriver.InitListen </span><br><span class="line"> |--UIpNetDriver.InitBase </span><br><span class="line"> | |--UNetDriver.InitBase.<span class="keyword">if</span> </span><br><span class="line"> | | |--UNetDriver.SetReplicationDriver.<span class="keyword">if</span> </span><br><span class="line"> | | | |--UReplicationGraph.InitForNetDriver </span><br><span class="line"> | | | | |--Super::<span class="built_in">InitGlobalActorClassSettings</span>();</span><br><span class="line"> | | | | | |--<span class="comment">// AInfo and APlayerControllers have no world location, so distance scaling should always be 0</span></span><br><span class="line"> | | | | | |--FClassReplicationInfo NonSpatialClassInfo;</span><br><span class="line"> | | | | | |--NonSpatialClassInfo.DistancePriorityScale = <span class="number">0.f</span>;</span><br><span class="line"> | | | | | |--</span><br><span class="line"> | | | | | |--GlobalActorReplicationInfoMap.<span class="built_in">SetClassInfo</span>( AInfo::<span class="built_in">StaticClass</span>(), NonSpatialClassInfo );</span><br><span class="line"> | | | | | |--GlobalActorReplicationInfoMap.<span class="built_in">SetClassInfo</span>( APlayerController::<span class="built_in">StaticClass</span>(), NonSpatialClassInfo );</span><br><span class="line"> | | | | | |--</span><br><span class="line"> | | | | | |--RPC_Multicast_OpenChannelForClass.<span class="built_in">Reset</span>();</span><br><span class="line"> | | | | | |--RPC_Multicast_OpenChannelForClass.<span class="built_in">Set</span>(AActor::<span class="built_in">StaticClass</span>(), <span class="literal">true</span>); <span class="comment">// Open channels for multicast RPCs by default</span></span><br><span class="line"> | | | | | |--RPC_Multicast_OpenChannelForClass.<span class="built_in">Set</span>(AController::<span class="built_in">StaticClass</span>(), <span class="literal">false</span>);</span><br><span class="line"> | | | | | |--RPC_Multicast_OpenChannelForClass.<span class="built_in">Set</span>(AServerStatReplicator::<span class="built_in">StaticClass</span>(), <span class="literal">false</span>);    </span><br><span class="line"> | | | | |--UBasicReplicationGraph.InitGlobalActorClassSettings.<span class="keyword">for</span> </span><br><span class="line"> | | | | | |--<span class="keyword">for</span> (TObjectIterator&lt;UClass&gt; It; It; ++It)</span><br><span class="line"> | | | | | |--&#123;</span><br><span class="line"> | | | | | |--    GlobalActorReplicationInfoMap.<span class="built_in">SetClassInfo</span>( Class, ClassInfo );</span><br><span class="line"> | | | | | |--&#125;</span><br><span class="line"> | | | | | |--</span><br></pre></td></tr></table></figure>
+<p>初始化:在ReplicationGrap启动的时候,
+向<code>GlobalActorReplicationInfoMap</code>中塞入各种类型信息.</p>
+<p><img src="./assets/image-20240510203520558.png" /></p>
+<p>在UBasicReplicationGraph中遍历所有Class信息,
+塞入<code>GlobalActorReplicationInfoMap</code>中.</p>
+<p><img src="./assets/image-20240510203629371.png" /></p>
+<h2 id="replicationgraphconnection">ReplicationGraphConnection</h2>
+<p>每个ReplicationGraph包含很多ReplicationGraphConnection,
+每个ReplicationGraphConnection对应一个NetConnection.
+<strong>ReplicationGraphConnection相当于ReplicationGraph与NetConnection交互的桥梁.</strong>
+ReplicationGraphConnection是一个接口类,
+里面定义Connection添加,删除,休眠Actor等事件, 可以供各个模块重写.
+在NetConnection创建的时候, 也会随之创建ReplicationGraphConnection.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230717114137912.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230717114458029.png" /></p>
+<h3
+id="自定义unetreplicationgraphconnection">自定义UNetReplicationGraphConnection</h3>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 创建UNetReplicationGraphConnection的堆栈</span><br><span class="line">--UIpNetDriver.TickDispatch()</span><br><span class="line"> |<span class="string">--UIpNetDriver.ProcessConnectionlessPacket()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.AddClientConnection()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.AddClientConnection()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UReplicationGraph.CreateClientConnectionManagerInternal()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetReplicationGraphConnection* NewConnectionManager = NewObject&lt;UNetReplicationGraphConnection&gt;(this, ReplicationConnectionManagerClass.Get());</span></span><br></pre></td></tr></table></figure>
+<p>可以通过配置自定义UNetReplicationGraphConnection</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[/Script/ReplicationGraph.UReplicationGraph]</span></span><br><span class="line"><span class="attr">ReplicationConnectionManagerClass</span>=<span class="string">&quot;/Script/模块名.类名&quot;</span></span><br></pre></td></tr></table></figure>
+<p>UNetReplicationGraphConnection的创建和初始化:</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230717114556756.png"
+alt="image-20230717114556756" />
+<figcaption aria-hidden="true">image-20230717114556756</figcaption>
+</figure>
+<h2 id="factorreplisttype">FActorRepListType</h2>
+<p>可以看出, 它是一个裸指针, 没有用UPROPERTY包裹, 不参与GC.
+这一点很重要,
+因为只要后续没有维护好Actor的生命周期(处理好Actor引用问题),
+就会崩溃.</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef AActor* FActorRepListType<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<h2 id="factorreplistrefview">FActorRepListRefView</h2>
+<p>它是一个Actor*的数组, 存储Actor*的数组</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct REPLICATIONGRAPH_API FActorRepListRefView</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    TArray&lt;FActorRepListType&gt; RepList<span class="comment">;</span></span><br><span class="line">&#125;<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<h2
+id="fconnectionreplicationactorinfo">FConnectionReplicationActorInfo</h2>
+<p>每个Connection中,
+对于每个需要同步的Actor都使用FConnectionReplicationActorInfo进行描述.
+记录该Actor在这个Connection中Replication的信息. 注意:
+每个Actor在不同Connection中同步的数据是不一样的.</p>
+<h3 id="lastrepframenum">LastRepFrameNum</h3>
+<p>上一次更新的帧数. 在每次ReplicateSingleActor时候进行更新.</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The last frame that this actor replicated on to this connection */</span></span><br><span class="line"><span class="built_in">uint32</span>    LastRepFrameNum = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721152525525.png" /></p>
+<h3 id="forcenetupdateframe">ForceNetUpdateFrame</h3>
+<p>必须更新的帧数. 该变量在Actor调用ForceNetUpdate函数时候进行更新.
+它的意思是这帧必须更新了, 但是是否进行Replication, 还得看其优先级.</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** the last time game code called ForceNetUpdate on this actor */</span></span><br><span class="line"><span class="built_in">uint32</span> ForceNetUpdateFrame = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230721152933750.png" /></p>
+<h2 id="fglobalactorreplicationinfo">FGlobalActorReplicationInfo</h2>
+<p>其存储在UReplicationGraph.GlobalActorReplicationInfoMap中,
+存储Actor对应的Network需要的网络信息.
+每当Replication使用该Actor都会创建一份.
+RemoveNetworkActor时候会删除其数据. <span style="color:red">注意:
+每个Actor都有自己唯一对应的<code>FGlobalActorReplicationInfo</code>.</span></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Per-Actor data that is global for the entire Replication Graph */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">FGlobalActorReplicationInfo</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/** The last time AActor::PreReplication was called. Used to track when we need to call it again. */</span></span><br><span class="line">    uint32 LastPreReplicationFrame = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** the last time game code called ForceNetUpdate on this actor */</span></span><br><span class="line">    uint32 ForceNetUpdateFrame = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Cached World Location of the actor */</span></span><br><span class="line">    FVector WorldLocation;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Mirrors AActor::NetDormancy &gt; DORM_Awake */</span></span><br><span class="line">    <span class="type">bool</span> bWantsToBeDormant = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if we should swap the actor role and remote role before calling ReplicateActor() */</span></span><br><span class="line">    <span class="type">bool</span> bSwapRolesOnReplicate = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Class default mirrors: state that is initialized directly from class defaults (and can be later changed on a per-actor basis) */</span></span><br><span class="line">    FClassReplicationInfo Settings;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**	Fast Shared path data */</span></span><br><span class="line">    TUniquePtr&lt;FFastSharedReplicationInfo&gt; FastSharedReplicationInfo;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Last frame FlushNetDormancy was called. Used to early out when it is called multiple times per frame */</span></span><br><span class="line">    uint32 LastFlushNetDormancyFrame = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -----------------------------------------------------------</span></span><br><span class="line">    <span class="comment">//	Events: Keep this last/at the bottom of the structure. The event data is the largest chunk but accessed the least</span></span><br><span class="line">    <span class="comment">// -----------------------------------------------------------</span></span><br><span class="line">    FGlobalActorReplicationEvents Events;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">/** When this actor replicates, we replicate these actors immediately afterwards (they are not gathered/prioritized/etc) */</span></span><br><span class="line">    FDependantListType DependentActorList;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** When this actor is added to the dependent list of a parent, track the parent here */</span></span><br><span class="line">    FDependantListType ParentActorList;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>通过UReplicationGraph.AddNetworkActor向<code>UReplicationGraph.GlobalActorReplicationInfoMap</code>中添加数据:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230722105341965.png" /></p>
+<p>当然, 也可以通过其他方式添加, 但是这种添加都是不严谨的, 无法被清理的.
+其实理论上它们已经通过UReplicationGraph.AddNetworkActor添加过了,
+但是这里没有进行判断, 直接添加了FGlobalActorReplicationInfo.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230722105456685.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230722105649199.png" /></p>
+<p>通过UReplicationGraph::RemoveNetworkActor进行删除:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230722105807151.png" /></p>
+<h3 id="bwantstobedormant">bWantsToBeDormant</h3>
+<p>表明当前是否需要属性同步.</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Mirrors AActor::NetDormancy &gt; DORM_Awake */</span></span><br><span class="line"><span class="built_in">bool</span> bWantsToBeDormant = <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<p>在AActor::FlushNetDormancy调用时候,
+会将bWantsToBeDormant临时设置为true, 进行一次完整的属性同步,
+然后关闭.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230725110022877.png" /></p>
+<h2 id="fnetviewer">FNetViewer</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** stores information on a viewer that actors need to be checked against for relevancy */</span></span><br><span class="line"><span class="comment">// 存储着观察者(链接)的信息, 包括观察者本身的Connection, PlayerController, ViewTarget, ViewLocation, ViewDir等</span></span><br></pre></td></tr></table></figure>
+<h3 id="fnetviewer.connection"><code>FNetViewer.Connection</code></h3>
+<p>观察者对应的Connection.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UNetConnection* Connection;</span><br></pre></td></tr></table></figure>
+<h3 id="fnetviewer.inviewer"><code>FNetViewer.InViewer</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The &quot;controlling net object&quot; associated with this view (typically player controller) */</span></span><br><span class="line"><span class="comment">// 与玩家关联的控制网络的对象, 例如:PlayerController.</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AActor</span>* InViewer;</span><br></pre></td></tr></table></figure>
+<h3 id="fnetviewer.viewtarget"><code>FNetViewer.ViewTarget</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** The actor that is being directly viewed, usually a pawn.  Could also be the net actor of consequence */</span></span><br><span class="line"><span class="comment">// 被观察者直接观察的对象, 通常是Pawn. 也可以是网络对象.</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AActor</span>* ViewTarget;</span><br></pre></td></tr></table></figure>
+<h3
+id="fnetviewer.viewlocation"><code>FNetViewer.ViewLocation</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Where the viewer is looking from */</span></span><br><span class="line"><span class="comment">// 观察者从哪个地方进行观察</span></span><br><span class="line">FVector ViewLocation;</span><br></pre></td></tr></table></figure>
+<h3 id="fnetviewer.viewdir"><code>FNetViewer.ViewDir</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Direction the viewer is looking */</span></span><br><span class="line"><span class="comment">// 观察者看的方向</span></span><br><span class="line">FVector ViewDir;</span><br></pre></td></tr></table></figure>
+<h2
+id="fconnectiongatheractorlistparameters">FConnectionGatherActorListParameters</h2>
+<p>FConnectionGatherActorListParameters解析:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514160624706.png" /></p>
+<p><strong>添加元素:</strong>每次添加都是一整个数组的添加. 并且没有去重,
+因为去重是在Add时候做的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514160743058.png" /></p>
+<h1 id="浅析node类型">浅析Node类型</h1>
+<p>节点类型汇总:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240506195413270.png" /></p>
+<p>堡垒之夜节点架构图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/Freplication-graph-nodes.jpg" /></p>
+<h2 id="ureplicationgraphnode">UReplicationGraphNode</h2>
+<h2
+id="ureplicationgraphnode_alwaysrelevant">UReplicationGraphNode_AlwaysRelevant</h2>
+<h2
+id="ureplicationgraphnode_gridspatialization2d">UReplicationGraphNode_GridSpatialization2D</h2>
+<p><strong>节点管理器, 用于管理平面内所有节点. </strong>
+这是ReplicationGraph中非常重要的一个节点类型, 根据空间分布规则,
+将节点放入指定Cell中, 然后根据玩家位置,
+取出对应Cell中需要同步的Actor.</p>
+<h3 id="节点布局">节点布局</h3>
+<ol type="1">
+<li><p>UReplicationGraphNode_GridSpatialization2D节点中包含很多个UReplicationGraphNode_GridCell节点,
+它们棋盘状分布.</p></li>
+<li><p>每个UReplicationGraphNode_GridCell节点包含一个Dormancy点+ActorListFrequencyBucket节点.</p></li>
+<li><p>Dormancy管理者多个ConnectionDormancy节点.
+每个ConnectionDormancy节点管理Actor.
+(注意真正管理Actor的是ConnectionDormancyNode.)</p></li>
+<li><p>ActorListFrequencyBucket节点管理多个桶, 每个桶包含多个Actor.
+每次只取其中一个桶.</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514105627680.png" /></p>
+<p>注意: Actor会根据AActor.NetCullDistanceSquared计算覆盖Cell的范围,
+然后将Actor放入该范围内所有的Cell中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726202241471.png" /></p>
+<p>A和B在Cell中的布局</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726204107297.png" /></p>
+<h3 id="创建">创建</h3>
+<p><code>UReplicationGraphNode_GridSpatialization2D</code>作为<code>UBasicReplicationGraph</code>的成员:<code>UBasicReplicationGraph.GridNode</code>,
+在<code>UBasicReplicationGraph::InitGlobalGraphNodes</code>中创建,
+并进行初始化. 并且在创建的同时,
+还设置了其<code>CellSize</code>和<code>SpatialBias</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513145437603.png" /></p>
+<h2 id="销毁">销毁</h2>
+<p>其生命周期与ReplicationGraph一致,
+当ReplicationGraph销毁时其随之销毁.</p>
+<h3 id="成员">成员</h3>
+<h4 id="staticspatializedactors">StaticSpatializedActors</h4>
+<p>所有的DormancyActor都放在这里. 支持重建.</p>
+<figure class="highlight bnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TMap<span class="attribute">&lt;FActorRepListType, FCachedStaticActorInfo&gt;</span> StaticSpatializedActors;</span><br></pre></td></tr></table></figure>
+<p>添加Dormancy Actor:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726201326318.png" /></p>
+<p>删除DormancyActor:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726201656027.png" /></p>
+<h3 id="添加节点">添加节点</h3>
+<p>最终会Actor会添加到CellNode中.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ActorSpawn时候, 将Actor添加到GridNode中</span></span><br><span class="line">--UWorld::<span class="built_in">SpawnActor</span>()</span><br><span class="line"> |--UWorld::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | |--<span class="comment">// 遍历所有NetDriver, 并将Actor添加到其中</span></span><br><span class="line"> | |--Driver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | |--UNetDriver::<span class="built_in">AddNetworkActor</span>()</span><br><span class="line"> | | | |--<span class="built_in">GetNetworkObjectList</span>().<span class="built_in">FindOrAdd</span>(Actor, <span class="keyword">this</span>);</span><br><span class="line"> | | | |--<span class="comment">// 向ReplicationGraph中添加NetworkActor</span></span><br><span class="line"> | | | |--ReplicationDriver-&gt;<span class="built_in">AddNetworkActor</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 添加Actor对应的描述信息FGlobalActorReplicationInfo</span></span><br><span class="line"> | | | | |--FGlobalActorReplicationInfo&amp; GlobalInfo = GlobalActorReplicationInfoMap.<span class="built_in">Get</span>(Actor);</span><br><span class="line"> | | | | |--<span class="comment">// 设置Dormant属性</span></span><br><span class="line"> | | | | |--GlobalInfo.bWantsToBeDormant = Actor-&gt;NetDormancy &gt; DORM_Awake;</span><br><span class="line"> | | | | |--UReplicationGraph::<span class="built_in">RouteAddNetworkActorToNodes</span>()</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bAlwaysRelevant, 添加到AlwaysRelevantNode中</span></span><br><span class="line"> | | | | | |--AlwaysRelevantNode-&gt;<span class="built_in">NotifyAddNetworkActor</span>(ActorInfo);</span><br><span class="line"> | | | | | |--<span class="comment">// 针对ActorInfo.Actor-&gt;bOnlyRelevantToOwner, 添加到ActorsWithoutNetConnection中</span></span><br><span class="line"> | | | | | |--ActorsWithoutNetConnection.<span class="built_in">Add</span>(ActorInfo.Actor);</span><br><span class="line"> | | | | | |--<span class="comment">// 其他情况添加到GridNode中</span></span><br><span class="line"> | | | | | |--GridNode-&gt;<span class="built_in">AddActor_Dormancy</span>(ActorInfo, GlobalInfo);</span><br><span class="line"> | | | | | | |--UReplicationGraphNode_GridSpatialization2D::AddActor_Dormancy</span><br><span class="line"> | | | | | | |--<span class="comment">// 如果要想要休眠, 调用AddActorInternal_Static函数</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Static</span>(ActorInfo, ActorRepInfo, <span class="literal">true</span>);</span><br><span class="line"> | | | | | | |--<span class="comment">// 否则, 调用AddActorInternal_Dynamic</span></span><br><span class="line"> | | | | | | |--<span class="built_in">AddActorInternal_Dynamic</span>(ActorInfo);</span><br><span class="line"> | | | | | | | |--<span class="comment">// 放入了UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中</span></span><br><span class="line"> | | | | | | | |--DynamicSpatializedActors.<span class="built_in">Emplace</span>(ActorInfo.Actor, ActorInfo);</span><br></pre></td></tr></table></figure>
+<p>将Actor分成静态和动态, 区分的依据是ActorRepInfo.bWantsToBeDormant,
+即是否要休眠.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726210906261.png" /></p>
+<p>而GlobalInfo.bWantsToBeDormant是依据当前Actor-&gt;NetDormancy的值确定的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726211112437.png" /></p>
+<h4 id="添加dormancy静态-actor">添加Dormancy(静态) Actor</h4>
+<p>观察添加Actor的逻辑, 针对DormancyActor, 会找到其对应的Cell,
+然后都放进去.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726205014091-1690377136460-1.png" /></p>
+<p>并针对每个Cell, 在其下创建ReplicationGraphNode_DormancyNode,
+将Actor添加进去.</p>
+<h4 id="添加动态actor">添加动态Actor</h4>
+<p>针对DynamicActor,
+会先放入UReplicationGraphNode_GridSpatialization2D.DynamicSpatializedActors中,
+然后在PrepareForReplication中放入对应的Cell中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726205252226.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726205527716.png" /></p>
+<p>其实, 这里无需每帧都提取Actor对应的Cell然后再检测是否发生变化,
+只要检测位置等信息是否发生变化, 如果发生变化, 再提取对应Cell添加.
+这一点是可以优化的.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726205740315.png" /></p>
+<h3 id="gatheractorlist">GatherActorList</h3>
+<p>根据ViewLocation计算出所处的Cell, 然后提取Cell中所有的Actor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726212730637.png" /></p>
+<p>然后分别提取Cell中ReplicationGraphNode_DormancyNode和ReplicationGraphNode_ActorListFrequencyBuckets中的Actor.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726212916041.png" /></p>
+<h4 id="在dormancynode中gatheractor">在DormancyNode中GatherActor</h4>
+<p>ReplicationGraphNode_DormancyNode中, 不会收集任何Actor,
+因为DormancyActor不需要同步.
+但是该Cell对应的UReplicationGraphNode_ConnectionDormancyNode,
+可能有需要在该Connection同步的Actor, 所以需要检查一下.</p>
+<p>处理非StreamLevel的actor</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726214409040.png" /></p>
+<p>处理StreamLevel的Actor:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726214533842.png" /></p>
+<h4 id="在动态节点中gatheractor">在动态节点中GatherActor</h4>
+<p>在UReplicationGraphNode_ActorListFrequencyBuckets中,
+提取Buckets中对应的数据.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726214814462.png" /></p>
+<h3 id="删除节点">删除节点</h3>
+<h4 id="删除dormancy静态节点">删除Dormancy(静态)节点</h4>
+<p>会将Actor对应的所有Cell中的数据都删除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726211523823.png" /></p>
+<h4 id="删除动态节点">删除动态节点</h4>
+<p>会将Actor对应的所有Cell中的数据都删除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230726211625154.png" /></p>
+<h2
+id="ureplicationgraphnode_gridcell">UReplicationGraphNode_GridCell</h2>
+<p>节点管理器, 管理一片区域内的节点.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514115451589.png" /></p>
+<h3 id="添加actor">添加Actor</h3>
+<p>添加流程是根据Actor类型, 将其分发到对应节点,
+然后根据Node逻辑再执行添加逻辑.</p>
+<p>添加DormancyActor:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514114853326.png" /></p>
+<p>添加非Dormancy Actor, 还要注意, 对于非DormancyActor,
+由于其坐标会频繁发生变化所以并不是实时添加到Cell中,
+而是先放入PendingList中, 然后在每帧初始时,
+在函数<code>UReplicationGraphNode_GridSpatialization2D::PrepareForReplication</code>中,
+将其分配到指定Cell中, 在根据由Cell将其分配到指定Node后,
+执行具体的添加逻辑.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514114920729.png" /></p>
+<h3 id="删除actor">删除Actor</h3>
+<p>与添加Actor类似, 删除Actor也需要根据Actor类型,
+然后将其分发到指定Cell进行删除处理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514115613360.png" /></p>
+<h3 id="收集actor">收集Actor</h3>
+<p>使用基类函数<code>UReplicationGraphNode_ActorList::GatherActorListsForConnection</code>,
+遍历所有Node节点, 递归调用gather进行收集.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514114819228.png" /></p>
+<h2
+id="ureplicationgraphnode_actorlist">UReplicationGraphNode_ActorList</h2>
+<p>中间节点, 目前使用的都是其子类, 不直接使用它.</p>
+<h2
+id="ureplicationgraphnode_actorlistfrequencybuckets">UReplicationGraphNode_ActorListFrequencyBuckets</h2>
+<p>在ReplicationGraph中默认启用, 管理Cell中非DormancyActor.
+该Node管理策略是使用桶的方式, 将Actor平均存放在多个桶中,
+每次只取其中一个桶的Actor. 如果开启了SharedFastPath,
+取出一个桶用于ReplicationActor, 其他桶中Actor用于SharedFastPath
+Replication.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514111751040.png" /></p>
+<h3 id="添加actor-1">添加Actor</h3>
+<p>添加Actor的情况一般发生在:</p>
+<ol type="1">
+<li>Actor创建时候添加到网络</li>
+<li>Actor被设置成需要Replicate.</li>
+<li>一个Actor由Dormancy变成Awake.</li>
+</ol>
+<p>数据流如下:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514113412809.png" /></p>
+<h3 id="删除actor-1">删除Actor</h3>
+<p>依旧区分Streaming和NonSteaming Actor. 将其从ActorList中删除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514113800483.png" /></p>
+<h3 id="收集actor-1">收集Actor</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514113703451.png" /></p>
+<h3 id="balance-bucket">Balance Bucket</h3>
+<p>计算一共多少个Actor, 然后根据桶的个数, 将其平均分配到桶里.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514113929765.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240514113910644.png" /></p>
+<h2
+id="ureplicationgraphnode_dynamicspatialfrequency">UReplicationGraphNode_DynamicSpatialFrequency</h2>
+<h2
+id="ureplicationgraphnode_connectiondormancynode">UReplicationGraphNode_ConnectionDormancyNode</h2>
+<p>参考:<code>UReplicationGraphNode_DormancyNode</code></p>
+<h2
+id="ureplicationgraphnode_dormancynode">UReplicationGraphNode_DormancyNode</h2>
+<p>一个<code>UReplicationGraphNode_DormancyNode</code>管理n个<code>UReplicationGraphNode_ConnectionDormancyNode</code>,
+其中n代表当前链接数量. <span style="color:red">注意:
+<code>UReplicationGraphNode_DormancyNode</code>并不管理Actor,
+其管理<code>UReplicationGraphNode_ConnectionDormancyNode</code>.</span></p>
+<p>这里需要重点说一下,
+为什么要在<code>UReplicationGraphNode_DormancyNode::GatherActorListsForConnection</code>时创建新的<code>UReplicationGraphNode_ConnectionDormancyNode</code>,
+原因: Connection可能是后面重新加的, 而不是DS启动时创建的.
+比如有个玩家在游戏进程到一半的时候突然加进来, 比如: 断线重连.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513201309749.png" /></p>
+<h3 id="添加dormancyactor">添加DormancyActor</h3>
+<p>注意, 这里向<code>UReplicationGraphNode_DormancyNode</code>添加Actor,
+其实Actor最终会被添加到<code>UReplicationGraphNode_ConnectionDormancyNode</code>中,
+而<code>UReplicationGraphNode_DormancyNode</code>就是一个管理器,
+其本身并不管理Actor,
+而是管理<code>UReplicationGraphNode_ConnectionDormancyNode</code>.</p>
+<ol type="1">
+<li><p>Actor加入网络:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513201727175.png" /></p></li>
+<li><p>Actor Dormancy属性发生变化</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513201903909.png" /></p></li>
+<li><p>DormancyFlush时, 如果没有添加,
+会再次将Actor添加到<code>UReplicationGraphNode_ConnectionDormancyNode</code>中.</p></li>
+</ol>
+<h3 id="actor-dormancy状态发生变化">Actor Dormancy状态发生变化</h3>
+<p>核心函数:<code>UReplicationGraphNode_GridCell::OnStaticActorNetDormancyChange</code>.
+处理情况:</p>
+<ol type="1">
+<li>由Dormancy变成非Dormancy, 从Dormancy节点将该Actor删除.</li>
+<li>由非Dormancy变成Dormancy, 将Actor添加到Dormancy节点中.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513115823062.png" /></p>
+<ol start="3" type="1">
+<li><p>调用<code>AActor.FlushNetDormancy</code>时,
+会主动将其添加到<code>UReplicationGraphNode_ConnectionDormancyNode</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513203617836.png" /></p></li>
+</ol>
+<h3 id="删除dormancyactor">删除DormancyActor</h3>
+<ol type="1">
+<li><p>Actor从Cell中被移除了. 例如Actor销毁. 影响范围:
+该Actor的所有<code>UReplicationGraphNode_ConnectionDormancyNode</code>全部移除.</p>
+<p><img src="./assets/image-20240513192121651.png" /></p></li>
+<li><p>Actor Dormancy属性发生了变化. 由Dormancy变成非Dormancy. 影响范围:
+该Actor的所有<code>UReplicationGraphNode_ConnectionDormancyNode</code>全部移除.</p>
+<p><img src="./assets/image-20240513192151519.png" /></p></li>
+<li><p>当Actor在某个Connection的状态变成FullDormancy后,
+会将Actor从<code>UReplicationGraphNode_ConnectionDormancyNode</code>中移除.
+因为当Actor在某个Connection中所有数据都传输成功后, 会变成FullDormancy,
+当收到<code>Ack</code>后会触发<code>UNetReplicationGraphConnection::NotifyActorFullyDormantForConnection</code>,
+进而触发
+会将对应Connection存储的<code>FConnectionReplicationActorInfo.bDormantOnConnection</code>设置为true.
+<code>FConnectionReplicationActorInfo.bDormantOnConnection</code>设置为1.</p>
+<p><img src="./assets/image-20240513193038600.png" /></p>
+<p>堆栈:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ActorChannel进入DormancyClose流程, 向客户端发送DormancyClose Bunch</span></span><br><span class="line">--UNetDriver.<span class="built_in">TickFlush</span>()</span><br><span class="line"> |--<span class="comment">// 针对所有ClientConnection, 都会进行tick</span></span><br><span class="line"> |--UIpConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | |--UNetConnection.<span class="built_in">Tick</span>()</span><br><span class="line"> | | |--<span class="comment">// 遍历所有需要Tick的Channel, 进行tick</span></span><br><span class="line"> | | |--UActorChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | |--UChannel.<span class="built_in">Tick</span>()</span><br><span class="line"> | | | | |--<span class="comment">// 当满足条件bPendingDormancy &amp;&amp; ReadyForDormancy() 时候, 进行BecomeDormant</span></span><br><span class="line"> | | | | |--UChannel.<span class="built_in">BecomeDormant</span>()</span><br><span class="line"> | | | | | |--bPendingDormancy = <span class="literal">false</span>;</span><br><span class="line"> | | | | | |--bIsInDormancyHysteresis = <span class="literal">false</span></span><br><span class="line"> | | | | | |--Dormant = <span class="literal">true</span></span><br><span class="line"> | | | | | |--UActorChannel.<span class="built_in">Close</span>(EChannelCloseReason::Dormancy);</span><br><span class="line"> | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | |--UChannel::<span class="built_in">Close</span>()</span><br><span class="line"> | | | | | | | | |--CloseBunch.bReliable = <span class="number">1</span>;</span><br><span class="line"> | | | | | | | | |--CloseBunch.CloseReason = Reason;</span><br><span class="line"> | | | | | | | | |--<span class="built_in">SendBunch</span>( &amp;CloseBunch, <span class="number">0</span> );</span><br><span class="line"> | | | | | | |--Connection-&gt;Driver-&gt;<span class="built_in">NotifyActorFullyDormantForConnection</span>(Actor, Connection);</span><br><span class="line"> | | | | | | | |--UReplicationDriver.<span class="built_in">NotifyActorFullyDormantForConnection</span>()</span><br><span class="line"> | | | | | | | | |--<span class="comment">// 遍历所有UReplicationGraph.Connections, 将FConnectionReplicateActorInfo.bDormantOnConnection设置为true</span></span><br><span class="line"> | | | | | | | | |--FConnectionReplicateActorInfo.bDormantOnConnection = <span class="literal">true</span></span><br><span class="line"> | | | | | | | | |-- <span class="comment">// 至此, 该Actor进入Dormancy.</span></span><br></pre></td></tr></table></figure>
+<p>注意,
+此时还没有将Actor从<code>UReplicationGraphNode_ConnectionDormancyNode</code>,
+等待下一次在<code>UReplicationGraphNode_ConnectionDormancyNode::GatherActorListsForConnection</code>的时候将该Actor从ReplicationActorList中删除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513200950951.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513201024687.png" /></p>
+<p>那什么时候会再次添加呢? 调用<code>AActor.FlushNetDormancy</code>时,
+会主动将其添加到<code>UReplicationGraphNode_ConnectionDormancyNode</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513203617836.png" /></p></li>
+</ol>
+<h2
+id="ureplicationgraphnode_tearoff_forconnection">UReplicationGraphNode_TearOff_ForConnection</h2>
+<h2
+id="ureplicationgraphnode_alwaysrelevant_forconnection">UReplicationGraphNode_AlwaysRelevant_ForConnection</h2>
+<p>顾名思义, 该节点存放针对某个Connection一直显示的节点,
+其中包括PlayerController和ViewTaget.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230825213804982.png" /></p>
+<h3 id="添加actor-2">添加Actor</h3>
+<h3 id="删除actor-2">删除Actor</h3>
+<h1 id="显示调试信息">显示调试信息</h1>
+<h1 id="扩展">扩展</h1>
+<h2 id="角色可见范围动态变化">角色可见范围动态变化</h2>
+<p>参考UReplicationGraphNode_GridSpatialization2D的设计理念, 反向设计,
+新建一种类型的Node, 采用九宫格理念.</p>
+<p>首先新建一个种类的Actor, 该Actor针对不同角色, 可见范围是不同的.
+新建一个类型的Node, 存储这种Actor, 并且在Node中我们依旧建立Cell,
+但是Actor只存储在包含其位置的Cell中.
+然后根据角色的可见范围确定需要提取哪些Cell中的Actor, 然后进行属性同步.
+当前这种方式缺点很明显, 就是每次都要计算需要同步哪些Cell中的Actor.
+也可以根据项目具体情况使用缓存, bucket等方式做进一步优化.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230727103516974.png" /></p>
+<h2 id="只有队内可见">只有队内可见</h2>
+<p>新建TeamNode, 只有队内可见的Actor都放在这个节点内部.
+并且只有队内的Connection才能在TeamNode提取Actor.</p>
+<h1 id="优化">优化</h1>
+<h2
+id="在serverreplicateactors阶段-遍历所有actorchannel判断相关性">在ServerReplicateActors阶段,
+遍历所有ActorChannel判断相关性</h2>
+<p>如下图, 针对每个Connection都会遍历其所有ActorChannel, 判断其相关性.
+这里其实是根据期望关闭的FrameNumber判断该Channel是否需要关闭.
+相当于保底操作, 但是该操作造成帧都会遍历一遍所有ActorChannel,
+消耗很大.</p>
+<p><img src="./assets/image-20240513165735591.png" /></p>
+<p><strong>优化方法:</strong></p>
+<p>如果DS中Channel过多, 会造成性能消耗过大,
+期望每帧将暂时不需要进行数据传输的Channel关闭. 基于这个需求,
+我们可以分帧检测, 可以间隔帧检测. 甚至, 我可做工具,
+检测哪些Channel会间隔多长时间,
+进而制定根据类型的Actor进行Dormancy的策略.</p>
+<p>关键词:<code>ActorChannelCloseFrameNum</code>,
+<code>UpdateActorChannelCloseFrameNum</code>,
+<code>根据相关性关闭Channel</code></p>
+<h2 id="在cell边缘移动-会反复销毁dormancyactor">在Cell边缘移动,
+会反复销毁DormancyActor</h2>
+<p>经过上述分析, 可以得出,
+ReplicationGraph大部分的消耗都在GatherActor中. 所以构建Node策略尤其重要,
+但是Node策略和游戏玩法又强相关, 不同游戏玩法, 其策略可能完全不同.
+那么有没有通用的优化方式呢? 并行, 将GatherActor并行化,
+充分利用DS多核优势. 而且它是由并行理论基础的, GatherActor理论上只是收集,
+并不修改其中的数据, 即是需要修改,
+那么可以将需要修改的点放入并行结果的临时变量中,
+等待并行结束后顺序修改.</p>
+<p>其实, ReplicationActor在序列化时候也可以并行,
+并且并行会极大提升其效率, 最关键的一点是SharedSerialization的处理,
+这里可以加锁, 但是一定要限制加锁的范围, 尽可能小范围内加锁.
+并且针对指定Actor加锁, 并不是所有执行逻辑到这里都要加锁,
+而是要同Actor在不同Connection序列化时, 需要修改或暂存数据时, 才去加锁.
+例如Actor1和Actor2使用的一定是不同的锁, Actor1和Actor2一般不会产生竞争,
+他们之间基本上不需要加锁.</p>
+<h1 id="额外配置">额外配置</h1>
+<h2 id="设置ds-tick频率">设置DS Tick频率</h2>
+<p>编辑器下, ReplicationGraph
+Tick还UNetDriver.NetServerMaxTickRate限制.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230825220045011.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230825220121323.png" /></p>
+<h3 id="unetdriver.maxnettickrate">UNetDriver.MaxNetTickRate</h3>
+<p>针对Connection的Tick:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230825220440406.png" /></p>
+<h2 id="设置spatialbias">设置SpatialBias</h2>
+<p><code>UReplicationGraphNode_GridSpatialization2D.SpatialBias</code>:
+空间偏移. 比如棋盘需要从0,0位置开始, 但是空间坐标有正负,
+怎样把负坐标转换成正的Cell数组下标索引呢? 答案: 偏移.
+将空间最小值偏移为0, 则其所有位置都能映射为正数了.</p>
+<p>在<code>UBasicReplicationGraph</code>初始化时进行设置,
+默认值是10000cm.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513145620627.png" /></p>
+<p>还可以通过<code>UReplicationGraphNode_GridSpatialization2D::SetBiasAndGridBounds</code>设置其偏移:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240513145113027.png" /></p>
+<h1 id="引用">引用</h1>
+<ol type="1">
+<li><a
+href="#https://www.unrealengine.com/zh-CN/tech-blog/replication-graph-overview-and-proper-replication-methods">堡垒之夜-ReplicationGraph</a></li>
+</ol>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/hidden/" rel="tag"># hidden</a>
+              <a href="/tags/RPC/" rel="tag"># RPC</a>
+              <a href="/tags/ReplicationGraph/" rel="tag"># ReplicationGraph</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

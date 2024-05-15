@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="FastArray处理流程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE4 FastArray">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="FastArray处理流程">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-05-15T02:54:53.846Z">
+<meta property="article:modified_time" content="2023-11-16T02:49:09.258Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE网络">
+<meta property="article:tag" content="FastArray">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/","path":"2024/05/15/UE/网络/UE FastArray/","title":"UE4 FastArray"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>UE4 FastArray | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E9%97%AE"><span class="nav-number">1.</span> <span class="nav-text">提问</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%8F%98%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">关键变量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ffastarrayserializer"><span class="nav-number">2.1.</span> <span class="nav-text">FFastArraySerializer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#itemmap"><span class="nav-number">2.1.1.</span> <span class="nav-text">ItemMap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#idcounter"><span class="nav-number">2.1.2.</span> <span class="nav-text">IDCounter</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ffastarrayserializeritem"><span class="nav-number">2.2.</span> <span class="nav-text">FFastArraySerializerItem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#replicationid"><span class="nav-number">2.2.1.</span> <span class="nav-text">ReplicationID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replicationkey"><span class="nav-number">2.2.2.</span> <span class="nav-text">ReplicationKey</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mostrecentarrayreplicationkey"><span class="nav-number">2.2.3.</span> <span class="nav-text">MostRecentArrayReplicationKey</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fnetfasttarraybasestate"><span class="nav-number">2.3.</span> <span class="nav-text">FNetFastTArrayBaseState</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#idtoclmap"><span class="nav-number">2.3.1.</span> <span class="nav-text">IDToCLMap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#arrayreplicationkey"><span class="nav-number">2.3.2.</span> <span class="nav-text">ArrayReplicationKey</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ffastarrayserializerheader.basereplicationkey"><span class="nav-number">2.4.</span> <span class="nav-text">FFastArraySerializerHeader.BaseReplicationKey</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ds%E5%A4%84%E7%90%86fastarray"><span class="nav-number">3.</span> <span class="nav-text">DS处理FastArray</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray-layout"><span class="nav-number">3.1.</span> <span class="nav-text">FastArray Layout</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fastarray-layout%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="nav-number">3.1.1.</span> <span class="nav-text">FastArray Layout的构建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E6%AE%8A%E5%A4%84%E7%90%86isfastarray%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.2.</span> <span class="nav-text">特殊处理IsFastArray类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%85%88%E5%A4%84%E7%90%86customdeltaproperty-changelist"><span class="nav-number">3.3.</span> <span class="nav-text">预先处理CustomDeltaProperty
+ChangeList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%89%80%E6%9C%89customdeltaproperty"><span class="nav-number">3.4.</span> <span class="nav-text">处理所有CustomDeltaProperty</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%85%E7%90%86retirementlist"><span class="nav-number">3.4.1.</span> <span class="nav-text">清理RetirementList</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AE%9E%E7%8E%B0%E6%AF%94%E8%BE%83%E5%B9%B6%E8%8E%B7%E5%BE%97changedelements"><span class="nav-number">3.4.2.</span> <span class="nav-text">自定义实现比较并获得ChangedElements</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AEidtoclmap"><span class="nav-number">3.4.2.1.</span> <span class="nav-text">关键数据IDToCLMap</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A1%AB%E5%85%85newstate%E7%9A%84idtoclmap-%E5%AF%B9%E6%AF%94replicationkey-%E5%A1%AB%E5%85%85changedelementlist"><span class="nav-number">3.4.2.2.</span> <span class="nav-text">填充NewState的IDToCLMap,
+对比ReplicationKey, 填充changedElementList</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97changeditems%E5%92%8Cdeleteditems"><span class="nav-number">3.4.2.3.</span> <span class="nav-text">计算ChangedItems和DeletedItems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%AE%A1%E7%AE%97changedlist"><span class="nav-number">3.4.3.</span> <span class="nav-text">核心:计算ChangedList</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E5%BB%BAshadow"><span class="nav-number">3.4.3.1.</span> <span class="nav-text">构建Shadow</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E5%87%BA%E8%BF%99%E4%B8%80%E5%B8%A7%E5%92%8C%E4%B8%8A%E4%B8%80%E5%B8%A7%E7%9A%84changelist"><span class="nav-number">3.4.3.2.</span> <span class="nav-text">计算出这一帧和上一帧的ChangeList</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E5%8E%86%E5%8F%B2%E9%9C%80%E8%A6%81resend%E6%95%B0%E6%8D%AE"><span class="nav-number">3.4.3.3.</span> <span class="nav-text">合并历史需要Resend数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E6%9E%9Cchangelist%E4%B8%BA%E7%A9%BA-%E9%87%8D%E5%8F%91%E6%89%80%E6%9C%89%E6%95%B0%E6%8D%AE"><span class="nav-number">3.4.3.4.</span> <span class="nav-text">如果ChangeList为空,
+重发所有数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE"><span class="nav-number">3.4.4.</span> <span class="nav-text">发送数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ds%E5%A1%AB%E5%85%85%E6%B6%88%E6%81%AF"><span class="nav-number">3.5.</span> <span class="nav-text">DS填充消息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84%E5%9B%BE"><span class="nav-number">3.5.1.</span> <span class="nav-text">消息结构图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A1%AB%E5%85%85deltaheader"><span class="nav-number">3.5.2.</span> <span class="nav-text">填充DeltaHeader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96%E9%9C%80%E8%A6%81%E5%8F%91%E9%80%81%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="nav-number">3.5.3.</span> <span class="nav-text">序列化需要发送的数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%92%8C%E4%BF%AE%E6%94%B9"><span class="nav-number">3.6.</span> <span class="nav-text">添加和修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">3.7.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%A4%84%E7%90%86fastarray"><span class="nav-number">4.</span> <span class="nav-text">客户端处理FastArray</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90deltaheader"><span class="nav-number">4.1.</span> <span class="nav-text">解析DeltaHeader</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90changeditem"><span class="nav-number">4.2.</span> <span class="nav-text">解析ChangedItem</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#postreceivecleanup%E5%9B%9E%E8%B0%83%E5%A4%84%E7%90%86"><span class="nav-number">4.3.</span> <span class="nav-text">PostReceiveCleanup回调处理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%9B%B4%E6%96%B0guid"><span class="nav-number">5.</span> <span class="nav-text">客户端更新GUID</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96gatherguidreferencesupdateunmappedobjects%E6%B5%81%E7%A8%8B"><span class="nav-number">5.1.</span> <span class="nav-text">反序列化+GatherGuidReferences+UpdateUnmappedObjects流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#moveguidtounmapped%E6%B5%81%E7%A8%8B"><span class="nav-number">5.2.</span> <span class="nav-text">MoveGuidToUnmapped流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE"><span class="nav-number">6.</span> <span class="nav-text">问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E7%9B%B8%E4%BA%92%E5%A5%97%E7%94%A8%E6%80%8E%E4%B9%88%E4%BC%A0%E8%BE%93"><span class="nav-number">6.1.</span> <span class="nav-text">FastArray相互套用怎么传输</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%A4%E4%B8%AAitem%E4%BD%8D%E7%BD%AE%E5%8F%91%E7%94%9F%E5%8F%98%E5%8C%96-%E4%BC%9A%E4%BC%A0%E8%BE%93%E6%95%B0%E6%8D%AE%E5%90%97"><span class="nav-number">6.2.</span> <span class="nav-text">如果数组中两个Item位置发生变化,
+会传输数据吗?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E8%B0%83%E7%94%A8%E7%9A%84%E6%97%B6memcopy-%E5%88%99%E4%B8%8D%E4%BC%9A%E4%BC%A0%E8%BE%93%E6%95%B0%E6%8D%AE"><span class="nav-number">6.2.1.</span> <span class="nav-text">如果调用的时Memcopy,
+则不会传输数据:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E8%B0%83%E7%94%A8-%E5%88%99%E4%BC%9A"><span class="nav-number">6.2.2.</span> <span class="nav-text">如果调用&#x3D;, 则会</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.2.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E6%9C%89%E4%BD%BF%E7%94%A8shadedserialized%E5%90%97"><span class="nav-number">6.3.</span> <span class="nav-text">FastArray有使用ShadedSerialized吗?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E6%AF%8F%E5%B8%A7%E6%9C%80%E5%A4%9A%E5%8F%AA%E8%BF%9B%E8%A1%8C%E4%B8%80%E6%AC%A1%E6%AF%94%E8%BE%83%E5%90%97-%E6%80%8E%E4%B9%88%E5%8E%BB%E9%87%8D%E7%9A%84"><span class="nav-number">6.4.</span> <span class="nav-text">FastArray每帧最多只进行一次比较吗?
+怎么去重的?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%92%8C%E8%B0%81%E6%AF%94%E8%BE%83"><span class="nav-number">6.5.</span> <span class="nav-text">FastArray第一次和谁比较?</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E5%BF%AB%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="nav-number">7.1.</span> <span class="nav-text">FastArray快在哪里</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fastarray%E6%9C%AC%E8%BA%AB%E6%9C%89%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98"><span class="nav-number">7.2.</span> <span class="nav-text">FastArray本身有哪些问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">7.3.</span> <span class="nav-text">注意</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%20FastArray/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="UE4 FastArray | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE4 FastArray
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:53" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:53+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-11-16 10:49:09" itemprop="dateModified" datetime="2023-11-16T10:49:09+08:00">2023-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/FastArray/" itemprop="url" rel="index"><span itemprop="name">FastArray</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>19 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/UE4%E7%BD%91%E7%BB%9C-CustomDeltaProperty%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B.drawio1.png"
+alt="FastArray处理流程" />
+<figcaption aria-hidden="true">FastArray处理流程</figcaption>
+</figure>
+<span id="more"></span>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/FastArrayMsgArchitecture.png"
+alt="FastArray消息架构图" />
+<figcaption aria-hidden="true">FastArray消息架构图</figcaption>
+</figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906145455490.png" /></p>
+<h1 id="提问">提问</h1>
+<ol type="1">
+<li><p>普通TArray和FastArray的增删改查有什么区别?
+(文中有FastArray详细讲解)</p></li>
+<li><p>普通TArray有哪些缺点, FastArray优化了哪些点? (文末指出)</p></li>
+<li><p>类似于HistoryChangedList, FastArray怎么实现的?
+(Retirement+HistoryList)</p></li>
+<li><p>ReceivingRepState, SendingRepState, FastArray又是怎么实现的?
+(存放在自身结构体<code>FFastArraySerializer</code>中)</p></li>
+<li><p>UnmapedGUID, FastArray怎么实现的?
+(存放在<code>FFastArraySerializer.GuidReferencesMap</code>中)</p></li>
+<li><p>FastArray第一次同步和谁对比, 是全量同步吗?(和Archetype对比,
+根据Changelist同步)</p></li>
+</ol>
+<h1 id="关键变量">关键变量</h1>
+<h2 id="ffastarrayserializer">FFastArraySerializer</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817160941280.png" /></p>
+<h3 id="itemmap">ItemMap</h3>
+<p>存储<code>Item.ReplicationID</code>到<code>FastArray数组中的Index</code>的映射关系.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Maps Element ReplicationID to Array Index.*/</span></span><br><span class="line">TMap&lt;int32, int32&gt; ItemMap;</span><br></pre></td></tr></table></figure>
+<h3 id="idcounter">IDCounter</h3>
+<p>IDCounter初始化为0, 每次有Item初始化(新Item)时候自增,
+该变量用于Item.ReplicationID初始化.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Counter used to assign IDs to new elements. */</span></span><br><span class="line">int32 IDCounter;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817161027755.png" /></p>
+<h2 id="ffastarrayserializeritem">FFastArraySerializerItem</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817160405050.png" /></p>
+<h3 id="replicationid">ReplicationID</h3>
+<p>唯一标志Item的ID, 一旦赋值, 终生不变. 一般用做Key, 查询该Item.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UPROPERTY</span>(NotReplicated)</span><br><span class="line">int32 ReplicationID;</span><br></pre></td></tr></table></figure>
+<h3 id="replicationkey">ReplicationKey</h3>
+<p>每次Item修改都会+1. 用于对比Item是否发生变化.</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="constructor">UPROPERTY(NotReplicated)</span></span><br><span class="line"><span class="built_in">int32</span> ReplicationKey;</span><br></pre></td></tr></table></figure>
+<h3
+id="mostrecentarrayreplicationkey">MostRecentArrayReplicationKey</h3>
+<p>只在客户端使用, 用于记录最近更新时候的FastArrayReplicationKey.
+用于Replay时候, 剔除不正确的数据.</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="constructor">UPROPERTY(NotReplicated)</span></span><br><span class="line"><span class="built_in">int32</span> MostRecentArrayReplicationKey;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230901103236701.png" /></p>
+<h2 id="fnetfasttarraybasestate">FNetFastTArrayBaseState</h2>
+<p>存放在FSendingRepState.RecentCustomDeltaState中,
+用于存储历史数据.</p>
+<h3 id="idtoclmap">IDToCLMap</h3>
+<p>一个Map,
+存储<code>element's ReplicationID</code>到<code>ReplicationKey</code>的映射.
+该数据时历史数据, 用于和当前数据进行对比, 进而只发送dirty数据.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Maps an element&#x27;s Replication ID to Index. */</span></span><br><span class="line">TMap&lt;int32, int32&gt; IDToCLMap;</span><br></pre></td></tr></table></figure>
+<h3 id="arrayreplicationkey">ArrayReplicationKey</h3>
+<p>历史的ArrayReplicationKey数据. 如果ArrayReplicationKey没有发生变化,
+则不需要重建.</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int32 ArrayReplicationKey<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817171359598.png" /></p>
+<p>不需要重建, 则直接返回.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817171447065.png" /></p>
+<p>如果需要重建, 则直接创建新的, 并重新赋值.
+相关函数:<code>FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230817172036683.png" /></p>
+<h2
+id="ffastarrayserializerheader.basereplicationkey">FFastArraySerializerHeader.BaseReplicationKey</h2>
+<p>赋值. 在序列化FastArray数据的时候,
+将<code>OldState</code>的<code>ArrayReplicationKey</code>写入<code>DeltaHeader</code>的<code>BaseReplicationKey</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904092544905.png" /></p>
+<p>在序列化<code>DeltaHeader</code>时,
+将<code>BaseReplicationKey</code>序列化到Bunch中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904092251768.png" /></p>
+<p>客户端在解析<code>DeltaHeader</code>时,
+将<code>BaseReplicationKey</code>解析出来.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904092336722.png" /></p>
+<p><span style="color:red;"><strong>总结:
+<code>BaseReplicationKey</code>是<code>OldState</code>的<code>ArrayReplicationKey</code>,
+和<code>DeltaHeader.ArrayReplicationKey</code>联合起来表示当前比较的范围:<span
+class="math inline">\([BaseReplicationKey,
+ArrayReplicationKey]\)</span>.
+BaseReplicationKey是用来处理Replay的.</strong> </span></p>
+<p>目前只有处理Replay时候用到了BaseReplicationKey.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905110148582.png" /></p>
+<h1 id="ds处理fastarray">DS处理FastArray</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/CustomDeltaPropertyFlow.png" /></p>
+<h2 id="fastarray-layout">FastArray Layout</h2>
+<p>ParentCmd存储顶层数据结构,
+在此处为<code>FExampleFastArray</code>成员变量,
+<code>FRepLayoutCmd</code>存储ParentCmd展开后的属性.
+而Handle存储了数组对象展开后成员的<code>FRepLayoutCmd</code>索引值.
+序列化时只序列化RelativeHandle,
+客户端根据RelativeHandle就可以知道当前消息处理的是哪个成员.</p>
+<p>下图中,
+Cmd可以根据<code>RelativeHandle</code>定位到<code>FHandleToCmdIndex数组</code>中的Item,
+<code>FHandleToCmdIndex数组</code>可以通过Item中的<code>CmdIndex</code>定位到对应的Cmd.
+<code>FRepLayoutCmd.RelativeHandle</code>和<code>FHandleToCmdIndex.CmdIndex</code>是他们二者相互查找的方式.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230901104719738.png"
+alt="image-20230901104719738" />
+<figcaption aria-hidden="true">image-20230901104719738</figcaption>
+</figure>
+<p>Parent结构:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230819145629344.png" /></p>
+<p>Cmd结构:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230819145830221.png" /></p>
+<p>RelativeHandle:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230819150029059.png" /></p>
+<h3 id="fastarray-layout的构建">FastArray Layout的构建</h3>
+<p>在初始化Replayout(FRepLayout.InitFromClass),会创建属性的描述类型:
+<code>FRepParentCmd</code>和<code>FRepLayoutCmd</code>.</p>
+<p>针对IsCustomDelta类型,在遍历<code>UClass.ClassReps</code>时,
+将其<code>FRepParentCmd.Flags</code>设置为<code>IsStructProperty|IsCustomDelta|IsFastArray</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815161149063.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815160639716.png" /></p>
+<p>此时, FastArray的FRepParentCmd.Flags为</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815160722915.png" /></p>
+<p>针对LifetimeProps,
+还要附加<code>ERepParentFlags::IsLifetime</code>属性,
+但是要排除<code>ERepParentFlags::IsCustomDelta</code>类型. 所以, <span
+style="color:red;">FastArray的<code>FRepParentCmd.Flags</code>并不包含<code>ERepParentFlags::IsLifetime</code></span>,
+这样后续对于<code>IsCustomDelta</code>类型, 不进行Compare.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815161252153.png" /></p>
+<h2
+id="特殊处理isfastarray类型">特殊处理<code>IsFastArray</code>类型</h2>
+<p>特殊的, 针对<code>IsFastArray</code>类型,
+要将其放入<code>FRepLayout.LifetimeCustomPropertyState</code>中.
+一定是<code>IsCustomDelta</code>中的<code>IsCustomDelta</code>类型.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815162039997.png" /></p>
+<p><strong>不进行Compare</strong></p>
+<p>在<code>FNetSerializeCB::UpdateChangelistMgr</code>和<code>FRepLayout.ReplicateProperties</code>执行时时会过滤掉<code>IsCustomDelta</code>类型,
+因为
+<code>IsCustomDelta</code>类型的<code>FRepParentCmd.Flags</code>不包含<code>ERepParentFlags::IsLifetime</code>,
+不会进入比较函数,
+进而比较结果ChangedList中不会包含<code>CustomDeltaProperty</code>,
+所以<code>CustomDeltaProperty</code>不会在<code>FRepLayout.ReplicateProperties</code>中被序列化.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815155143872.png"
+alt="image-20230815155143872" />
+<figcaption aria-hidden="true">image-20230815155143872</figcaption>
+</figure>
+<h2
+id="预先处理customdeltaproperty-changelist">预先处理CustomDeltaProperty
+ChangeList</h2>
+<p>保证提取一个可用的HistoryItem, 供这次修改使用.
+从下图可以看出<code>FRepLayout::PreSendCustomDeltaProperties</code>主要是处理<code>FastArray</code>中的<code>HistoryItemList</code>,
+如果没有可用的<code>HistoryItem</code>,
+则将<code>EndItem</code>强制<code>Reset</code>, 用于填充此次比较的结果.
+注意, 该行为是每帧最多执行一次, 即所有Connection共用一个HistoryList.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230901114618904.png" /></p>
+<h2
+id="处理所有customdeltaproperty">处理所有<code>CustomDeltaProperty</code></h2>
+<p>遍历所有<code>CustomDeltaProperty</code>, 依次进行处理.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230815163839963.png" /></p>
+<p><strong>RecentCustomDeltaState</strong>:使用<code>RecentCustomDeltaState</code>作为OldState,
+与新创建的NewState进行比较.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230901115040299.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905214601917.png" /></p>
+<h3 id="清理retirementlist">清理<code>RetirementList</code></h3>
+<p>根据LastAckPacketID, 删除已经无用的<code>RetirementItem</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230901115245653.png" /></p>
+<h3
+id="自定义实现比较并获得changedelements">自定义实现比较并获得ChangedElements</h3>
+<h4 id="关键数据idtoclmap">关键数据IDToCLMap</h4>
+<p>IDToCLMap: ReplicationID到数组中ReplicationKey的映射.
+在数组发生变化时候, 进行重建, 并且根据Old和New的IDToCLMap比较,
+得出删除的数据. <span
+style="color:red;">如果数组中Item只是位置发生了变化无任何影响. </span></p>
+<p>每个需要<code>Replication</code>的<code>UObject</code>都有一个<code>FObjectReplicator</code>与之相对应.
+每个<code>Connection</code>都有一份<code>RetirementList</code>.
+<code>RetirementItem</code>中就包括<code>IDToCLMap</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/HistoryListArchitecture-1693985095439-16.png" /></p>
+<p>NewState是每次比较时候, 新创建的:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821162654878.png" /></p>
+<p>等到数据比较完成之后, 将旧数据放入了FSendingRepState.Retirement中, ,
+新数据变成旧数据,
+放入ReplicateCustomDeltaProperties.UsingCustomDeltaStates中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821164004265.png" /></p>
+<h4
+id="填充newstate的idtoclmap-对比replicationkey-填充changedelementlist">填充NewState的IDToCLMap,
+对比ReplicationKey, 填充changedElementList</h4>
+<p>在处理FastArray的属性同步时, 如果数组内容发生变化, 会重建IDToCLMap.
+并对比ReplicationKey, 填充ChangedList</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821200155740.png" /></p>
+<h4
+id="计算changeditems和deleteditems">计算ChangedItems和DeletedItems</h4>
+<p>根据<code>ReplicationID</code>将新旧<code>IDToCLMap</code>进行对比,
+计算已经删除Item. 注意, 这里只是根据ReplicationID进行比较,
+并没有根据数组的位置比较.
+而且是旧的<code>IDToCLMap</code>中存在某个<code>ReplicationID</code>,但是新的中没有,
+就代表删除.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821151944608.png" /></p>
+<h3 id="核心计算changedlist">核心:计算ChangedList</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904220130324.png" /></p>
+<h4 id="构建shadow">构建Shadow</h4>
+<p><strong>背景知识:
+C++可以通过对象地址+Offset唯一确定某个对象的成员变量, 取址后,
+可以根据该地址直接对该成员进行操作. UE使用该特性,
+对Property进行各种直接操作.</strong></p>
+<p>初始化<code>FastArray</code>对应的<code>FLifetimeCustomDeltaProperty</code>,
+并存放在<code>FRepLayout.LifetimeCustomPropertyState</code>中.
+其中关键变量为:<code>FastArrayArrayReplicationKeyName</code>和<code>FastArrayItemReplicationIDName</code>的<code>Offset</code>,
+为后续查询做准备.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904211937206.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904212225203.png"
+alt="结构引用图" />
+<figcaption aria-hidden="true">结构引用图</figcaption>
+</figure>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904202334312.png"
+alt="VS中内存分布" />
+<figcaption aria-hidden="true">VS中内存分布</figcaption>
+</figure>
+<p>通过对象指针+成员偏移, 找到对应的成员地址,
+在通过成员对象提取出其存储数据的起始地址.
+这块地址为存放着连续Item的数组.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904212831009.png" /></p>
+<p>可以通过<code>TScriptArray.Insert</code>探究出其内存分布.
+即所有Item存储在一块连续内存中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904213312499.png" /></p>
+<p>Shadow变更流程: 首先将Shadow中数据调整成和当前ItemArray数组一致,
+即shadow中Index位置存储的ReplicationID要和当前Item数组中Index位置的ReplicationID一致.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904214423464.png" /></p>
+<p>然后, 如果Shadow数组大小小于ObjectArrayNumber, 要扩充Shadow数组大小.
+并且如果需要扩充shadow, 则需要将Shadow中扩充的部分填充好ReplicationID,
+并全部设置为New.</p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904214916457.png"
+alt="image-20230904214916457" />
+<figcaption aria-hidden="true">image-20230904214916457</figcaption>
+</figure>
+<p>经过上述调整, 最终ShadowArray和ObjectArray大小一致,
+并且Index位置所对应Item的ReplicationID都是一样的.</p>
+<h4
+id="计算出这一帧和上一帧的changelist">计算出这一帧和上一帧的ChangeList</h4>
+<p>构建完成Shadow, 就可以用它和ObjectArray进行比较了, 并且在比较的同时,
+会将Shadow值更到最新. <strong>而且会得出ChangeList.</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904215354796.png" /></p>
+<h4 id="合并历史需要resend数据">合并历史需要Resend数据</h4>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904215559014.png" /></p>
+<h4 id="如果changelist为空-重发所有数据">如果ChangeList为空,
+重发所有数据</h4>
+<p>这种情况发生在超高丢包率情况下, 64个ChangeList已经不够用了,
+导致该帧比较结果+历史比较结果已经不能正确表示真是的修改值.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904215629575.png" /></p>
+<h3 id="发送数据">发送数据</h3>
+<p>根据收集到的ChangeList发数据, 并且结尾添加结束符:0.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904215943556.png" /></p>
+<h2 id="ds填充消息">DS填充消息</h2>
+<h3 id="消息结构图">消息结构图</h3>
+<ol type="1">
+<li><p><code>Bunch=BunchHeader+BunchBody</code>,
+<code>BunchHeader</code>唯一确定该<code>Bunch</code>处理的对象是哪个<code>Actor</code>.</p></li>
+<li><p><code>BunchBody=ContentBlockHeader+ContentBlockBody</code>,
+<code>ContentBlockHeader</code>:唯一确定当前处理的是哪个<code>UObject</code></p></li>
+<li><p><code>ContentBlockBody=FieldHeader+FieldBody</code>,
+<code>FieldHeader</code>唯一标识当前要处理的是哪个<code>Property</code>.</p></li>
+<li><p><code>FieldBody=FastArrayHeader+FastArrayBody</code>,
+<code>FastArrayHeader</code>有当前<code>FastArray</code>的信息,
+比如修改的梳理, FastArrayReplicationID,
+删除元素的ReplicationID列表等.</p></li>
+<li><p><code>FastArrayBody</code>是由一个list组成,
+<code>ListItem=ReplicationID+bDirty+Item详细内容</code>.</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904103159640.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/FastArrayMsgArchitecture-1693793883814-6.png" /></p>
+<h3 id="填充deltaheader">填充DeltaHeader</h3>
+<p>遍历当前所有Item,
+填充<code>NewState.IDToCLMap</code>(ReplicationID2ReplicationKey),
+然后将<code>NewState</code>和<code>OldState</code>中的<code>IDToCLMap</code>进行比较,
+统计DeletedIndices(<strong>已删除Item的ReplicationID</strong>),
+<code>NumChanged</code>(变化的Item),
+记录<code>BaseReplicationKey</code>(<code>OldState.ArrayReplicationKey</code>)和<code>ArrayReplicationKey</code>(<code>NewState.ArrayReplicationKey</code>).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904111805357.png" /></p>
+<p>序列化Header信息</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230904112009536.png" /></p>
+<h3 id="序列化需要发送的数据">序列化需要发送的数据</h3>
+<p>数据格式:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905093705264.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905093818819.png" /></p>
+<h2 id="添加和修改">添加和修改</h2>
+<p>默认流程是支持增加和修改的, 上述流程已经说的很详细了,
+这里不再赘述.</p>
+<h2 id="删除">删除</h2>
+<p><strong>DS上构建删除元素(ReplicationIDList),
+序列化到<code>FastArrayHeader</code>中, 发送到客户端.</strong></p>
+<p>逻辑上DS删除元素是直接删除的,
+在<code>TickFlush</code>-<code>SerializeDeltaCustomData</code>期间,
+会根据<code>OldState(RecentCustomDelta)</code>和NewState
+<code>ReplicationID-ReplicationKey</code>的比较结果,
+得出DS上删除的元素的<code>ReplicationID</code>. 将ID序列化到Header中,
+然后发送的客户端.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831201801056.png" /></p>
+<p><strong>客户端解析收到的<code>FastArrayHeader</code>,
+找到<code>ReplicationID</code>对应的Index, 然后删除之.</strong></p>
+<p>在客户端,
+反序列化<code>FastArrayHeader</code>得到删除的ReplicationID,
+根据ReplicationID找到对应的Index,</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831202232817.png" /></p>
+<p>删除前回调:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831204759315.png" /></p>
+<p>客户端真正触发删除操作:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230831204825582.png" /></p>
+<h1 id="客户端处理fastarray">客户端处理FastArray</h1>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905110421239.png" /></p>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+<p style="line-height:1.5;">
+// 客户端在RecvBunch时,调用NetDeltaSerialize调用堆栈 <br>
+--UIpNetDriver.TickDispatch() <br> |--UNetConnection.ReceivedRawPacket()
+<br> | |--UNetConnection.ReceivedPacket() <br> | |
+|--UChannel.ReceivedRawBunch <br> | | | |--UChannel.ReceivedNextBunch
+<br> | | | | |--UChannel.ReceivedSequencedBunch <br> | | | | |
+|--UActorChannel.ReceivedBunch <br> | | | | | |
+|--UActorChannel.ProcessBunch <br> | | | | | | |
+|--FObjectReplicator.ReceivedBunch <br> | | | | | | | |
+|--FNetSerializeCB.ReceiveCustomDeltaProperty <br> | | | | | | | | |
+|--FRepLayout.ReceiveCustomDeltaProperty <br> | | | | | | | | | |
+|--<span style="color:red;">// 执行NetDeltaSerialize函数, 注意,
+这里是被动调的, 无感知的. 即:
+Recv时无感知调用NetDeltaSerialize函数.</span> <br> | | | | | | | | | |
+|--<span style="color:red;">CppStructOps-&gt;NetDeltaSerialize(Params,
+Params.Data)</span><br> | | | | | | | | | | | |--<span
+style="color:red;">FFastArraySerializer.FastArrayDeltaSerialize</span>
+<br> | | | | | | | | | | | |
+|--FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs
+<br> | | | | | | | | | | | | |
+|--FFastArraySerializer.TFastArraySerializeHelper&lt;Type,
+SerializerType&gt;.ReadDeltaHeader<br> | | | | | | | | | | | | |
+|--Parms.NetSerializeCB-&gt;NetDeltaSerializeForFastArray(DeltaSerializeParams)<br>
+| | | | | | | | | | | | | |
+|--FRepLayout.DeltaSerializeFastArrayProperty()<br> | | | | | | | | | |
+| | | | | |-- // 解析DS发来的Properties的数据 | | | | | | | | | | | | |
+|--Helper.template PostReceiveCleanup() <br> | | | | | | | | | | | | | |
+|--// for all deleted items <br> | | | | | | | | | | | | | |
+|--FFastArraySerializerItem.PreReplicatedRemove() <br> | | | | | | | | |
+| | | | | |--FFastArraySerializer.PreReplicatedRemove() <br> | | | | | |
+| | | | | | | | |--// for all added items <br> | | | | | | | | | | | | |
+| |--FFastArraySerializerItem.PostReplicatedAdd() <br> | | | | | | | | |
+| | | | | |--FFastArraySerializer.PostReplicatedAdd() <br> | | | | | | |
+| | | | | | | |--// for all changed items <br> | | | | | | | | | | | | |
+| |--FFastArraySerializerItem.PostReplicatedChange() <br> | | | | | | |
+| | | | | | | |--FFastArraySerializer.PostReplicatedChange() <br> | | |
+| | | | | | | | | | | |--<span style="color:red;">//
+调用RemoveAtSwap删除DeletedItems.
+注意:经过此操作后不能保证顺序一致</span> <br> | | | | | | | | | |
+|--<span style="color:red;">//
+将Property添加到RepNotifyQueue中</span><br> | | | | | | | | | |
+|--UE4_RepLayout_Private.QueueRepNotifyForCustomDeltaProperty<br> | | |
+| | | | | | | | |--<span style="color:red;">//
+将Property添加到RepNotifies中</span><br> | | | | | | | | | | |
+|--ReceivingRepState-&gt;RepNotifies.AddUnique(Property);<br> | | | | |
+| | |--<span style="color:red;">// 遍历所有Replicator,
+执行PostReceivedBunch, 其中就包括OnRep函数</span> <br> | | | | | | |
+|--for (auto RepComp = ReplicationMap.CreateIterator(); RepComp;
+++RepComp)<br> | | | | | | | |--<span style="color:red;">
+ObjectReplicator-&gt;PostReceivedBunch()</span><br> | | | | | | | |
+|--<span style="color:red;">// !bIsServer &amp;&amp;
+bHasReplicatedProperties:客户端并且有ReplicatedProerties才会执行FObjectReplicator.PostNetReceive
+</span><br> | | | | | | | | |--FObjectReplicator.PostNetReceive() <br> |
+| | | | | | | | |--<span
+style="color:red;">Object-&gt;PostNetReceive();</span><br> | | | | | | |
+| |--<span style="color:red;">FObjectReplicator::CallRepNotifies</span>
+<br> | | | | | | | | | |--FReceivingRepState* ReceivingRepState =
+RepState-&gt;GetReceivingRepState();<br> | | | | | | | | |
+|--RepLayout-&gt;CallRepNotifies(ReceivingRepState, Object);<br> | | | |
+| | | | | | |--Object-&gt;ProcessEvent(RepNotifyFunc, nullptr);<br> | |
+| | | | | | | | | |--AActor.ProcessEvent<br> | | | | | | | | | | | |
+|--UObject.ProcessEvent<br> | | | | | | | | | | | | |
+|--UFunction.Invoke<br> | | | | | | | | | | | | | | |--<span
+style="color:red;">ABasePlayerController.OnRep_ExampleFastArray </span>
+<br>
+</p>
+</td>
+</tr>
+</table>
+<h2 id="解析deltaheader">解析DeltaHeader</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905105917803.png" /></p>
+<h2 id="解析changeditem">解析ChangedItem</h2>
+<p>先解析出ReplicationID:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905110610147.png" /></p>
+<p>解析是否有数据修改:bDirty, 如果有数据修改,
+则开始递归解析该Item的属性.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905110711659.png" /></p>
+<h2 id="postreceivecleanup回调处理">PostReceiveCleanup回调处理</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905120138880.png" /></p>
+<p>删除之前, 回调PreRemove函数:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905120217945.png" /></p>
+<p>添加之后, 回调PostAdd函数:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905120304973.png" /></p>
+<p>修改之后, 调用PostChanged函数:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905120346014.png" /></p>
+<p>执行删除操作:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905120413399.png" /></p>
+<h1 id="客户端更新guid">客户端更新GUID</h1>
+<p>DS不需要更新GUID, 因为DS都赋值者,
+所有UObject对应的GUID都是在DS上赋值(Replication/RPC的时候注册到FNetGUIDCache中).
+这种情况只可能发生在客户端. 客户端需要更新的原因:
+客户端处理消息是有先后顺序的, 有的时候某些对象在序列化GUID的时候,
+对应的UObject(Actor)还没有创建出来, 就无法找到对应UObject(Actor),
+所以需要对于UmmapedGUID进行延迟绑定.</p>
+<p><strong>这里需要关注两个变量:
+<code>FReceivePropertiesSharedParams.bOutHasUnmapped</code>和<code>FReceivePropertiesSharedParams.bOutGuidsChanged</code>.</strong></p>
+<p>在处理收到的属性消息时, 如果返回值为true,
+则表示具有Unmaped的GUID.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905172307975.png" /></p>
+<p>进一步深究发现,
+在<code>ReceivePropertyHelper</code>序列化属性时会传入<code>PackageMap</code>,
+如果发现有Umapped的GUID就会将其放入<code>UPackageMap.TrackedUnmappedNetGuids</code>中,
+然后根据<code>TrackedUnmappedGuids</code>数量来确定是否有UmappedGUID(<code>TrackedUnmappedGuids</code>数量大约0).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905172955366.png" /></p>
+<p>并且在处理结果中, 我们还看到, 在这份代码中还有比较,
+如果发现与之前的有不同, 则将<code>bOutGuidsChanged</code>设置为true.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905184838514.png" /></p>
+<p>在FastArray反序列化(<code>FRepLayout.DeltaSerializeFastArrayProperty</code>)完成之后,
+会将<code>bOutGuidsChanged</code>和<code>bOutHasUnmapped</code>合并到<code>FNetDeltaSerializeInfo.bGuidListsChanged</code>和<code>FNetDeltaSerializeInfo.bOutHasMoreUnmapped</code>中.
+因为有其他模块也有可能含有Unmapped和Changed数据, 所以需要合并.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905191551916.png" /></p>
+<p>FastArray反序列化,
+会将计算得到的<code>bOutHasUnmapped</code>和<code>bOutGuidsChanged</code>传递出来.
+如果<code>bOutGuidsChanged</code>为true,
+则会调用<code>FObjectReplicator.UpdateGuidToReplicatorMap</code>,
+即调用<code>INetSerializeCB.GatherGuidReferencesForFastArray</code>函数.
+当<code>bOutHasUnmapped</code>为true, 则最终会将</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905192229648.png" /></p>
+<p>将<code>bHasUnmapped</code>信息传递出来,
+如果<code>bHasUnmapped</code>为true,
+则会将其放入<code>UNetDriver.UnmappedReplicators</code>中,
+等待<code>TickFlush</code>时候调用.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905192716712.png" /></p>
+<h2
+id="反序列化gatherguidreferencesupdateunmappedobjects流程">反序列化+GatherGuidReferences+UpdateUnmappedObjects流程</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905213036141.png" /></p>
+<p>客户端会先执行反序列化, 然后会得出bHasUnmappedGUID和bChangedGUID.
+如果bChangedGUID为true, 则进行Gather流程, 即重新收集GUID.
+如果bHasUnmappedGUID为true, 则进行UpdateUnmappedObject流程,
+即尝试重新将GUID映射到对应的Object上.</p>
+<table>
+<tr>
+<td bgcolor="#D5E8D4">
+<p style="line-height:1.5;">
+// FastArray GatherGuidReferences+反序列化+UpdateUnmappedObjects流程
+<br> --UIpNetDriver.TickDispatch <br>
+|--UNetConnection.ReceivedRawPacket <br> |
+|--UNetConnection.ReceivedPacket <br> | | |--UChannel.ReceivedRawBunch
+<br> | | | |--UChannel.ReceivedNextBunch <br> | | | |
+|--UChannel.ReceivedSequencedBunch <br> | | | | |
+|--UActorChannel.ReceivedBunch <br> | | | | | |
+|--UActorChannel.ProcessBunch <br> | | | | | | |
+|--FObjectReplicator.ReceivedBunch <br> | | | | | | | |
+|--FNetSerializeCB.ReceiveCustomDeltaProperty() <br> | | | | | | | | |
+|--FNetSerializeCB.ReceiveCustomDeltaProperty() <br> | | | | | | | | | |
+|--FRepLayout.ReceiveCustomDeltaProperty() <br> | | | | | | | | | | |
+|--<span
+style="color:red;">FFastArraySerializer.FastArrayDeltaSerialize()</span>
+<br> | | | | | | | | | | | |
+|--FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs()
+<br> | | | | | | | | | | | | |
+|--FNetSerializeCB.NetDeltaSerializeForFastArray <br> | | | | | | | | |
+| | | | | |--FRepLayout.DeltaSerializeFastArrayProperty <br> | | | | | |
+| | | | | | | | | |--//
+根据ReplicationID,向GuidReferencesMap_StructDelta中添加元素 <br> | | | |
+| | | | | | | | | | | |--FGuidReferencesMap&amp; GuidReferences =
+ArraySerializer.GuidReferencesMap_StructDelta.FindOrAdd(ID); <br> | | |
+| | | | | | | | | | | | |--ReceiveProperties_r() <br> | | | | | | | | |
+| | | | | | | |--ReceivePropertyHelper() <br> | | | | | | | | | | | | |
+| | | | |--//在反序列化Item时候,
+会将UnmappedGUID放入UPackageMap.TrackedUnmappedNetGuids中. <br> | | | |
+| | | | | | | | | | | | | |--Cmd.Property-&gt;NetSerializeItem(); <br> |
+| | | | | | | | | | | | | | | | |--//
+如果TrackedUnmappedNetGuids中不为空, 则证明有UnmappedGUID,
+会将bHasUnmapped设置为true <br> | | | | | | | | | | | | | | | | | |--//
+如果新旧UnmappedGUID(FGuidReferences.UnmappedGUIDs和TrackedUnmappedGuids)不一致,则证明GUID发生了变化,会将bOutGuidsChanged设置为true
+<br> | | | | | | | | | | | | | | | | |--//
+如果ReceivePropertyHelper的返回值为true,
+会将Params.bOutHasUnmapped设置为true,证明有Unmapped的数据 <br> | | | | |
+| | | | | | | | | | | |--Params.bOutHasUnmapped = true; <br> | | | | | |
+| | | | | |
+|--FFastArraySerializer.TFastArraySerializeHelper.PostReceiveCleanup()
+<br> | | | | | | | | |--if (Parms.bOutHasMoreUnmapped) <br> | | | | | |
+| | |--{ <br> | | | | | | | | |-- bOutHasUnmapped = true; <br> | | | | |
+| | | |--} <br> | | | | | | | | |-- <br> | | | | | | | | |--if
+(Parms.bGuidListsChanged) <br> | | | | | | | | |--{ <br> | | | | | | | |
+|-- bGuidsChanged = true; <br> | | | | | | | | |--} <br> | | | | | | | |
+|---<span
+style="color:red;">//如果bGuidsChanged为true,则将执行FObjectReplicator.UpdateGuidToReplicatorMap
+</span><br> | | | | | | | | |--<span
+style="color:red;">FObjectReplicator.UpdateGuidToReplicatorMap() </span>
+<br> | | | | | | | | | |--<span
+style="color:#f400a1;">FRepLayout.GatherGuidReferences</span> <br> | | |
+| | | | | | | |--FFastArraySerializer.FastArrayDeltaSerialize <br> | | |
+| | | | | | | |
+|--FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs
+<br> | | | | | | | | | | | |
+|--FNetSerializeCB.GatherGuidReferencesForFastArray <br> | | | | | | | |
+| | | | | |--FRepLayout.GatherGuidReferencesForFastArray <br> | | | | |
+| | | | | | | | | |--//
+将FFastArraySerializer.GuidReferencesMap_StructDelta中的信息放入FFastArraySerializer.GuidReferencesMap中
+<br> | | | | | | | | | | | | | | |--FRepLayout.GatherGuidReferences_r()
+<br> | | | | | | | |--//
+如果bHasUnmapped为true,会将Replicator放入UnmappedReplicators中 <br> | |
+| | | | | |--<span
+style="color:Maroon;">Connection-&gt;Driver-&gt;UnmappedReplicators.Add(&amp;Replicator.Get());</span>
+<br> |--//
+遍历AllReplicators,如果为UnmappedReplicators,则UpdateUnmappedObjects
+<br> |--<span
+style="color:#f400a1;">FObjectReplicator.UpdateUnmappedObjects()</span>
+<br> | |--FRepLayout.UpdateUnmappedObjects <br> | |
+|--ReceiveProperties_r.FRepLayout.UpdateUnmappedObjects <br> | | |
+|--FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs
+<br> | | | | |--INetSerializeCB.UpdateUnmappedGuidsForFastArray <br> | |
+| | | |--FRepLayout.UpdateUnmappedGuidsForFastArray <br> | | | | | |
+|--//
+遍历所有ArraySerializer.GuidReferencesMap_StructDelta,执行UpdateUnmappedObjects_r操作
+<br> | | | | | | |--FRepLayout.UpdateUnmappedObjects_r() <br> | | | | |
+| | |-- // 遍历所有UnmappedGUID进行查询, 如果找到了对应Object,进行序列化
+<br> | | | | | | | |--Cmd.Property-&gt;NetSerializeItem(Reader,
+PackageMap, Data + AbsOffset); <br> | | | | | | | |-- //
+如果还有UnmappedGUID, 会将<span
+style="color:Olive;">bOutHasMoreUnmapped</span>设置成true <br> |
+|--FObjectReplicator.PostNetReceive <br> |
+|--FObjectReplicator.UpdateGuidToReplicatorMap() <br> |
+|--FObjectReplicator.CallRepNotifies <br> | |
+|--FRepLayout.CallRepNotifies() <br> | | |
+|--遍历所有FReceivingRepState.RepNotifies,回调其对应的UFunction <br>
+|--if ( !<span style="color:Olive;">bHasMoreUnmapped</span> ) <br> |--{
+<br> |-- <span style="color:Maroon;">UnmappedReplicators.Remove(
+Replicator ); </span> <br> |--} <br>
+</p>
+</td>
+</tr>
+</table>
+<h2 id="moveguidtounmapped流程">MoveGuidToUnmapped流程</h2>
+<p>当ActorChannel销毁时候, 触发MoveGuidToUnmapped.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// FastArray MoveGuidToUnmapped流程</span><br><span class="line">--UIpNetDriver.TickDispatch.for</span><br><span class="line">|<span class="string">--UNetConnection.ReceivedRawPacket</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string">--UNetConnection.ReceivedPacket </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ReceivedRawBunch</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ReceivedNextBunch </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ReceivedSequencedBunch </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UChannel.ConditionalCleanUp</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.CleanUp </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.DestroyActorAndComponents</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.MoveMappedObjectToUnmapped</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.MoveMappedObjectToUnmapped</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.MoveMappedObjectToUnmapped </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.MoveMappedObjectToUnmapped</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FFastArraySerializer.FastArrayDeltaSerialize</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FFastArraySerializer.FastArrayDeltaSerialize_DeltaSerializeStructs</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FNetSerializeCB.MoveGuidToUnmappedForFastArray </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.CreateReplicationChangelistMgr</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.MoveMappedObjectToUnmapped_r</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GuidReferences.MappedDynamicGUIDs.Remove(GUID);</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--GuidReferences.UnmappedGUIDs.Add(GUID);</span></span><br></pre></td></tr></table></figure>
+<p>从上述流程可以看出, 当一个Actor销毁时候,
+会将其Actor内部所OwnedGUID所关联的对象对应的GUID,
+全部从MappedGUID移动到UnmappedGUID, 而不是删除. 那什么时候删除呢?
+对于DS来讲, 当发生变化时候, 会将设置成全新的,
+然后将新的GUID同步到客户端. 客户端发起新的流程,
+会走一遍序列化+UpdateUnmappedObjects流程.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905205822327.png" /></p>
+<p>那么客户端呢? 如果一个客户端主动将一个Actor销毁,
+UnmappedGUID还会清理吗? 不会了, 从堆栈中可以看出,
+MoveMappedObjectToUnmapped都是通过ActorChannel调用的,
+客户端销毁一个Actor, 并不会将其ActorChannel销毁, 所以,
+不会触发MoveMappedObjectToUnmapped.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230905212028573.png" /></p>
+<h1 id="问">问</h1>
+<h2 id="fastarray相互套用怎么传输">FastArray相互套用怎么传输</h2>
+<p>被嵌套的<code>FastArray</code>会被当做普通结构图进行传输,
+失去了其本身FastArray对比等功能. 所以嵌套能用,
+但是会被当做普通数组一样对待.</p>
+<p>这里注意以下几点, 证明FastArray是不能被嵌套的.</p>
+<ol type="1">
+<li>在遍历所有ParentCmd时候,
+针对每个<code>IsCustomDelta</code>的ParentCmd会遍历其Cmd,
+在这些cmd中如果发现一个是FastArray,就会break,
+导致Replayout中没有被嵌套FastArray的信息,
+即其属性成员的各种Offset无法被找到. 而且, 可以注意到,
+如果FastArray被其他结构嵌套,
+由于其ParentCmd不是<code>IsCustomDelta</code>,
+则其也不会存在FLifetimeCustomDeltaProperty结构.
+即FastArray不能被嵌套.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906093859228.png" /></p>
+<p>FLifetimeCustomDeltaProperty记录FastArray的各种属性成员的Offset,
+如果没有<code>FLifetimeCustomDeltaProperty</code>, 很多操作无法执行.
+比如说在<code>FRepLayout::DeltaSerializeFastArrayProperty</code>中用到的函数<code>FLifetimeCustomDeltaState.GetCustomDeltaProperty</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906094208157.png" /></p>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906094512029.png"
+alt="image-20230906094512029" />
+<figcaption aria-hidden="true">image-20230906094512029</figcaption>
+</figure>
+<ol start="2" type="1">
+<li>FastArray的比较是自定义实现的, 如果FastArray嵌套FastArray,
+那么其内容的递归比较也不支持</li>
+</ol>
+<figure>
+<img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906094947644.png"
+alt="调用通用比较函数" />
+<figcaption aria-hidden="true">调用通用比较函数</figcaption>
+</figure>
+<p>但是通用比较函数没有针对FastArray进行特殊处理:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906095054849.png" /></p>
+<h2
+id="如果数组中两个item位置发生变化-会传输数据吗">如果数组中两个Item位置发生变化,
+会传输数据吗?</h2>
+<h3 id="如果调用的时memcopy-则不会传输数据">如果调用的时Memcopy,
+则不会传输数据:</h3>
+<p>示例:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821172756085.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821172105044.png" /></p>
+<p>可以清晰的看到, 在传输数据的时候, 发现其没有任何变化,
+不会序列化数据.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821173400498.png" /></p>
+<h3 id="如果调用-则会">如果调用<code>=</code>, 则会</h3>
+<p>由于FFastArraySerializerItem重写了操作符<code>=</code>,
+在复制的时候会将ReplicationID和ReplicationKey重置, 所以相当于全新数据,
+会全部同步.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821172343849.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230821171413652.png" /></p>
+<h3 id="总结">总结</h3>
+<p><span style="color:red;">如果仅仅是数组位置发生变化
+而Item内容没有发生任何变化, 则会不进行任何数据传输.</span>
+在使用FastArray时候, 交换两个Item位置的时候, 不要使用<code>=</code>,
+否则会发生无意义的数据传输. UE原生的<code>TArray.Swap</code>,
+<code>TArray.RemoveAt</code>,
+<code>TArray.RemoveAtSwap</code>等都不会调用<code>=</code>,
+直接进行内存级别的赋值, 推荐使用.</p>
+<h2
+id="fastarray有使用shadedserialized吗">FastArray有使用<code>ShadedSerialized</code>吗?</h2>
+<p><span style="color:red;"><strong>首先,
+看一下什么是<code>ShadedSerialized</code></strong>:</span>
+<code>ShadedSerialized</code>是在多个Connection之间共用一份数据,
+省去其中重复执行序列化操作的时间. 同一帧之内起效果, 隔帧失效. <span
+style="color:red;"><strong>其次,
+看一下<code>ShadedSerialized</code>是怎么使用的</strong>:</span>
+在属性比较之后, Gather出ChangedList(里面存储着RelativeHandle),
+针对每个RelativeHandle, 如果该属性开启<code>ShadedSerialized</code>,
+并且该帧已经序列化了, 则取出其序列化结果直接使用.</p>
+<p>好了, 有了以上基础, 可以看看FastArray了. 针对FastArray,
+其调用序列化并发送数据的接口为:<code>FRepLayout::SendProperties_r</code>,
+观察期传入参数<code>SharedInfo</code>为空,
+则一定不会有<code>ShadedSerialized</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906110729892.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906111001623.png" /></p>
+<p>那么能不能改造成支持<code>ShadedSerialized</code>呢?</p>
+<p><span style="color:red;">答案肯定是能的,
+参考普通属性的<code>ShadedSerialized</code>,
+在<strong>FDeltaArrayHistoryState</strong>中添加一个成员,
+用于存储FastArray的数据, 从目前来看, 其要存放成一个Map成员,
+ReplicationID-ShadedInfo,
+即针对每个Item,都要建立一个ShadedInfo数据.</span></p>
+<h2
+id="fastarray每帧最多只进行一次比较吗-怎么去重的">FastArray每帧最多只进行一次比较吗?
+怎么去重的?</h2>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/HistoryListArchitecture.png" /></p>
+<p><span style="color:red;">针对FastArray, 这一帧和上一帧的内容比较次数,
+在一帧内, 最多只执行一次. </span></p>
+<p>在<code>FRepLayout::PreSendCustomDeltaProperties</code>阶段,
+会记录每次执行比较操作的帧数<code>CustomDeltaChangelistState.CompareIndex</code>,
+如果该帧执行过比较, 则直接略过. 这里特殊说一下, 如果是第一次执行,
+会取出一个新的HistoryItem, 重置, 然后用作这次比较.
+如果HistoryList环形buffer超标了, HistoryEnd和HistoryStart重合了,
+强制重置第一个HistoryStartItem, 然后将HistoryStart后延,
+即强制提供一个可用的HistoryItem.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906105452551.png" /></p>
+<p>在比较过程中, 取出History数据, 如果HistoryItem执行过比较, 就直接略过.
+如果是第一次, 则<code>FDeltaArrayHistoryItem.bWasUpdated</code>为false,
+则进行比较并更新historyList, 否则直接跳过了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230906105629093.png" /></p>
+<h2 id="fastarray第一次和谁比较">FastArray第一次和谁比较?</h2>
+<p>和Archetype对比, 根据Changelist同步.</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// FastArray RecentDeltaCustom初始化, RecentDeltaCustom每个Connection独一份</span><br><span class="line">--UNetConnection.CreateReplicatorForNewActorChannel </span><br><span class="line">|<span class="string">--FObjectReplicator.InitWithObject </span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.InitRecentProperties // 注意这里传入的UObject为CDO</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--// 遍历所有CustomDeltaProperty, 执行SendCustomDeltaProperty, 这里会初始化FSendingRepState.RecentCustomDeltaState .</span></span><br><span class="line"><span class="string"></span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.SendCustomDeltaProperty </span></span><br></pre></td></tr></table></figure>
+<p>这样, 在创建Replicator时候, 使用CDO,
+对FSendingRepState.RecentCustomDeltaState进行初始化.
+所以后续对比的其实是CDO内的FastArray数据.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230907131227381.png" /></p>
+<p>使用CDO初始化<code>FSendingRepState.RecentCustomDeltaState</code>数据.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20230907131254116.png" /></p>
+<h1 id="总结-1">总结</h1>
+<h2 id="fastarray快在哪里">FastArray快在哪里</h2>
+<p>快在Array中间一个元素发生变化, 不会影响其他元素.
+而TArray会重传变动后面的所有数据. 因为TArray是按照位置进行比较的,
+而FastArray是按照ReplicationID进行比较的.</p>
+<h2 id="fastarray本身有哪些问题">FastArray本身有哪些问题</h2>
+<ol type="1">
+<li>如果大量连续丢包, 并超过64(HistoryList环形buffer大小),
+则传输的数据只能保证最终数据一致, 而不能保证过程中,
+某些数据的顺序.例如FastArray中只有Item1和Item2两个元素, 当遇到连续丢包,
+并且已经超过了64(HistoryList环形buffer大小), 那么在比较过程中,
+就不会从HistoryList中获取数据, 只发送本帧修改的数据,
+这样会导致一段时间内只能收到当帧修改的数据. 只有当帧没有数据变化,
+才会触发ChangedItem全部发送的逻辑, 即保证最后数据的正确性.</li>
+<li>没有使用<code>ShadedSerialized</code>, 当Connection较多时候,
+大量使用FastArray会造成性能问题.</li>
+<li>不能保证数组顺序, 例如DS数组中内容为 <code>0,1,2</code>,
+同步到客户端就可能是<code>1,2,0</code>.</li>
+<li>FastArray内部不支持嵌套FastArray, 如果嵌套了,
+会被当做普通结构体进行同步</li>
+<li>任何数据中嵌套了FastArray,
+都会被当做普通结构体进行传输(可以认为是普通数据).
+只有FastArray在ParentCmd层级, 才会被真正当做FastArray使用.</li>
+<li>如果Item过多, 每个RelativeHandle都使用uint32进行数据传输,
+那么会非常耗费. <span style="color:red;">方法1:</span>
+可以考虑使用bit替换, 每个成员变量都会用一个bit表示其是否发生了变化,
+如果有变化则进行序列化(参考RPC参数的发送).<span
+style="color:red;">方法2:</span> 或者限制范围, 比如该结构体参数个数为5,
+那么可以将RelativeHandle限制在3个bit内. <span
+style="color:red;">总结:</span>还要结合项目具体情况使用,
+比如某些结构体频繁改动, 并且结构体内部成员很多, 可以使用方法1.
+如果某些结构体成员很多, 但内部只有少量数据变动, 但是变动很频繁,
+可以使用方法2. 还可以二者结合使用, 动态方式, 比如统计之前的使用状态,
+预计下次最优的使用方式.</li>
+</ol>
+<h2 id="注意">注意</h2>
+<p>FastArray没有<code>HistoryChangedList</code>,
+只有<code>RetirementList</code>,
+并且它只存储<code>ReplicationID-Replicationkey</code>.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE%E7%BD%91%E7%BB%9C/" rel="tag"># UE网络</a>
+              <a href="/tags/FastArray/" rel="tag"># FastArray</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/" rel="prev" title="RPC浅析">
+                  <i class="fa fa-chevron-left"></i> RPC浅析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%20%E6%B6%88%E6%81%AF%E7%BB%93%E6%9E%84/" rel="next" title="UE4消息结构">
+                  UE4消息结构 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

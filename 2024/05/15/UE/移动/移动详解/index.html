@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="关键数据 FSavedMove_Character 记录一&#x2F;多次移动的具体信息, 相当于某一次或多次移动的快照. 1FSavedMove_Character represents a saved move on the client that has been sent to the server and might need to be played back. CharacterOwn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="移动详解">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="关键数据 FSavedMove_Character 记录一&#x2F;多次移动的具体信息, 相当于某一次或多次移动的快照. 1FSavedMove_Character represents a saved move on the client that has been sent to the server and might need to be played back. CharacterOwn">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103095512735.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103095914282.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323120349249.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323120511435.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321150201043.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240416165747039.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323120828945.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240416193220448.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240416193149755.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240320192800886.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240320193108140.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240320193429824.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240320193140028.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321110729746.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240422211221028.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410200542276.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410201627717.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322194023905.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322193642656.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322193735923.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322194410107.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322201202721.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322200130836.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323113759829.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323113934001.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322200938729.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323144815172.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323145757322.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323150419381.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323150518326.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323150657313.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323163144412.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240401201048401.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410200239805.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240401200555912.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329160302843.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329111923932.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329112214403.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329113829729.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329113821192.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240325153227921.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240325153331903.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240325153404099.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240402151846089.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240402152013679.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321154537148.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322101645342.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322110251690.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321154002155.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321162236544.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322211127323.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322211249269.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323114625290.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323114537538.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322205919087.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323112815208.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322210424034.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323112903754.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240402155235999.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410194352517.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410202544233.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410204746407.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410205902138.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240411101712165.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410202617222.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322204702118.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240323121649190.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322101645342.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321165915206.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103100318660.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103100455079.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103100542830.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103100727735.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103100934397.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103101303930.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103101556832.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240321114543106.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322120034401.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240322121948319.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240327212537695.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410194659683.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410193901879.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410193855038.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240410194037258.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329151956536.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329145838825.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240329150334988.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240416192524110.png">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240416192046136.png">
+<meta property="article:published_time" content="2024-05-15T02:54:49.004Z">
+<meta property="article:modified_time" content="2024-05-07T02:21:44.789Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="移动">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/assets/image-20240103095512735.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/","path":"2024/05/15/UE/移动/移动详解/","title":"移动详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>移动详解 | NoBodyNoOne</title><meta name="robots" content="noindex">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AE"><span class="nav-number">1.</span> <span class="nav-text">关键数据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fsavedmove_character"><span class="nav-number">1.1.</span> <span class="nav-text">FSavedMove_Character</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#characterowner"><span class="nav-number">1.1.1.</span> <span class="nav-text">CharacterOwner</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bpressedjump"><span class="nav-number">1.1.2.</span> <span class="nav-text">bPressedJump</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bwantstocrouch"><span class="nav-number">1.1.3.</span> <span class="nav-text">bWantsToCrouch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bforcemaxaccel"><span class="nav-number">1.1.4.</span> <span class="nav-text">bForceMaxAccel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bforcenocombine"><span class="nav-number">1.1.5.</span> <span class="nav-text">bForceNoCombine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#timestamp"><span class="nav-number">1.1.6.</span> <span class="nav-text">TimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0prepmovefor"><span class="nav-number">1.1.7.</span> <span class="nav-text">函数PrepMoveFor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0combinewith"><span class="nav-number">1.1.8.</span> <span class="nav-text">函数CombineWith</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0setmovefor"><span class="nav-number">1.1.9.</span> <span class="nav-text">函数SetMoveFor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0setinitialposition"><span class="nav-number">1.1.10.</span> <span class="nav-text">函数SetInitialPosition</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fnetworkpredictiondata_client_character"><span class="nav-number">1.2.</span> <span class="nav-text">FNetworkPredictionData_Client_Character</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#clientupdatetime"><span class="nav-number">1.2.1.</span> <span class="nav-text">ClientUpdateTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#currenttimestamp"><span class="nav-number">1.2.2.</span> <span class="nav-text">CurrentTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#savedmoves"><span class="nav-number">1.2.3.</span> <span class="nav-text">SavedMoves</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#freemoves"><span class="nav-number">1.2.4.</span> <span class="nav-text">FreeMoves</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bupdateposition"><span class="nav-number">1.2.5.</span> <span class="nav-text">bUpdatePosition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#smoothnetupdatetime"><span class="nav-number">1.2.6.</span> <span class="nav-text">SmoothNetUpdateTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#meshtranslationoffset"><span class="nav-number">1.2.7.</span> <span class="nav-text">MeshTranslationOffset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#smoothingservertimestamp"><span class="nav-number">1.2.8.</span> <span class="nav-text">SmoothingServerTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0updatetimestampanddeltatime"><span class="nav-number">1.2.9.</span> <span class="nav-text">函数UpdateTimeStampAndDeltaTime</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fnetworkpredictiondata_server_character"><span class="nav-number">1.3.</span> <span class="nav-text">FNetworkPredictionData_Server_Character</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pendingadjustment"><span class="nav-number">1.3.1.</span> <span class="nav-text">PendingAdjustment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#currentclienttimestamp"><span class="nav-number">1.3.2.</span> <span class="nav-text">CurrentClientTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lastreceivedclienttimestamp"><span class="nav-number">1.3.3.</span> <span class="nav-text">LastReceivedClientTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#servertimestamplastservermove"><span class="nav-number">1.3.4.</span> <span class="nav-text">ServerTimeStampLastServerMove</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lastupdatetime"><span class="nav-number">1.3.5.</span> <span class="nav-text">LastUpdateTime</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fnetworkpredictiondata_server"><span class="nav-number">1.4.</span> <span class="nav-text">FNetworkPredictionData_Server</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#servertimestamp"><span class="nav-number">1.4.1.</span> <span class="nav-text">ServerTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#servertimebeginningforcedupdates"><span class="nav-number">1.4.2.</span> <span class="nav-text">ServerTimeBeginningForcedUpdates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#servertimelastforcedupdate"><span class="nav-number">1.4.3.</span> <span class="nav-text">ServerTimeLastForcedUpdate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#btriggeringforcedupdates"><span class="nav-number">1.4.4.</span> <span class="nav-text">bTriggeringForcedUpdates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bforcedupdatedurationexceeded"><span class="nav-number">1.4.5.</span> <span class="nav-text">bForcedUpdateDurationExceeded</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blastrequestneedsforcedupdates"><span class="nav-number">1.4.6.</span> <span class="nav-text">bLastRequestNeedsForcedUpdates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bforceclientupdate"><span class="nav-number">1.4.7.</span> <span class="nav-text">bForceClientUpdate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lifetimerawtimediscrepancy"><span class="nav-number">1.4.8.</span> <span class="nav-text">LifetimeRawTimeDiscrepancy</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fclientadjustment"><span class="nav-number">1.5.</span> <span class="nav-text">FClientAdjustment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#charactermovementcvars"><span class="nav-number">1.6.</span> <span class="nav-text">CharacterMovementCVars</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#netservermovetimestampexpiredwarningthreshold"><span class="nav-number">1.6.1.</span> <span class="nav-text">NetServerMoveTimestampExpiredWarningThreshold</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ucharactermovementcomponent"><span class="nav-number">1.7.</span> <span class="nav-text">UCharacterMovementComponent</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bignoreclientmovementerrorchecksandcorrection"><span class="nav-number">1.7.1.</span> <span class="nav-text">bIgnoreClientMovementErrorChecksAndCorrection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bserveracceptclientauthoritativeposition"><span class="nav-number">1.7.2.</span> <span class="nav-text">bServerAcceptClientAuthoritativePosition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deprecated_character_movement_rpc"><span class="nav-number">1.7.3.</span> <span class="nav-text">DEPRECATED_CHARACTER_MOVEMENT_RPC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mintimebetweentimestampresets"><span class="nav-number">1.7.4.</span> <span class="nav-text">MinTimeBetweenTimeStampResets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lasttimestampresetservertime"><span class="nav-number">1.7.5.</span> <span class="nav-text">LastTimeStampResetServerTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#networksimulatedsmoothlocationtime"><span class="nav-number">1.7.6.</span> <span class="nav-text">NetworkSimulatedSmoothLocationTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#listenservernetworksimulatedsmoothlocationtime"><span class="nav-number">1.7.7.</span> <span class="nav-text">ListenServerNetworkSimulatedSmoothLocationTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0clientadjustposition_implementation"><span class="nav-number">1.7.8.</span> <span class="nav-text">函数ClientAdjustPosition_Implementation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#serverlasttransformupdatetimestamp"><span class="nav-number">1.7.9.</span> <span class="nav-text">ServerLastTransformUpdateTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0clientupdatepositionafterserverupdate"><span class="nav-number">1.7.10.</span> <span class="nav-text">函数ClientUpdatePositionAfterServerUpdate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0isclienttimestampvalid"><span class="nav-number">1.7.11.</span> <span class="nav-text">函数IsClientTimeStampValid</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0processclienttimestampfortimediscrepancy"><span class="nav-number">1.7.12.</span> <span class="nav-text">函数ProcessClientTimeStampForTimeDiscrepancy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-verifyclienttimestamp"><span class="nav-number">1.7.13.</span> <span class="nav-text">函数
+VerifyClientTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0servershoulduseauthoritativeposition"><span class="nav-number">1.7.14.</span> <span class="nav-text">函数ServerShouldUseAuthoritativePosition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0simulaterootmotion"><span class="nav-number">1.7.15.</span> <span class="nav-text">函数SimulateRootMotion</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0smoothcorrection"><span class="nav-number">1.7.16.</span> <span class="nav-text">函数SmoothCorrection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0smoothclientposition_interpolate"><span class="nav-number">1.7.17.</span> <span class="nav-text">函数SmoothClientPosition_Interpolate</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#agamenetworkmanager"><span class="nav-number">1.8.</span> <span class="nav-text">AGameNetworkManager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#maxclientupdateinterval"><span class="nav-number">1.8.1.</span> <span class="nav-text">MAXCLIENTUPDATEINTERVAL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maxclientforcedupdateduration"><span class="nav-number">1.8.2.</span> <span class="nav-text">MaxClientForcedUpdateDuration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#serverforcedupdatehitchthreshold"><span class="nav-number">1.8.3.</span> <span class="nav-text">ServerForcedUpdateHitchThreshold</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#serverforcedupdatehitchcooldown"><span class="nav-number">1.8.4.</span> <span class="nav-text">ServerForcedUpdateHitchCooldown</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bmovementtimediscrepancydetection"><span class="nav-number">1.8.5.</span> <span class="nav-text">bMovementTimeDiscrepancyDetection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maxpositionerrorsquared"><span class="nav-number">1.8.6.</span> <span class="nav-text">MAXPOSITIONERRORSQUARED</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clienterrorupdateratelimit"><span class="nav-number">1.8.7.</span> <span class="nav-text">ClientErrorUpdateRateLimit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clientadjustupdatecost"><span class="nav-number">1.8.8.</span> <span class="nav-text">CLIENTADJUSTUPDATECOST</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clientauthorativeposition"><span class="nav-number">1.8.9.</span> <span class="nav-text">ClientAuthorativePosition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0withinupdatedelaybounds"><span class="nav-number">1.8.10.</span> <span class="nav-text">函数WithinUpdateDelayBounds</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#aplayercontroller"><span class="nav-number">1.9.</span> <span class="nav-text">APlayerController</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#lastmovementupdatetime"><span class="nav-number">1.9.1.</span> <span class="nav-text">LastMovementUpdateTime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lastmovementhitch"><span class="nav-number">1.9.2.</span> <span class="nav-text">LastMovementHitch</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#actor"><span class="nav-number">1.10.</span> <span class="nav-text">Actor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#breplicatemovement"><span class="nav-number">1.11.</span> <span class="nav-text">bReplicateMovement</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#replicatedmovement"><span class="nav-number">1.12.</span> <span class="nav-text">ReplicatedMovement</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#acharacter"><span class="nav-number">1.13.</span> <span class="nav-text">ACharacter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fbasedmovementinfo"><span class="nav-number">1.13.1.</span> <span class="nav-text">FBasedMovementInfo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replicatedmovementmode"><span class="nav-number">1.13.2.</span> <span class="nav-text">ReplicatedMovementMode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replicatedserverlasttransformupdatetimestamp"><span class="nav-number">1.13.3.</span> <span class="nav-text">ReplicatedServerLastTransformUpdateTimeStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reprootmotion"><span class="nav-number">1.13.4.</span> <span class="nav-text">RepRootMotion</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0simulatedrootmotionpositionfixup"><span class="nav-number">1.13.5.</span> <span class="nav-text">函数SimulatedRootMotionPositionFixup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0findrootmotionrepmove"><span class="nav-number">1.13.6.</span> <span class="nav-text">函数FindRootMotionRepMove</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0canuserootmotionrepmove"><span class="nav-number">1.13.7.</span> <span class="nav-text">函数CanUseRootMotionRepMove</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0restorereplicatedmove"><span class="nav-number">1.13.8.</span> <span class="nav-text">函数RestoreReplicatedMove</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">交互流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">2.1.</span> <span class="nav-text">交互流程图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E7%AB%AF"><span class="nav-number">2.2.</span> <span class="nav-text">主端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E7%AB%AF%E6%94%B6%E9%9B%86%E7%A7%BB%E5%8A%A8%E6%95%B0%E6%8D%AE"><span class="nav-number">2.2.1.</span> <span class="nav-text">主端收集移动数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E7%AB%AF%E5%90%88%E5%B9%B6%E7%A7%BB%E5%8A%A8%E5%8C%85%E5%B9%B6%E5%BB%B6%E8%BF%9F%E5%8F%91%E5%8C%85"><span class="nav-number">2.2.2.</span> <span class="nav-text">主端合并移动包并延迟发包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B9%E6%8D%AE%E6%97%B6%E9%97%B4%E6%88%B3%E5%BB%B6%E8%BF%9F%E5%8F%91%E5%8C%85"><span class="nav-number">2.2.3.</span> <span class="nav-text">根据时间戳延迟发包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E8%A7%84%E5%88%99"><span class="nav-number">2.2.4.</span> <span class="nav-text">合并规则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#root-motion-source-containing%E7%B1%BB%E5%9E%8B%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.1.</span> <span class="nav-text">Root motion
+source-containing类型不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#animrootmotion%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.2.</span> <span class="nav-text">AnimRootMotion不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#launchvelocity%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.3.</span> <span class="nav-text">LaunchVelocity不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#triggeroverlap%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.4.</span> <span class="nav-text">TriggerOverlap不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E9%80%9F%E5%BA%A6%E6%88%96%E8%80%85%E6%9C%80%E7%BB%88%E9%80%9F%E5%BA%A6%E4%B8%BA0%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.5.</span> <span class="nav-text">初始速度或者最终速度为0的情况不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#movementmode%E5%8F%91%E7%94%9F%E5%8F%98%E5%8C%96%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.6.</span> <span class="nav-text">MovementMode发生变化不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bpressedjump%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.7.</span> <span class="nav-text">bPressedJump不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#boldtimestampbeforereset%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.8.</span> <span class="nav-text">bOldTimeStampBeforeReset不能合并</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ds%E7%9F%AB%E6%AD%A3%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%BD%8D%E7%BD%AE%E6%97%B6-%E9%82%A3%E6%97%B6%E7%9A%84%E4%BD%8D%E7%BD%AE%E4%BF%A1%E6%81%AF%E4%B8%8D%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">2.2.4.9.</span> <span class="nav-text">DS矫正客户端位置时,
+那时的位置信息不能合并</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E9%80%BB%E8%BE%91"><span class="nav-number">2.2.5.</span> <span class="nav-text">合并逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E4%B8%AD%E4%B9%8B%E9%87%8D"><span class="nav-number">2.2.6.</span> <span class="nav-text">重中之重</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E7%AB%AF%E5%8F%91%E9%80%81%E7%A7%BB%E5%8A%A8%E6%95%B0%E6%8D%AE"><span class="nav-number">2.2.7.</span> <span class="nav-text">主端发送移动数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E7%AB%AF%E7%9F%AB%E6%AD%A3"><span class="nav-number">2.2.8.</span> <span class="nav-text">主端矫正</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ds"><span class="nav-number">2.3.</span> <span class="nav-text">DS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E5%BC%BA%E5%88%B6%E7%A7%BB%E5%8A%A8"><span class="nav-number">2.3.1.</span> <span class="nav-text">DS强制移动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E6%A0%A1%E9%AA%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E6%9D%A5%E7%9A%84%E6%97%B6%E9%97%B4"><span class="nav-number">2.3.2.</span> <span class="nav-text">DS校验客户端发来的时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E6%89%A7%E8%A1%8C%E7%A7%BB%E5%8A%A8%E9%80%BB%E8%BE%91"><span class="nav-number">2.3.3.</span> <span class="nav-text">DS执行移动逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E6%A0%A1%E9%AA%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E6%9D%A5%E7%9A%84%E7%A7%BB%E5%8A%A8%E4%BF%A1%E6%81%AF"><span class="nav-number">2.3.4.</span> <span class="nav-text">DS校验客户端发来的移动信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds-adjustack"><span class="nav-number">2.3.5.</span> <span class="nav-text">DS AdjustAck</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds-goodack"><span class="nav-number">2.3.6.</span> <span class="nav-text">DS GoodAck</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E5%8F%91%E9%80%81%E7%9F%AB%E6%AD%A3%E4%B8%BB%E7%AB%AF%E7%A7%BB%E5%8A%A8%E4%BF%A1%E6%81%AFrpc"><span class="nav-number">2.3.7.</span> <span class="nav-text">DS发送矫正主端移动信息RPC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds%E8%B6%85%E6%97%B6%E8%87%AA%E4%B8%BB%E6%A8%A1%E6%8B%9F"><span class="nav-number">2.3.8.</span> <span class="nav-text">DS超时自主模拟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E7%BB%99%E6%A8%A1%E6%8B%9F%E7%AB%AF"><span class="nav-number">2.3.9.</span> <span class="nav-text">同步给模拟端</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#replicatedmovement-1"><span class="nav-number">2.3.9.1.</span> <span class="nav-text">ReplicatedMovement</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#reprootmotion-1"><span class="nav-number">2.3.9.2.</span> <span class="nav-text">RepRootMotion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#replicatedmovementmode-1"><span class="nav-number">2.3.9.3.</span> <span class="nav-text">ReplicatedMovementMode</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#replicatedbasedmovement"><span class="nav-number">2.3.9.4.</span> <span class="nav-text">ReplicatedBasedMovement</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#replicatedserverlasttransformupdatetimestamp-1"><span class="nav-number">2.3.9.5.</span> <span class="nav-text">ReplicatedServerLastTransformUpdateTimeStamp</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E6%8B%9F%E7%AB%AF%E6%A8%A1%E6%8B%9F"><span class="nav-number">2.4.</span> <span class="nav-text">模拟端模拟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%92%88%E5%AF%B9rootmotion%E7%9A%84%E9%A2%9D%E5%A4%96%E5%A4%84%E7%90%86"><span class="nav-number">2.4.1.</span> <span class="nav-text">针对RootMotion的额外处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%92%88%E5%AF%B9rootmotionsource%E7%9A%84%E9%A2%9D%E5%A4%96%E5%A4%84%E7%90%86"><span class="nav-number">2.4.2.</span> <span class="nav-text">针对RootMotionSource的额外处理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%9E%84%E5%BB%BA%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">本地构建测试环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%A7%BB%E5%8A%A8%E8%BF%9E%E7%BB%AD%E4%B8%A2%E5%8C%85"><span class="nav-number">3.1.</span> <span class="nav-text">测试移动连续丢包</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE"><span class="nav-number">4.</span> <span class="nav-text">问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E4%B8%8A%E5%8F%B0%E9%98%B6%E6%96%9C%E9%9D%A2%E7%9A%84%E7%A7%BB%E5%8A%A8%E8%B7%9D%E7%A6%BB%E4%B8%8D%E4%BC%9A%E7%BC%A9%E5%87%8F"><span class="nav-number">4.1.</span> <span class="nav-text">如何保证上台阶&#x2F;斜面的移动距离不会缩减</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88charactermovement%E4%B8%8D%E8%87%AA%E5%B7%B1%E5%AE%9A%E4%B9%89rpc-%E5%A4%A7%E5%A4%9A%E4%BD%BF%E7%94%A8character%E8%BA%AB%E4%B8%8A%E7%9A%84"><span class="nav-number">4.2.</span> <span class="nav-text">为什么CharacterMovement不自己定义RPC,
+大多使用Character身上的?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#servermoveold%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84"><span class="nav-number">4.3.</span> <span class="nav-text">ServerMoveOld是干什么的?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AB%99%E5%9C%A8%E5%9C%B0%E8%A1%A8-%E5%A6%82%E4%BD%95%E6%AF%8F%E6%AC%A1%E9%83%BD%E8%83%BD%E4%BF%9D%E6%8C%81%E7%A6%BB%E5%9C%B0%E4%B8%80%E5%AE%9A%E9%AB%98%E5%BA%A6"><span class="nav-number">4.4.</span> <span class="nav-text">站在地表,
+如何每次都能保持离地一定高度?</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%87%8D%E7%82%B9"><span class="nav-number">5.</span> <span class="nav-text">重点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#rootmotion%E4%B9%8B%E4%B8%BB%E7%AB%AF%E5%90%91ds%E5%8F%91%E9%80%81"><span class="nav-number">5.1.</span> <span class="nav-text">RootMotion之主端向DS发送</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A2%B0%E6%92%9E%E8%A7%A6%E5%8F%91handleimpact"><span class="nav-number">5.2.</span> <span class="nav-text">碰撞触发HandleImpact</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%BB%84%E4%BB%B6updatecomponent"><span class="nav-number">5.3.</span> <span class="nav-text">移动更新组件UpdateComponent</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A7%BB%E5%8A%A8%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="移动详解 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          移动详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:49" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:49+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-07 10:21:44" itemprop="dateModified" datetime="2024-05-07T10:21:44+08:00">2024-05-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/%E7%A7%BB%E5%8A%A8/" itemprop="url" rel="index"><span itemprop="name">移动</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>10k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>37 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="关键数据">关键数据</h1>
+<h2 id="fsavedmove_character">FSavedMove_Character</h2>
+<p>记录一/多次移动的具体信息, 相当于某一次或多次移动的快照.</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FSavedMove_Character represents <span class="keyword">a</span> saved <span class="keyword">move</span> <span class="keyword">on</span> the client that <span class="built_in">has</span> been sent <span class="keyword">to</span> the server <span class="built_in">and</span> might need <span class="keyword">to</span> <span class="keyword">be</span> played back.</span><br></pre></td></tr></table></figure>
+<h3 id="characterowner">CharacterOwner</h3>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> 本次移动的Character</span><br><span class="line">ACharacter* CharacterOwner;</span><br></pre></td></tr></table></figure>
+<h3 id="bpressedjump">bPressedJump</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 是否按下Jump</span></span><br><span class="line"><span class="built_in">uint32</span> bPressedJump:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="./assets/image-20240103095512735.png" /></p>
+<h3 id="bwantstocrouch">bWantsToCrouch</h3>
+<p>记录<code>CharacterMovement</code>是否<code>Crouch</code></p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">uint32</span> bWantsToCrouch:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240103095634737.png" /></p>
+<h3 id="bforcemaxaccel">bForceMaxAccel</h3>
+<p>记录<code>CharacterMovement</code>是否为<code>ForceMaxAccel</code>.</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">uint32</span> bForceMaxAccel:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="./assets/image-20240103095914282.png"
+alt="image-20240103095914282" />
+<figcaption aria-hidden="true">image-20240103095914282</figcaption>
+</figure>
+<h3 id="bforcenocombine">bForceNoCombine</h3>
+<p>某些关键的移动是不允许合并的, 必须独立出来,
+否则会对移动重塑造成较大影响. 以下就是不允许合并Move的具体情形.</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** If true this move is using an old TimeStamp, before a reset occurred. */</span></span><br><span class="line"><span class="built_in">uint32</span> bOldTimeStampBeforeReset:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="timestamp">TimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> TimeStamp;    <span class="comment">// Time of this move.</span></span><br></pre></td></tr></table></figure>
+<p>在<code>FSavedMove_Character</code>设置初始值的时候进行设置,
+关键函数:<code>FSavedMove_Character.SetMoveFor</code>,
+其来源于<code>FNetworkPredictionData_Client_Character.CurrentTimeStamp</code>.</p>
+<figure>
+<img src="./assets/image-20240323120349249.png"
+alt="image-20240323120349249" />
+<figcaption aria-hidden="true">image-20240323120349249</figcaption>
+</figure>
+<p>其来源于<code>FNetworkPredictionData_Client_Character.CurrentTimeStamp</code>.</p>
+<figure>
+<img src="./assets/image-20240323120511435.png"
+alt="image-20240323120511435" />
+<figcaption aria-hidden="true">image-20240323120511435</figcaption>
+</figure>
+<h3 id="函数prepmovefor">函数<code>PrepMoveFor</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Called before ClientUpdatePosition uses this SavedMove to make a predictive correction     */</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">PrepMoveFor</span><span class="params">(ACharacter* C)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>在函数<code>UCharacterMovementComponent.ClientUpdatePositionAfterServerUpdate</code>执行时,
+在每次ReplayMove时恢复之前的Move上下文,
+然后进行重放(<code>MoveAutonomous</code>).即将<code>FSavedMove_Character</code>信息提取到Character身上进行重新Move.</p>
+<figure>
+<img src="./assets/image-20240321150201043.png"
+alt="image-20240321150201043" />
+<figcaption aria-hidden="true">image-20240321150201043</figcaption>
+</figure>
+<h3 id="函数combinewith">函数<code>CombineWith</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Combine this move with an older move and update relevant state. */</span></span><br><span class="line"><span class="comment">// 将OldMove中的信息提取到当前Move中. 包括速度/位置/base等, 但是不包括Acceleration.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">CombineWith</span><span class="params">(<span class="type">const</span> FSavedMove_Character* OldMove, ACharacter* InCharacter, APlayerController* PC, <span class="type">const</span> FVector&amp; OldStartLocation)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240416163834614.png" /></p>
+<h3 id="函数setmovefor">函数<code>SetMoveFor</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Called to set up this saved move (when initially created) to make a predictive correction. */</span></span><br><span class="line"><span class="comment">// 提取Character移动信息(速度/位置/加速度/Base/Floor等)保存到FSavedMove_Character中</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">SetMoveFor</span><span class="params">(ACharacter* C, <span class="type">float</span> InDeltaTime, FVector <span class="type">const</span>&amp; NewAccel, <span class="keyword">class</span> FNetworkPredictionData_Client_Character &amp; ClientData)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240416164933117.png" /></p>
+<h3 id="函数setinitialposition">函数<code>SetInitialPosition</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Set the properties describing the position, etc. of the moved pawn at the start of the move. */</span></span><br><span class="line"><span class="comment">// 设置初始化位置/旋转/Floor/Base信息/jump信息等</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">SetInitialPosition</span><span class="params">(ACharacter* C)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="./assets/image-20240416165747039.png"
+alt="image-20240416165747039" />
+<figcaption aria-hidden="true">image-20240416165747039</figcaption>
+</figure>
+<h2
+id="fnetworkpredictiondata_client_character">FNetworkPredictionData_Client_Character</h2>
+<h3 id="clientupdatetime">ClientUpdateTime</h3>
+<figure class="highlight prolog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Client timestamp of last time it sent a servermove() to the server. This is an increasing timestamp from the owning UWorld. Used for holding off on sending movement updates to save bandwidth. */</span></span><br><span class="line">客户端最后一次发送<span class="string">`servermove()`</span>时候的区间时间戳, 范围在[<span class="number">0</span>, <span class="symbol">UCharacterMovementComponent</span>.<span class="symbol">MinTimeBetweenTimeStampResets</span>], 类似于环形buffer. 它用于节省带宽而推迟发送movement.</span><br><span class="line">通俗的讲:使用该变量记录最后一次发送<span class="symbol">ServerMove</span>的时间戳,主要用于节省带宽. 比如在一定时间内只发一次. 它存储的是<span class="symbol">UWorld</span>.<span class="symbol">TimeSeconds</span>.</span><br></pre></td></tr></table></figure>
+<h3 id="currenttimestamp">CurrentTimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Current TimeStamp for sending new Moves to the Server. This time resets to zero at a frequency of MinTimeBetweenTimeStampResets. */</span></span><br><span class="line"><span class="comment">// 它是一个累计时间, 每次Tick时候累计DeltaTime, 而且其范围在区间[0, CharacterMovementComponent.MinTimeBetweenTimeStampResets]内循环</span></span><br><span class="line"><span class="comment">// 每次向DS发送的时间戳, 就来源于它.</span></span><br><span class="line"><span class="type">float</span> CurrentTimeStamp;</span><br></pre></td></tr></table></figure>
+<p>关键函数:<code>FNetworkPredictionData_Client_Character::UpdateTimeStampAndDeltaTime</code>.</p>
+<figure>
+<img src="./assets/image-20240323120828945.png"
+alt="image-20240323120828945" />
+<figcaption aria-hidden="true">image-20240323120828945</figcaption>
+</figure>
+<h3 id="savedmoves">SavedMoves</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Buffered moves pending position updates, orderd oldest to newest. Moves that have been acked by the server are removed.</span></span><br><span class="line"><span class="comment">// 缓存已发送但是还没有Ack的移动信息. </span></span><br><span class="line">TArray&lt;FSavedMovePtr&gt; SavedMoves;</span><br></pre></td></tr></table></figure>
+<p>数组中, 从前到后, 时间越来越新. 即越后面的元素, 越是新产生的.
+Old-&gt;New.</p>
+<p>添加SavedMove. 每当新产生一个Move, 就将其放入SavedMove列表尾部.</p>
+<figure>
+<img src="./assets/image-20240416193220448.png"
+alt="image-20240416193220448" />
+<figcaption aria-hidden="true">image-20240416193220448</figcaption>
+</figure>
+<p>删除SavedMove. 每当Move经过Ack,
+则将其从SavedMove列表中删除其及其之前的Item.</p>
+<figure>
+<img src="./assets/image-20240416193149755.png"
+alt="image-20240416193149755" />
+<figcaption aria-hidden="true">image-20240416193149755</figcaption>
+</figure>
+<h3 id="freemoves">FreeMoves</h3>
+<figure class="highlight plaintext"><figcaption><span>FreeMoves;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// freed moves, available for buffering</span><br><span class="line">// 相当于一个池, 数组里面存储着空闲可用的Item, 用于重复利用.</span><br><span class="line">TArray&lt;FSavedMovePtr&gt; FreeMoves;</span><br></pre></td></tr></table></figure>
+<p>每次获取SavedMove时优先从池(<code>FreeMoves</code>)中取,
+如果没有取到, 才会从新创建.</p>
+<figure>
+<img src="./assets/image-20240320192800886.png"
+alt="image-20240320192800886" />
+<figcaption aria-hidden="true">image-20240320192800886</figcaption>
+</figure>
+<p>当DS纠正客户端信息时, 会将Ack客户端发来的移动包.</p>
+<figure>
+<img src="./assets/image-20240320193108140.png"
+alt="image-20240320193108140" />
+<figcaption aria-hidden="true">image-20240320193108140</figcaption>
+</figure>
+<p>DS AckGood客户端消息</p>
+<figure>
+<img src="./assets/image-20240320193429824.png"
+alt="image-20240320193429824" />
+<figcaption aria-hidden="true">image-20240320193429824</figcaption>
+</figure>
+<p>通过时间戳定位Index,
+然后将Index之前的所有<code>MoveItem</code>全部回收.</p>
+<figure>
+<img src="./assets/image-20240320193140028.png"
+alt="image-20240320193140028" />
+<figcaption aria-hidden="true">image-20240320193140028</figcaption>
+</figure>
+<h3 id="bupdateposition">bUpdatePosition</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// when true, update the position (via ClientUpdatePosition)</span></span><br><span class="line"><span class="comment">// 如果true, 主端就会调用ClientUpdatePosition进行更新.</span></span><br><span class="line">uint32 bUpdatePosition:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<ol type="1">
+<li>当DS发来调整客户端位置(<code>ClientAdjustPosition_Implementation</code>)的时候,
+将其设置为true.</li>
+<li>如果为True,
+主端就会调用<code>ClientUpdatePositionAfterServerUpdate</code>更新位置.</li>
+<li>主端位置更新开始后, 将其设置为false, 防止重复进入</li>
+</ol>
+<figure>
+<img src="./assets/image-20240321110729746.png"
+alt="image-20240321110729746" />
+<figcaption aria-hidden="true">image-20240321110729746</figcaption>
+</figure>
+<p><strong>当DS发来调整客户端位置的时候, 将其设置为true.</strong>
+关键函数:<code>ClientAdjustPosition_Implementation</code></p>
+<p><strong>如果为True,
+主端就会调用<code>ClientUpdatePosition</code>更新位置:</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311172830587.png" /></p>
+<p><strong>如果为True,
+主端就会调用<code>ClientUpdatePosition</code>更新位置:</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311172601720.png" /></p>
+<p><strong>主端位置更新开始后, 将其设置为false,
+防止重复进入:</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240311172928837.png" /></p>
+<h3 id="smoothnetupdatetime">SmoothNetUpdateTime</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// How long to take to smoothly interpolate from the old pawn position on the client to the corrected one sent by the server.  </span></span><br><span class="line"><span class="comment">// Must be &gt;= 0. Not used for linear smoothing. */</span></span><br><span class="line"><span class="comment">// 从旧位置到DS发来的新的位置需要多长的平滑插值时间. 必须大于等于0, 不会用于linear smoothing. </span></span><br><span class="line"><span class="type">float</span> SmoothNetUpdateTime;</span><br></pre></td></tr></table></figure>
+<p>如果在DS上,
+使用值<code>UCharacterMovementComponent.ListenServerNetworkSimulatedSmoothLocationTime</code>,
+如果在客户端使用值:<code>UCharacterMovementComponent.NetworkSimulatedSmoothLocationTime</code>.</p>
+<figure>
+<img src="./assets/image-20240422211221028.png"
+alt="image-20240422211221028" />
+<figcaption aria-hidden="true">image-20240422211221028</figcaption>
+</figure>
+<h3 id="meshtranslationoffset">MeshTranslationOffset</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** World space offset of the mesh. Target value is zero offset. Used for position smoothing in net games. */</span></span><br><span class="line"><span class="comment">// 世界空间中的Mesh偏移, 目标是0偏移. 用于网络游戏中的位置平滑处理.</span></span><br><span class="line">FVector MeshTranslationOffset;</span><br></pre></td></tr></table></figure>
+<h3 id="smoothingservertimestamp">SmoothingServerTimeStamp</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Used to track the timestamp of the last server move. */</span></span><br><span class="line"><span class="comment">// 用于记录DS最后一次移动的时间戳</span></span><br><span class="line"><span class="built_in">double</span> SmoothingServerTimeStamp;</span><br></pre></td></tr></table></figure>
+<p>在<code>UCharacterMovementComponent.SmoothCorrection</code>中,
+在模拟端会将<code>SmoothingServerTimeStamp</code>赋值为<code>ACharacter.ReplicatedServerLastTransformUpdateTimeStamp</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240423095034637.png" /></p>
+<h3
+id="函数updatetimestampanddeltatime">函数<code>UpdateTimeStampAndDeltaTime</code></h3>
+<h2
+id="fnetworkpredictiondata_server_character">FNetworkPredictionData_Server_Character</h2>
+<h3 id="pendingadjustment">PendingAdjustment</h3>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">//</span> 每帧收集的信息, 用于向客户端发送Adjust信息.</span><br><span class="line">FClientAdjustment PendingAdjustment;</span><br></pre></td></tr></table></figure>
+<h3 id="currentclienttimestamp">CurrentClientTimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Timestamp from the client of most recent ServerMove() processed for this player. Reset occasionally for timestamp resets (to maintain accuracy). */</span></span><br><span class="line"><span class="comment">// 来自客户端的时间戳(大多数是经过ServerMove处理过的, 还有经过`ForcePositionUpdate`处理过的). 为了保持精度, 会进行重置</span></span><br><span class="line"><span class="comment">// 表示已经处理的客户端的时间戳, 在该时间之前的Move都不再进行处理了.</span></span><br><span class="line"><span class="type">float</span> CurrentClientTimeStamp;</span><br></pre></td></tr></table></figure>
+<p>一般而言, 如果DS自主模拟移动,
+那么在该时间之前的来自客户端的Move会直接丢弃了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240408110756364.png" /></p>
+<h3 id="lastreceivedclienttimestamp">LastReceivedClientTimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Timestamp from the client of most recent ServerMove() received for this player, including rejected requests. */</span></span><br><span class="line"><span class="comment">// 来自客户端的时间戳, 它由ServerMove传递而来, 包括被拒绝的请求.</span></span><br><span class="line"><span class="comment">// 它记录上次ServerMove发来的时间戳.</span></span><br><span class="line"><span class="type">float</span> LastReceivedClientTimeStamp;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240408111359357.png" /></p>
+<h3
+id="servertimestamplastservermove">ServerTimeStampLastServerMove</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Server clock time when last server move was received from client (does NOT include forced moves on server) */</span></span><br><span class="line"><span class="comment">// DS上一次收到RPC(ServerMove)时候更新的时间戳, 注意:DS强制执行ForcePositionUpdate时不会更新它</span></span><br><span class="line"><span class="type">float</span> ServerTimeStampLastServerMove;</span><br></pre></td></tr></table></figure>
+<h3 id="lastupdatetime">LastUpdateTime</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Last time server updated client with a move correction */</span></span><br><span class="line"><span class="comment">// 上次一强制矫正客户端移动信息/DS强制执行模拟的时间.</span></span><br><span class="line"><span class="comment">// 注意DS强制执行模拟的时候会倒退10s</span></span><br><span class="line"><span class="type">float</span> LastUpdateTime;</span><br></pre></td></tr></table></figure>
+<p>DS强制Replication, 目前没地方调用.</p>
+<figure>
+<img src="./assets/image-20240410200542276.png"
+alt="image-20240410200542276" />
+<figcaption aria-hidden="true">image-20240410200542276</figcaption>
+</figure>
+<p>每次校验失败时候, 会记录时间:</p>
+<figure>
+<img src="./assets/image-20240410201627717.png"
+alt="image-20240410201627717" />
+<figcaption aria-hidden="true">image-20240410201627717</figcaption>
+</figure>
+<h2
+id="fnetworkpredictiondata_server">FNetworkPredictionData_Server</h2>
+<h3 id="servertimestamp">ServerTimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Server clock time when last server move was received or movement was forced to be processed */</span></span><br><span class="line"><span class="comment">// DS上记录的时间戳, 每次收到RPC(ServerMove)或者DS强制执行ForcePositionUpdate时候刷新</span></span><br><span class="line"><span class="type">float</span> ServerTimeStamp;</span><br></pre></td></tr></table></figure>
+<p><code>ServerTimeStamp</code>为0表示DS不需要进行网络移动更新.
+关键函数:<code>APlayerController.TickActor</code>.</p>
+<figure>
+<img src="./assets/image-20240322194023905.png"
+alt="image-20240322194023905" />
+<figcaption aria-hidden="true">image-20240322194023905</figcaption>
+</figure>
+<p><code>FNetworkPredictionData_Server_Character</code>创建的时候赋值,
+该类型创建, 表示一定会进行Replication.</p>
+<figure>
+<img src="./assets/image-20240322193642656.png"
+alt="image-20240322193642656" />
+<figcaption aria-hidden="true">image-20240322193642656</figcaption>
+</figure>
+<p><code>ACharacter::SetReplicateMovement</code>时候赋值.</p>
+<figure>
+<img src="./assets/image-20240322193735923.png"
+alt="image-20240322193735923" />
+<figcaption aria-hidden="true">image-20240322193735923</figcaption>
+</figure>
+<p>计算客户端和DS之间的时间差异.
+关键函数<code>UCharacterMovementComponent.ProcessClientTimeStampForTimeDiscrepancy</code></p>
+<figure>
+<img src="./assets/image-20240322194410107.png"
+alt="image-20240322194410107" />
+<figcaption aria-hidden="true">image-20240322194410107</figcaption>
+</figure>
+<p>每当触发<code>ForcePositionUpdate</code>时,
+会更新<code>ServerTimeStamp</code>和<code>ServerTimeLastForcedUpdate</code>.</p>
+<figure>
+<img src="./assets/image-20240322201202721.png"
+alt="image-20240322201202721" />
+<figcaption aria-hidden="true">image-20240322201202721</figcaption>
+</figure>
+<h3
+id="servertimebeginningforcedupdates">ServerTimeBeginningForcedUpdates</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Initial ServerTimeStamp that triggered a ForcedPositionUpdate series. Reset to 0 after no longer exceeding update interval.</span></span><br><span class="line"><span class="comment">// 开始执行ForcedPositionUpdate时候的时间戳, 不再执行ForcedPositionUpdate时会设置为0.</span></span><br><span class="line"><span class="type">float</span> ServerTimeBeginningForcedUpdates;</span><br></pre></td></tr></table></figure>
+<p>开始触发<code>ForcePositionUpdate</code>时的时间戳.</p>
+<figure>
+<img src="./assets/image-20240322200130836.png"
+alt="image-20240322200130836" />
+<figcaption aria-hidden="true">image-20240322200130836</figcaption>
+</figure>
+<p>每次收到客户端发来的RPC之后重置,
+重置相关函数:<code>FNetworkPredictionData_Server.ResetForcedUpdateState</code>.</p>
+<figure>
+<img src="./assets/image-20240323113759829.png"
+alt="image-20240323113759829" />
+<figcaption aria-hidden="true">image-20240323113759829</figcaption>
+</figure>
+<p>重置逻辑,
+其中<code>ServerData-&gt;ServerTimeStamp &gt; ServerData-&gt;ServerTimeLastForcedUpdate</code>表示有客户端发来的移动RPC,
+即有<code>ServerMove</code>执行.
+而且只有在<code>ForcedUpdate</code>持续了一段时间(<code>AGameNetworkManager.MaxClientForcedUpdateDuration</code>)之后才会清理.</p>
+<figure>
+<img src="./assets/image-20240323113934001.png"
+alt="image-20240323113934001" />
+<figcaption aria-hidden="true">image-20240323113934001</figcaption>
+</figure>
+<h3 id="servertimelastforcedupdate">ServerTimeLastForcedUpdate</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** ServerTimeStamp last time we called ForcePositionUpdate. */</span></span><br><span class="line"><span class="comment">// 上一次触发ForcedPositionUpdate的时间戳</span></span><br><span class="line"><span class="type">float</span> ServerTimeLastForcedUpdate;</span><br></pre></td></tr></table></figure>
+<p>只要成功触发<code>ForcedPositionUpdate</code>,
+一定会更新<code>ServerTimeLastForcedUpdate</code>.</p>
+<figure>
+<img src="./assets/image-20240322200938729.png"
+alt="image-20240322200938729" />
+<figcaption aria-hidden="true">image-20240322200938729</figcaption>
+</figure>
+<h3 id="btriggeringforcedupdates">bTriggeringForcedUpdates</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Set to true while requirements for ForcePositionUpdate interval are met, and set back to false after updates are received again. */</span></span><br><span class="line"><span class="comment">// 表示当前是否正在执行ForcePositionUpdate, 执行就会被设置成true, 否则就设置成false.</span></span><br><span class="line"><span class="comment">// 在执行ForcePositionUpdate期间, 该变量会被设置成true, 当收到客户端的ServerMove后, 会被设置成false.</span></span><br><span class="line">uint8 bTriggeringForcedUpdates : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>在执行ForcePositionUpdate期间, 该变量会被设置成true</p>
+<figure>
+<img src="./assets/image-20240323144815172.png"
+alt="image-20240323144815172" />
+<figcaption aria-hidden="true">image-20240323144815172</figcaption>
+</figure>
+<p>当收到客户端的ServerMove后, 会被设置成false.</p>
+<figure>
+<img src="./assets/image-20240323145757322.png"
+alt="image-20240323145757322" />
+<figcaption aria-hidden="true">image-20240323145757322</figcaption>
+</figure>
+<h3
+id="bforcedupdatedurationexceeded">bForcedUpdateDurationExceeded</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Set to true while bTriggeringForcedUpdates is true and after update duration has been exceeded (when server will stop forcing updates). */</span></span><br><span class="line"><span class="comment">// 是否ForcePositionUpdate超过了时限. 如果超过了时限就不再执行, 否则继续执行.</span></span><br><span class="line">uint8 bForcedUpdateDurationExceeded : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>超过的时限是指<code>AGameNetworkManager.MaxClientForcedUpdateDuration</code>,
+如果连续执行<code>ForcePositionUpdate</code>的时间超过了该值,
+并且没有设置<code>FNetworkPredictionData_Server.bLastRequestNeedsForcedUpdates</code>,
+即上次ServerMove表明, 不需要强制更新, 就会自动停止.</p>
+<p><span style="color:red">是否超时执行,
+即<code>ForcePositionUpdate</code>执行有一个区间,
+当执行时间超过该时间后是否还需要继续执行.即如果<code>bForcedUpdateDurationExceeded</code>为false,
+表示没超时, 即使超时了, 但是还需要执行也可以理解成没超时.
+没超时就会继续执行.</span></p>
+<p>每次<code>Tick</code>都会重置<code>bForcedUpdateDurationExceeded</code>为false,
+即不超时限.</p>
+<figure>
+<img src="./assets/image-20240323150419381.png"
+alt="image-20240323150419381" />
+<figcaption aria-hidden="true">image-20240323150419381</figcaption>
+</figure>
+<p>如果<code>ForcePositionUpdate</code>执行超过了时限,
+并且<code>FNetworkPredictionData_Server.bLastRequestNeedsForcedUpdates</code>也没有说需要强制Update,
+那就是超时限了, 并且以后不需要继续执行了,
+所以设置为<code>false</code>.</p>
+<figure>
+<img src="./assets/image-20240323150518326.png"
+alt="image-20240323150518326" />
+<figcaption aria-hidden="true">image-20240323150518326</figcaption>
+</figure>
+<p>在<code>ForcePositionUpdate</code>执行前置条件时候,
+检查超时是否继续执行时,
+会判断<code>bForcedUpdateDurationExceeded</code>属性.</p>
+<figure>
+<img src="./assets/image-20240323150657313.png"
+alt="image-20240323150657313" />
+<figcaption aria-hidden="true">image-20240323150657313</figcaption>
+</figure>
+<h3
+id="blastrequestneedsforcedupdates">bLastRequestNeedsForcedUpdates</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Set to true if last received move request  is bad and needs correction */</span></span><br><span class="line"><span class="comment">// 最后一次收到的ServerMove如果是Bad, 则将bLastRequestNeedsForcedUpdates设置为true, 允许DS执行ForcePositionUpdate</span></span><br><span class="line">uint8 bLastRequestNeedsForcedUpdates : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>关键函数:<code>UCharacterMovementComponent::VerifyClientTimeStamp</code></p>
+<figure>
+<img src="./assets/image-20240323163144412.png"
+alt="image-20240323163144412" />
+<figcaption aria-hidden="true">image-20240323163144412</figcaption>
+</figure>
+<p><span style="color:red">客户端的TimeStamp是一个环形增长方式,
+即从0增长到最大, 然后归零, 无限循环.
+每当TimeStamp变成0左右的时候叫做一次重置. 如果没有重置,
+但是客户端发来的TimeStamp又比以前的小, 或为过去的Move,
+或者是本次丢包太多, 超时太多, 发来了一个新的, 但是已经无法检测为重置了,
+所以需要DS进行主动模拟移动了.</span></p>
+<h3 id="bforceclientupdate">bForceClientUpdate</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Force client update on the next ServerMoveHandleClientError() call. */</span></span><br><span class="line">uint32 bForceClientUpdate:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>该变量表示在<code>UCharacterMovementComponent.ServerMoveHandleClientError</code>中,
+是否需要强制更新<code>FNetworkPredictionData_Server_Character.PendingAdjustment</code>数据.
+如果为true, 则表示一定更新,
+否则还需要根据<code>ServerCheckClientError</code>的结果来决定是否需要更新<code>PendingAdjustment</code>.
+如果更新了<code>PendingAdjustment</code>,
+表示该数据不是<code>NotGood</code>,
+否则表示该数据为<code>Good</code>.</p>
+<figure>
+<img src="./assets/image-20240401201048401.png"
+alt="image-20240401201048401" />
+<figcaption aria-hidden="true">image-20240401201048401</figcaption>
+</figure>
+<p>目前<code>FNetworkPredictionData_Server_Character.bForceClientUpdate</code>都是false.</p>
+<p><img src="./assets/image-20240410200239805.png" /></p>
+<h3 id="lifetimerawtimediscrepancy">LifetimeRawTimeDiscrepancy</h3>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/** Accumulated timestamp difference between autonomous client<span class="built_in"> and </span>server for tracking<span class="built_in"> long-term </span>trends */<span class="built_in"></span></span><br><span class="line"><span class="built_in">float </span><span class="class">LifetimeRawTimeDiscrepancy;</span></span><br></pre></td></tr></table></figure>
+<h2 id="fclientadjustment">FClientAdjustment</h2>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">// ClientAdjustPosition <span class="keyword">replication</span> (event <span class="keyword">called</span> at <span class="keyword">end</span> <span class="keyword">of</span> frame <span class="keyword">by</span> <span class="keyword">server</span>)</span><br></pre></td></tr></table></figure>
+<p>在<code>UCharacterMovementComponent::ServerMoveHandleClientError</code>中填充<code>FClientAdjustment</code>.</p>
+<figure>
+<img src="./assets/image-20240401200555912.png"
+alt="image-20240401200555912" />
+<figcaption aria-hidden="true">image-20240401200555912</figcaption>
+</figure>
+<p>在<code>UCharacterMovementComponent::SendClientAdjustment</code>根据该数据,
+向客户端发送Adjust数据. 调用堆栈:</p>
+<figure>
+<img src="./assets/image-20240329160302843.png"
+alt="image-20240329160302843" />
+<figcaption aria-hidden="true">image-20240329160302843</figcaption>
+</figure>
+<h2 id="charactermovementcvars">CharacterMovementCVars</h2>
+<h3
+id="netservermovetimestampexpiredwarningthreshold">NetServerMoveTimestampExpiredWarningThreshold</h3>
+<p>如果客户端和DS时间戳差异过大, 将发出警告.
+客户端时间戳指的是主控端发来的移动包带来的时间:<code>FCharacterNetworkMoveData.TimeStamp</code>;
+DS时间戳指的是<code>FNetworkPredictionData_Server_Character.CurrentClientTimeStamp</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">float</span> NetServerMoveTimestampExpiredWarningThreshold = <span class="number">1.0f</span>;</span><br><span class="line"><span class="function">FAutoConsoleVariableRef <span class="title">CVarNetServerMoveTimestampExpiredWarningThreshold</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    TEXT(<span class="string">&quot;net.NetServerMoveTimestampExpiredWarningThreshold&quot;</span>),</span></span></span><br><span class="line"><span class="params"><span class="function">    NetServerMoveTimestampExpiredWarningThreshold,</span></span></span><br><span class="line"><span class="params"><span class="function">    TEXT(<span class="string">&quot;Tolerance for ServerMove() to warn when client moves are expired more than this time threshold behind the server.&quot;</span>),</span></span></span><br><span class="line"><span class="params"><span class="function">    ECVF_Default)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="ucharactermovementcomponent">UCharacterMovementComponent</h2>
+<h3
+id="bignoreclientmovementerrorchecksandcorrection">bIgnoreClientMovementErrorChecksAndCorrection</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment"> * If true, we should ignore server location difference checks for client error on this movement component.</span></span><br><span class="line"><span class="comment"> * This can be useful when character is moving at extreme speeds for a duration and you need it to look</span></span><br><span class="line"><span class="comment"> * smooth on clients without the server correcting the client. Make sure to disable when done, as this would</span></span><br><span class="line"><span class="comment"> * break this character&#x27;s server-client movement correction.</span></span><br><span class="line"><span class="comment"> * @see bServerAcceptClientAuthoritativePosition, ServerCheckClientError()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">// 如果设置为true, 会忽略移动组件上在位置的校验</span></span><br><span class="line"><span class="comment">// 当客户端有持续一段时间的超速移动时, 关闭检测会让客户端看起来非常顺滑. 当它结束时一定要关闭, 因为它会停止移动校验.</span></span><br><span class="line">uint8 bIgnoreClientMovementErrorChecksAndCorrection:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>如果设置为true, 则DS不执行位置校验.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240410192206168.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240410192247246.png" /></p>
+<h3
+id="bserveracceptclientauthoritativeposition">bServerAcceptClientAuthoritativePosition</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * If true, and server does not detect client position error, server will copy the client movement location/velocity/etc after simulating the move.</span></span><br><span class="line"><span class="comment"> * This can be useful for short bursts of movement that are difficult to sync over the network.</span></span><br><span class="line"><span class="comment"> * Note that if bIgnoreClientMovementErrorChecksAndCorrection is used, this means the server will not detect an error.</span></span><br><span class="line"><span class="comment"> * Also see GameNetworkManager-&gt;ClientAuthorativePosition which permanently enables this behavior.</span></span><br><span class="line"><span class="comment"> * @see bIgnoreClientMovementErrorChecksAndCorrection, ServerShouldUseAuthoritativePosition()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">// 当DS不进行客户端位置校验时, 该值又设置为true, DS在模拟移动之后将直接Copy客户端移动的location/velocity等数据.</span></span><br><span class="line"><span class="comment">// 针对网络包积压(突然网卡又恢复)的情况非常有效</span></span><br><span class="line"><span class="comment">// 注意如果使用bIgnoreClientMovementErrorChecksAndCorrection, 意味着DS不会进行移动校验.</span></span><br><span class="line"><span class="comment">// GameNetworkManager-&gt;ClientAuthorativePosition意思是一直开启改行为.</span></span><br><span class="line">uint8 bServerAcceptClientAuthoritativePosition : <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>DS是否使用客户端位置/速度等信息:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240410193551591.png" /></p>
+<p>如果校验通过(无需校验也算作校验通过的一种), 并且开启了使用客户端信息,
+则直接将客户端相关数据拷贝给DS.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240410193733438.png" /></p>
+<h3
+id="deprecated_character_movement_rpc">DEPRECATED_CHARACTER_MOVEMENT_RPC</h3>
+<p><span
+style="color:red"><code>DEPRECATED_CHARACTER_MOVEMENT_RPC</code>开启了,
+但是<code>UE_DEPRECATED_FORGAME</code>没开启.
+最终导致警告功能最终没开启, 所以不会有警告.</span></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If defined and not zero, deprecated RPCs on UCharacterMovementComponent will not be marked deprecated at compile time, to aid in migration of older projects. New projects should prefer the new API.</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> SUPPORT_DEPRECATED_CHARACTER_MOVEMENT_RPCS</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SUPPORT_DEPRECATED_CHARACTER_MOVEMENT_RPCS 0</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> SUPPORT_DEPRECATED_CHARACTER_MOVEMENT_RPCS</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DEPRECATED_CHARACTER_MOVEMENT_RPC(...)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DEPRECATED_CHARACTER_MOVEMENT_RPC(DeprecatedFunction, NewFunction) UE_DEPRECATED_FORGAME(4.26, #DeprecatedFunction <span class="string">&quot;() is deprecated, use &quot;</span> #NewFunction <span class="string">&quot;() instead, or define SUPPORT_DEPRECATED_CHARACTER_MOVEMENT_RPCS=1 in the project and set CVar p.NetUsePackedMovementRPCs=0 to use the old code path.&quot;</span>)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>如果没开启DEPRECATED_CHARACTER_MOVEMENT_RPC,
+则不要使用DEPRECATED_CHARACTER_MOVEMENT_RPC中的DeprecatedFunction,
+尽量使用NewFunction. 例如:
+<code>DEPRECATED_CHARACTER_MOVEMENT_RPC(ClientAdjustRootMotionSourcePosition, ClientHandleMoveResponse)</code>表明不要使用<code>ClientAdjustRootMotionSourcePosition</code>,
+要使用<code>ClientHandleMoveResponse</code>.</p>
+<p>但是, 由于<code>UE_DEPRECATED_FORGAME</code>没有设置,
+导致最终警告没有发出.</p>
+<figure>
+<img src="./assets/image-20240329111923932.png"
+alt="image-20240329111923932" />
+<figcaption aria-hidden="true">image-20240329111923932</figcaption>
+</figure>
+<p>如果想要开启<code>UE_DEPRECATED_FORGAME</code>,
+则需要在<code>Engine.Build.cs</code>中添加<code>Definitions.Add("UE_DEPRECATED_FORGAME=UE_DEPRECATED");</code></p>
+<figure>
+<img src="./assets/image-20240329112214403.png"
+alt="image-20240329112214403" />
+<figcaption aria-hidden="true">image-20240329112214403</figcaption>
+</figure>
+<p><span style="color:red">注意该警告是在编译器抛出的,
+即编译时候(只有在编译该行代码时才会抛出, 不编译相关代码就不会抛出,
+所以增量编译的时候有可能没警告.)就会输出该警告. 但是你真正用了,
+在运行期是不会产生警告的.</span></p>
+<figure>
+<img src="./assets/image-20240329113829729.png"
+alt="image-20240329113829729" />
+<figcaption aria-hidden="true">image-20240329113829729</figcaption>
+</figure>
+<figure>
+<img src="./assets/image-20240329113821192.png"
+alt="image-20240329113821192" />
+<figcaption aria-hidden="true">image-20240329113821192</figcaption>
+</figure>
+<h3
+id="mintimebetweentimestampresets">MinTimeBetweenTimeStampResets</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Minimum time between client TimeStamp resets.</span></span><br><span class="line"><span class="comment"> !! This has to be large enough so that we don&#x27;t confuse the server if the client can stall or timeout.</span></span><br><span class="line"><span class="comment"> We do this as we use floats for TimeStamps, and server derives DeltaTime from two TimeStamps. </span></span><br><span class="line"><span class="comment"> As time goes on, accuracy decreases from those floating point numbers.</span></span><br><span class="line"><span class="comment"> So we trigger a TimeStamp reset at regular intervals to maintain a high level of accuracy. */</span></span><br><span class="line"><span class="comment">// 客户端时间戳重置的最小时间.</span></span><br><span class="line"><span class="comment">// 为了不让Server困惑客户端到底是延迟了还是超时了, 它必须足够大.</span></span><br><span class="line"><span class="comment">// 由于使用float作为时间戳, DS使用两个时间戳来计算DeltaTime.</span></span><br><span class="line"><span class="comment">// 随着时间流逝, float精度会下降, 所以为了保持高精度, 我们会定期重置时间戳.</span></span><br><span class="line"><span class="built_in">UPROPERTY</span>()</span><br><span class="line"><span class="type">float</span> MinTimeBetweenTimeStampResets;</span><br></pre></td></tr></table></figure>
+<p><span style="color:red">客户端用它来重置时间, 将时间戳限制在某个区间.
+DS用它的一半来检测客户端发来的时间戳是否需要Reset.</span>
+默认值:4*60</p>
+<figure>
+<img src="./assets/image-20240325153227921.png"
+alt="image-20240325153227921" />
+<figcaption aria-hidden="true">image-20240325153227921</figcaption>
+</figure>
+<p>客户端定期重置时间戳来保证精度:</p>
+<figure>
+<img src="./assets/image-20240325153331903.png"
+alt="image-20240325153331903" />
+<figcaption aria-hidden="true">image-20240325153331903</figcaption>
+</figure>
+<p>DS也会根据客户端时间戳进行重置:</p>
+<figure>
+<img src="./assets/image-20240325153404099.png"
+alt="image-20240325153404099" />
+<figcaption aria-hidden="true">image-20240325153404099</figcaption>
+</figure>
+<h3 id="lasttimestampresetservertime">LastTimeStampResetServerTime</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Clock time on the server of the last timestamp reset. */</span></span><br><span class="line"><span class="comment">// 上一次DS上客户端重置的时间戳</span></span><br><span class="line"><span class="built_in">float</span> LastTimeStampResetServerTime;</span><br></pre></td></tr></table></figure>
+<p>DS检测到客户端的时间戳发生了回环(即重置), 需要记录一下当前DS时间,
+防止客户端作弊.</p>
+<figure>
+<img src="./assets/image-20240402151846089.png"
+alt="image-20240402151846089" />
+<figcaption aria-hidden="true">image-20240402151846089</figcaption>
+</figure>
+<p>不能频繁重置, 重置的时间要有一定CD,
+CD为<code>MinTimeBetweenTimeStampResets</code>的一半.</p>
+<figure>
+<img src="./assets/image-20240402152013679.png"
+alt="image-20240402152013679" />
+<figcaption aria-hidden="true">image-20240402152013679</figcaption>
+</figure>
+<h3
+id="networksimulatedsmoothlocationtime"><code>NetworkSimulatedSmoothLocationTime</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// How long to take to smoothly interpolate from the old pawn position on the client to the corrected one sent by the server. /</span></span><br><span class="line"><span class="comment">// Not used by Linear smoothing.</span></span><br><span class="line"><span class="comment">// 花费多长时间, 从当前位置平滑插值到DS传输来的目标位置. Linear smoothing中不会使用.</span></span><br><span class="line"><span class="type">float</span> NetworkSimulatedSmoothLocationTime;</span><br></pre></td></tr></table></figure>
+<h3
+id="listenservernetworksimulatedsmoothlocationtime"><code>ListenServerNetworkSimulatedSmoothLocationTime</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Similar setting as NetworkSimulatedSmoothLocationTime but only used on Listen servers.</span></span><br><span class="line"><span class="comment">// 和NetworkSimulatedSmoothLocationTime类似, 但是用于DS上.</span></span><br><span class="line"><span class="type">float</span> ListenServerNetworkSimulatedSmoothLocationTime;</span><br></pre></td></tr></table></figure>
+<h3
+id="函数clientadjustposition_implementation">函数<code>ClientAdjustPosition_Implementation</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Replicate position correction to client, associated with a timestamped servermove.  Client will replay subsequent moves after applying adjustment. */</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">ClientAdjustPosition_Implementation</span><span class="params">(<span class="type">float</span> TimeStamp, FVector NewLoc, FVector NewVel, UPrimitiveComponent* NewBase, FName NewBaseBoneName, <span class="type">bool</span> bHasBase, <span class="type">bool</span> bBaseRelativePosition, uint8 ServerMovementMode)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>客户端发给DS的移动包校验没通过, 客户端需要矫正,
+而<code>ClientAdjustPosition</code>函数就是告诉客户端需要矫正,
+并且附带了矫正信息. 矫正具体流程:</p>
+<figure>
+<img src="./assets/image-20240321154537148.png"
+alt="image-20240321154537148" />
+<figcaption aria-hidden="true">image-20240321154537148</figcaption>
+</figure>
+<h3
+id="serverlasttransformupdatetimestamp">ServerLastTransformUpdateTimeStamp</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Timestamp when location or rotation last changed during an update. Only valid on the server.</span></span><br><span class="line"><span class="comment">// DS上, 当Location或者Rotation发生变化时的时间戳.</span></span><br><span class="line"><span class="type">float</span> ServerLastTransformUpdateTimeStamp;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240423100103371.png" /></p>
+<p>在模拟端使用DS上的时间戳.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240423100134276.png" /></p>
+<h3
+id="函数clientupdatepositionafterserverupdate">函数<code>ClientUpdatePositionAfterServerUpdate</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** If bUpdatePosition is true, then replay any unacked moves. Returns whether any moves were actually replayed. */</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">ClientUpdatePositionAfterServerUpdate</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>该函数在主端收到DS矫正客户端位置(<code>ClientAdjustPosition_Implementation</code>)RPC后执行,
+并且Replay之前还没Ack的<code>MoveItem</code>.
+可以Replay移动的基础是:如果移动的初始位置相同, 移动的DeltaTime, 加速度,
+速度等都相同, 那么移动的位置最终的目标点也是相同的. 矫正信息包括位置,
+Base, 加速度, MovementMode等.</p>
+<p><strong>ReplayMove关键字段:</strong></p>
+<figure>
+<img src="./assets/image-20240322101645342.png"
+alt="image-20240322101645342" />
+<figcaption aria-hidden="true">image-20240322101645342</figcaption>
+</figure>
+<p><strong>ReplayMove流程:</strong></p>
+<ol type="1">
+<li>Replay过程中,
+只改变<code>MoveItem</code>中部分<code>SavedXXX</code>和<code>EndXXX</code>相关信息,
+而不改变<code>StartXXX</code>相关信息.</li>
+<li>Replay执行过程中不对速度, 位置等信息进行干预,
+只是根据之前记录的奔跑跳爬加速度等输入行为(人为触发), 重新执行移动逻辑,
+通过移动自身逻辑计算新的位置速度等信息.</li>
+</ol>
+<figure>
+<img src="./assets/image-20240322110251690.png"
+alt="image-20240322110251690" />
+<figcaption aria-hidden="true">image-20240322110251690</figcaption>
+</figure>
+<p><strong>Replay前后大致轨迹</strong></p>
+<figure>
+<img src="./assets/image-20240321154002155.png"
+alt="image-20240321154002155" />
+<figcaption aria-hidden="true">image-20240321154002155</figcaption>
+</figure>
+<p><strong>ReplayMove核心代码</strong></p>
+<figure>
+<img src="./assets/image-20240321162236544.png"
+alt="image-20240321162236544" />
+<figcaption aria-hidden="true">image-20240321162236544</figcaption>
+</figure>
+<p><strong>这里有一个疑问:</strong></p>
+<ol type="1">
+<li><p>之前发给DS的Move信息, 还能和Replay之后的Move信息对上吗?
+会不会一连多个AdjustAck?</p></li>
+<li><p>由于Replay之后的<code>SavedMoves</code>不会重新进行Ack,
+那么Replay时修正的<code>SavedMoves</code>后续还会被使用吗?</p></li>
+<li><p>是否可以直接设置位置之后不进行ReplayMove?</p></li>
+</ol>
+<p><strong>回答:</strong></p>
+<ol type="1">
+<li>由于时间戳没改, Move对应的位置可以对上, 但是其存储的内容无法对上了.
+可能发生一连多个AdjustAck的情况, 如果某一个Move包需要矫正,
+那么后续大概率会有连续多个包需要矫正.</li>
+<li>会被使用, 如果主控端连续(分帧)收到<code>ClientAdjustPosition</code>,
+会触发连续Replay, 每次都会用到上一次Replay后的MoveItem. 其意义在于,
+如果某一次移动需要矫正,
+那么经过矫正之后重新Replay的<code>SavedMoves</code>会更贴近后续DS矫正的位置,
+如果后续每次矫正的位置足够小, 即发生轻微抖动也能接受.
+并且如果网络响应足够快, 那么一般不会有SavedMove包积累, 即网络较好情况,
+Replay时SavedMove数量不会太多.</li>
+<li>是不能的, 因为移动包是连续发送的, 收到Ack也是连续的,
+如果连续收到<code>ClientAdjustPosition</code>, 每次只重新设置位置,
+当发生移动包积累(网络不好造成数据包阻塞, 突然网络变好, 一次性发给DS,
+或者网络波动,时好时坏)时候,
+连续的<code>ClientAdjustPosition</code>会造成移动严重拉扯.
+其原因在于每次向DS发送移动包的时候, 会有Delta时间,
+DS根据客户端的信息计算当前位移, 进而推进模拟端表现.
+并且主端是进行预表现的, 即主端先行.
+如果客户端收到<code>ClientAdjustPosition</code>直接设置位置,
+会造成Ack时间的移动包到当前时间的移动包直接丢弃,
+而DS还在不断收到移动包并模拟, 这样会造成很差的移动表现.</li>
+</ol>
+<h3
+id="函数isclienttimestampvalid">函数<code>IsClientTimeStampValid</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Internal const check for client timestamp validity without side-effects. </span></span><br><span class="line"><span class="comment">  * @see VerifyClientTimeStamp */</span></span><br><span class="line"><span class="comment">// 客户端时间戳是否可用</span></span><br><span class="line"><span class="comment">// bTimeStampResetDetected: 时间戳是否发生重置, 即回环.</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">IsClientTimeStampValid</span><span class="params">(<span class="type">float</span> TimeStamp, <span class="type">const</span> FNetworkPredictionData_Server_Character&amp; ServerData, <span class="type">bool</span>&amp; bTimeStampResetDetected)</span> <span class="type">const</span></span>;</span><br></pre></td></tr></table></figure>
+<p><span
+style="color:red">DS用<code>MinTimeBetweenTimeStampResets</code>的一半来检测客户端发来的时间戳是否需要Reset.</span></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240325164358536-1712548091926-1.png" /></p>
+<h3
+id="函数processclienttimestampfortimediscrepancy">函数<code>ProcessClientTimeStampForTimeDiscrepancy</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Processes client timestamps from ServerMoves, </span></span><br><span class="line"><span class="comment">// detects and protects against time discrepancy between client-reported times and server time Called by </span></span><br><span class="line"><span class="comment">// UCharacterMovementComponent::VerifyClientTimeStamp() for valid timestamps.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">ProcessClientTimeStampForTimeDiscrepancy</span><span class="params">(<span class="type">float</span> ClientTimeStamp, FNetworkPredictionData_Server_Character&amp; ServerData)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>如果想要开启该动能,
+则需要打开<code>AGameNetworkManager.bMovementTimeDiscrepancyDetection</code>,
+默认是不开启的. 后续再分析该函数.</p>
+<p><strong>TODO</strong></p>
+<h3 id="函数-verifyclienttimestamp">函数
+<code>VerifyClientTimeStamp</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// On the Server, verify that an incoming client TimeStamp is valid and has not yet expired.</span></span><br><span class="line"><span class="comment">// It will also handle TimeStamp resets if it detects a gap larger than MinTimeBetweenTimeStampResets / 2.f</span></span><br><span class="line"><span class="comment">// !! ServerData.CurrentClientTimeStamp can be reset !!</span></span><br><span class="line"><span class="comment">// @returns true if TimeStamp is valid, or false if it has expired.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">VerifyClientTimeStamp</span><span class="params">(<span class="type">float</span> TimeStamp, FNetworkPredictionData_Server_Character &amp; ServerData)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>该函数就是检测客户端发来的时间戳是否合法,
+并且在检测过程中更新一些属性.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240408113501001.png" /></p>
+<h3
+id="函数servershoulduseauthoritativeposition">函数<code>ServerShouldUseAuthoritativePosition</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If ServerCheckClientError() does not find an error, </span></span><br><span class="line"><span class="comment">// this determines if the server should also copy the client&#x27;s movement params rather than keep the server sim result.</span></span><br><span class="line"><span class="comment">// 如果校验通过, 该函数决定是否用客户端移动数据覆盖DS数据.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="type">bool</span> <span class="title">ServerShouldUseAuthoritativePosition</span><span class="params">(<span class="type">float</span> ClientTimeStamp, <span class="type">float</span> DeltaTime, <span class="type">const</span> FVector&amp; Accel, <span class="type">const</span> FVector&amp; ClientWorldLocation, <span class="type">const</span> FVector&amp; RelativeClientLocation, UPrimitiveComponent* ClientMovementBase, FName ClientBaseBoneName, uint8 ClientMovementMode)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><span style="color:red">一般情况, 如果客户端移动通过校验,
+应该使用主端移动信息, 这样防止移动误差积累造成的拉扯.</span></p>
+<ol type="1">
+<li>主动要求DS接受主端移动数据,
+关键变量:<code>UCharacterMovementComponent.bServerAcceptClientAuthoritativePosition</code>.</li>
+<li>配置默认要求DS接受主端移动数据, 相关变量:<a
+href="#ClientAuthorativePosition"><code>AGameNetworkManager.ClientAuthorativePosition</code></a></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240411100812450-1712801294190-1.png" /></p>
+<h3 id="函数simulaterootmotion">函数<code>SimulateRootMotion</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Simulate Root Motion physics on Simulated Proxies */</span></span><br><span class="line"><span class="comment">// 模拟端模拟RootMotion行为</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">SimulateRootMotion</span><span class="params">(<span class="type">float</span> DeltaSeconds, <span class="type">const</span> FTransform&amp; LocalRootMotionTransform)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422110121907.png" /></p>
+<h3 id="函数smoothcorrection">函数<code>SmoothCorrection</code></h3>
+<h3
+id="函数smoothclientposition_interpolate">函数<code>SmoothClientPosition_Interpolate</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Update interpolation values for client smoothing. Does not change actual mesh location.</span></span><br><span class="line"><span class="comment">//Sets bNetworkSmoothingComplete to true when the interpolation reaches the target.</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">SmoothClientPosition_Interpolate</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="agamenetworkmanager">AGameNetworkManager</h2>
+<h3 id="maxclientupdateinterval">MAXCLIENTUPDATEINTERVAL</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** MAXCLIENTUPDATEINTERVAL is the maximum time between movement updates from the client before the server forces an update. */</span></span><br><span class="line"><span class="comment">// DS端强制执行ForcePositionUpdate的最小时间间隔, 注意这只是执行ForcePositionUpdate限制中的一个.</span></span><br><span class="line"><span class="type">float</span> MAXCLIENTUPDATEINTERVAL;</span><br></pre></td></tr></table></figure>
+<p>执行<code>INetworkPredictionInterface.ForcePositionUpdate</code>的最小时间间隔,
+超过该间隔才能再次执行.</p>
+<figure>
+<img src="./assets/image-20240322211127323.png"
+alt="image-20240322211127323" />
+<figcaption aria-hidden="true">image-20240322211127323</figcaption>
+</figure>
+<p>默认值:0.25</p>
+<figure>
+<img src="./assets/image-20240322211249269.png"
+alt="image-20240322211249269" />
+<figcaption aria-hidden="true">image-20240322211249269</figcaption>
+</figure>
+<h3
+id="maxclientforcedupdateduration">MaxClientForcedUpdateDuration</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** MaxClientForcedUpdateDuration is the maximum time duration over which the server will force updates, after MAXCLIENTUPDATEINTERVAL is initially exceeded. */</span></span><br><span class="line"><span class="comment">// 执行ForcePositionUpdate的最长持续时间, 超过该时间算超时.</span></span><br><span class="line"><span class="type">float</span> MaxClientForcedUpdateDuration;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="./assets/image-20240323114625290.png"
+alt="image-20240323114625290" />
+<figcaption aria-hidden="true">image-20240323114625290</figcaption>
+</figure>
+<p>默认值1.0f</p>
+<figure>
+<img src="./assets/image-20240323114537538.png"
+alt="image-20240323114537538" />
+<figcaption aria-hidden="true">image-20240323114537538</figcaption>
+</figure>
+<h3
+id="serverforcedupdatehitchthreshold">ServerForcedUpdateHitchThreshold</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Ignore forced client movement updates when server hitches for longer than this duration. */</span></span><br><span class="line"><span class="comment">// 卡顿的阈值, 如果一帧的执行时间超过该值, 就将该帧定义为卡顿</span></span><br><span class="line"><span class="type">float</span> ServerForcedUpdateHitchThreshold;</span><br></pre></td></tr></table></figure>
+<p>默认值:0.15</p>
+<figure>
+<img src="./assets/image-20240322205919087.png"
+alt="image-20240322205919087" />
+<figcaption aria-hidden="true">image-20240322205919087</figcaption>
+</figure>
+<p>关键代码:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">float</span> CurrentRealTime = World-&gt;<span class="built_in">GetRealTimeSeconds</span>();</span><br><span class="line"><span class="type">const</span> <span class="type">bool</span> bHitch = (CurrentRealTime - LastMovementUpdateTime) &gt; GameNetworkManager-&gt;ServerForcedUpdateHitchThreshold &amp;&amp; (LastMovementUpdateTime != <span class="number">0</span>);</span><br><span class="line">LastMovementHitch = bHitch ? CurrentRealTime : LastMovementHitch;</span><br><span class="line"><span class="type">const</span> <span class="type">bool</span> bRecentHitch = bHitch || (CurrentRealTime - LastMovementHitch &lt; GameNetworkManager-&gt;ServerForcedUpdateHitchCooldown);</span><br><span class="line">LastMovementUpdateTime = CurrentRealTime;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="./assets/image-20240323112815208.png"
+alt="image-20240323112815208" />
+<figcaption aria-hidden="true">image-20240323112815208</figcaption>
+</figure>
+<h3
+id="serverforcedupdatehitchcooldown">ServerForcedUpdateHitchCooldown</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Ignore forced client movement updates when server hitch was detected within this amount of time in the past. */</span></span><br><span class="line"><span class="comment">// 遇到卡顿后不能立即执行, 需要有CD时间, 该变量就是定义CD时长的.</span></span><br><span class="line"><span class="type">float</span> ServerForcedUpdateHitchCooldown;</span><br></pre></td></tr></table></figure>
+<p>默认值0.1</p>
+<figure>
+<img src="./assets/image-20240322210424034.png"
+alt="image-20240322210424034" />
+<figcaption aria-hidden="true">image-20240322210424034</figcaption>
+</figure>
+<figure>
+<img src="./assets/image-20240323112903754.png"
+alt="image-20240323112903754" />
+<figcaption aria-hidden="true">image-20240323112903754</figcaption>
+</figure>
+<h3
+id="bmovementtimediscrepancydetection">bMovementTimeDiscrepancyDetection</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Whether movement time discrepancy (speed hack) detection is enabled. */</span></span><br><span class="line"><span class="comment">// 是否检测时间差异</span></span><br><span class="line"><span class="type">bool</span> bMovementTimeDiscrepancyDetection;</span><br></pre></td></tr></table></figure>
+<p>只有开启时间差异的检测功能, 才会统计时间差异等信息以及修正等行为.</p>
+<p><img src="./assets/image-20240402155235999.png" /></p>
+<h3 id="maxpositionerrorsquared">MAXPOSITIONERRORSQUARED</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** MAXPOSITIONERRORSQUARED is the square of the max position error that is accepted (not corrected) in net play */</span></span><br><span class="line"><span class="comment">// 能接受的DS和客户端位置的最大差异, 该值为差异距离的平方.</span></span><br><span class="line"><span class="type">float</span> MAXPOSITIONERRORSQUARED;</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="./assets/image-20240410194352517.png"
+alt="image-20240410194352517" />
+<figcaption aria-hidden="true">image-20240410194352517</figcaption>
+</figure>
+<h3 id="clienterrorupdateratelimit">ClientErrorUpdateRateLimit</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Minimum delay between the server sending error corrections to a client, in seconds. */</span></span><br><span class="line"><span class="comment">// DS检测一次移动非法后的CD时间, 在此时间内不进行移动检测.</span></span><br><span class="line"><span class="built_in">float</span> ClientErrorUpdateRateLimit;</span><br></pre></td></tr></table></figure>
+<p>默认为0.</p>
+<figure>
+<img src="./assets/image-20240410202544233.png"
+alt="image-20240410202544233" />
+<figcaption aria-hidden="true">image-20240410202544233</figcaption>
+</figure>
+<h3 id="clientadjustupdatecost">CLIENTADJUSTUPDATECOST</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** CLIENTADJUSTUPDATECOST is the bandwidth cost in bytes of sending a client adjustment update. 180 is greater than the actual cost, but represents a tweaked value reserving enough bandwidth for</span></span><br><span class="line"><span class="comment">other updates sent to the client.  Increase this value to reduce client adjustment update frequency, or if the amount of data sent in the clientadjustment() call increases */</span></span><br><span class="line"><span class="comment">// CLIENTADJUSTUPDATECOST是发送ClientAdjust的带宽消耗的字节数.180比真正消耗要大,但是它代表了一个调整值, 该值保留了足够的带宽发送给客户端.</span></span><br><span class="line"><span class="comment">// 增大该值会减少客户端矫正的频率. 或者增加在clientadjustment()函数调用过程中发送的数据也会</span></span><br><span class="line"><span class="type">float</span> CLIENTADJUSTUPDATECOST;</span><br></pre></td></tr></table></figure>
+<p>默认值180</p>
+<figure>
+<img src="./assets/image-20240410204746407.png"
+alt="image-20240410204746407" />
+<figcaption aria-hidden="true">image-20240410204746407</figcaption>
+</figure>
+<p>根据带宽调整:</p>
+<figure>
+<img src="./assets/image-20240410205902138.png"
+alt="image-20240410205902138" />
+<figcaption aria-hidden="true">image-20240410205902138</figcaption>
+</figure>
+<h3 id="clientauthorativeposition">ClientAuthorativePosition</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If client update is within MAXPOSITIONERRORSQUARED of </span></span><br><span class="line"><span class="comment">// what the server expects then the client is authoritative on it&#x27;s final position</span></span><br><span class="line"><span class="comment">// 如果移动校验通过, DS是否应用客户端移动数据.</span></span><br><span class="line"><span class="type">bool</span> ClientAuthorativePosition;</span><br></pre></td></tr></table></figure>
+<p>默认值为false.
+在函数<code>UCharacterMovementComponent.ServerShouldUseAuthoritativePosition</code>中使用:</p>
+<figure>
+<img src="./assets/image-20240411101712165.png"
+alt="image-20240411101712165" />
+<figcaption aria-hidden="true">image-20240411101712165</figcaption>
+</figure>
+<h3
+id="函数withinupdatedelaybounds">函数<code>WithinUpdateDelayBounds</code></h3>
+<p>DS校验移动失败有CD时间, 即一次失败后一定时间内不进行移动校验,
+但是会进行移动模拟.
+默认情况下<code>AGameNetworkManager.ClientErrorUpdateRateLimit</code>设置为0,
+即没有设置认为的CD时间,
+但是还会根据网络考虑CD时间(<code>AGameNetworkManager.CLIENTADJUSTUPDATECOST/UPlayer.CurrentNetSpeed</code>).</p>
+<ol type="1">
+<li>方法1:根据配置读取CD时间</li>
+<li>方法2:根据带宽调整CD时间</li>
+</ol>
+<p><img src="./assets/image-20240410202617222.png" /></p>
+<h2 id="aplayercontroller">APlayerController</h2>
+<h3 id="lastmovementupdatetime">LastMovementUpdateTime</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Last real time (undilated) recorded in TickActor() when checking for forced client movement updates. */</span></span><br><span class="line"><span class="type">float</span> LastMovementUpdateTime;</span><br></pre></td></tr></table></figure>
+<p>上一次Movement Update时间戳, 从代码上看, 每帧更新.</p>
+<figure>
+<img src="./assets/image-20240322204702118.png"
+alt="image-20240322204702118" />
+<figcaption aria-hidden="true">image-20240322204702118</figcaption>
+</figure>
+<h3 id="lastmovementhitch">LastMovementHitch</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Last real time (undilated) a hitch was detected in TickActor() when checking for forced client movement updates. */</span></span><br><span class="line"><span class="comment">// 上一次卡顿时间戳</span></span><br><span class="line"><span class="type">float</span> LastMovementHitch;</span><br></pre></td></tr></table></figure>
+<p>这段代码可以用于卡顿的计算逻辑.</p>
+<figure>
+<img src="./assets/image-20240323121649190.png"
+alt="image-20240323121649190" />
+<figcaption aria-hidden="true">image-20240323121649190</figcaption>
+</figure>
+<h2 id="actor">Actor</h2>
+<h2 id="breplicatemovement">bReplicateMovement</h2>
+<p>是否同步移动相关信息. 在Actor进行Replication的时候,
+会调用<code>PreReplication</code>,
+如果开启了<code>ReplicatingMovement</code>, 则会收集当前移动信息,
+进行同步.</p>
+<p>收集移动信息, 关键函数<code>AActor::GatherCurrentMovement</code>:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240430174455324.png" /></p>
+<p>堆栈:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240430174328721.png" /></p>
+<h2 id="replicatedmovement">ReplicatedMovement</h2>
+<p>网络同步的基础移动信息.</p>
+<h2 id="acharacter">ACharacter</h2>
+<h3 id="fbasedmovementinfo">FBasedMovementInfo</h3>
+<h3 id="replicatedmovementmode">ReplicatedMovementMode</h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CharacterMovement MovementMode (and custom mode) replicated for simulated proxies. </span></span><br><span class="line"><span class="comment">// Use CharacterMovementComponent::UnpackNetworkMovementMode() to translate it.</span></span><br><span class="line"><span class="comment">// 使用ReplicatedMovementMode将MovementMode传输给模拟端.</span></span><br><span class="line"><span class="comment">// 使用CharacterMovementComponent::UnpackNetworkMovementMode()解码</span></span><br><span class="line">uint8 ReplicatedMovementMode;</span><br></pre></td></tr></table></figure>
+<p>在传输<code>MovementMode</code>的时候使用<code>uint8</code>类型数据进行传输.</p>
+<ol type="1">
+<li><code>PackedMovementModeConstants.GroundShift</code>值为4</li>
+<li><code>PackedMovementModeConstants.CustomModeThr</code>值为<span
+class="math inline">\(2^5\)</span></li>
+</ol>
+<p>如果为非<code>MOVE_Custom</code>类型</p>
+<ol type="1">
+<li><p>第1-4位: 为零</p></li>
+<li><p>第4位为1, 表明是是否为地面移动类型,
+<code>MOVE_Walking</code>和<code>MOVE_NavWalking</code>都是地表移动类型.</p></li>
+<li><p>第5-8位: 表示<code>EMovementMode</code>具体类型</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422100734031.png" /></p>
+<p>如果为<code>MOVE_Custom</code>类型,
+肯定不小于<code>PackedMovementModeConstants::CustomModeThr</code>.
+其数值为:<code>UCharacterMovementComponent.CustomMovementMode</code>+<code>PackedMovementModeConstants::CustomModeThr</code></p>
+<p>具体代码:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422095923608.png" /></p>
+<p>Unpack代码:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422100938526.png" /></p>
+<h3
+id="replicatedserverlasttransformupdatetimestamp">ReplicatedServerLastTransformUpdateTimeStamp</h3>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** CharacterMovement ServerLastTransformUpdateTimeStamp value, replicated to simulated proxies. */</span></span><br><span class="line"><span class="comment">// DS上, CharacterMovement上一次更新Transform的时间戳, 并且会Replicated到模拟端</span></span><br><span class="line"><span class="built_in">float</span> ReplicatedServerLastTransformUpdateTimeStamp;</span><br></pre></td></tr></table></figure>
+<p>如果<code>UCharacterMovementComponent.bNetworkAlwaysReplicateTransformUpdateTimestamp</code>设置为1,
+或者<code>CharacterMovement-&gt;NetworkSmoothingMode == ENetworkSmoothingMode::Linear</code>,
+则会将DS上Transform最后一次更新Replicated到模拟端. 否则将其设置为0.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240423095819330.png" /></p>
+<h3 id="reprootmotion">RepRootMotion</h3>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Replicated Root Motion montage */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="type">FRepRootMotionMontage</span> RepRootMotion;</span><br></pre></td></tr></table></figure>
+<h3
+id="函数simulatedrootmotionpositionfixup">函数<code>SimulatedRootMotionPositionFixup</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Position fix up for Simulated Proxies playing Root Motion */</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">SimulatedRootMotionPositionFixup</span><span class="params">(<span class="type">float</span> DeltaSeconds)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>模拟端正在进行RootMotion模拟, 当DS RootMotion数据到来时,
+会根据时间差, 修正当前RootMotion状态. 主要思路为:<span
+style="color:red">在DS传输来的RootMotion数据中,
+找到之前的(比当前执行的时间点早)和当前执行的Montage最接近的RootMotion进行比较,
+根据Montage执行的位置差(DeltaPosition)对模拟端Montage进行修正.</span></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422120748171.png" /></p>
+<h3
+id="函数findrootmotionrepmove">函数<code>FindRootMotionRepMove</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Find usable root motion replicated move from our buffer.</span></span><br><span class="line"><span class="comment"> * Goes through the buffer back in time, to find the first move that clears &#x27;CanUseRootMotionRepMove&#x27; below.</span></span><br><span class="line"><span class="comment"> * Returns index of that move or INDEX_NONE otherwise.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">int32 <span class="title">FindRootMotionRepMove</span><span class="params">(<span class="type">const</span> FAnimMontageInstance&amp; ClientMontageInstance)</span> <span class="type">const</span></span>;</span><br></pre></td></tr></table></figure>
+<p>DS
+Replication过来的<code>RootMotion</code>会存储在一个数组<code>ACharacter.RootMotionRepMoves</code>中,
+并记录接收到的时间戳. 然后根据规则找到一个可用的RootMotion进行修正重置,
+然后Replay.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422122109392.png" /></p>
+<h3
+id="函数canuserootmotionrepmove">函数<code>CanUseRootMotionRepMove</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** True if buffered move is usable to teleport client back to. */</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">CanUseRootMotionRepMove</span><span class="params">(<span class="type">const</span> FSimulatedRootMotionReplicatedMove&amp; RootMotionRepMove, <span class="type">const</span> FAnimMontageInstance&amp; ClientMontageInstance)</span> <span class="type">const</span></span>;</span><br></pre></td></tr></table></figure>
+<p>找到比当前模拟端执行时间早,
+但是又符合一定条件(忽略过时的<code>RootMotion</code>,
+目前0.5s过期)的<code>RootMotion</code>, 并返回其<code>Index</code>.</p>
+<ol type="1">
+<li>过期RootMotionRep数据不能使用.</li>
+<li>客户端先行与DS.</li>
+<li>必须在同一个MontageSection.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422122525831.png" /></p>
+<h3
+id="函数restorereplicatedmove">函数<code>RestoreReplicatedMove</code></h3>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Restore actor to an old buffered move. */</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">RestoreReplicatedMove</span><span class="params">(<span class="type">const</span> FSimulatedRootMotionReplicatedMove&amp; RootMotionRepMove)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>将客户端重置为DS Replication过来的RootMotion的位置和旋转,
+并且设置其Base信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422122749314.png" /></p>
+<h1 id="交互流程">交互流程</h1>
+<h2 id="交互流程图">交互流程图</h2>
+<p>其中特别关键的函数(<strong>移动优化相关</strong>)已经用红色标注出来了.</p>
+<p>主端向DS发送RPC:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/ReplicateMoveToServer-Detail.drawio.png" /></p>
+<p>DS向主端发送RPC:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/DSRPCToAutonomous.png" /></p>
+<h2 id="主端">主端</h2>
+<h3 id="主端收集移动数据">主端收集移动数据</h3>
+<p>收集每次移动前后的速度,位置等信息, 发送给DS.</p>
+<figure>
+<img src="./assets/image-20240322101645342.png"
+alt="image-20240322101645342" />
+<figcaption aria-hidden="true">image-20240322101645342</figcaption>
+</figure>
+<p>将收集的Move信息放入PendingMove中, 将PendingMove的信息RPC给DS后,
+将Move信息放入SavedMove中, 收到Ack后将对应的Move信息放入FreeMoves中,
+等待下次重复使用. 根据以上流程可以看出, 其中关键在于收集Move信息,
+其他的都是根据流程将Move信息进行转移, 变换.
+下面详细分析收集的move信息都是什么, 以及他们是怎么使用的.</p>
+<p><code>FNetworkPredictionData_Client_Character</code>相当于一个管理器,
+管理所有Move信息, 而真正Move的信息存储在<code>FSavedMovePtr</code>中,
+即<code>FSavedMove_Character</code>.
+可以看到<code>FSavedMove_Character</code>成员很多,
+但是其中关键的大致分成三类: <code>StartXXX</code>,
+<code>SavedXXX</code>, <code>EndXXX</code>.
+这些放到主端合并移动包来讲.</p>
+<p><code>ReplicateMoveToServer</code>流程(关键函数<code>UCharacterMovementComponent.ReplicateMoveToServer</code>):</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/ReplicateMoveToServer-Detail.drawio.png" /></p>
+<p>简单版:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240401113731997.png" /></p>
+<h3 id="主端合并移动包并延迟发包">主端合并移动包并延迟发包</h3>
+<p>如果每帧的移动信息都发送给DS, 那么将会有很多冗余信息,
+这样会增加很多没必要的流量消耗(PacketHeader, BunchHeader等).
+那么我们能不能将其中某些连续的移动包合并呢?</p>
+<p>可以的, UE也提供相关函数:</p>
+<ol type="1">
+<li>能否延迟发包:<code>UCharacterMovementComponent.CanDelaySendingMove</code></li>
+<li>能够将移动包合并:<code>FSavedMove_Character.CanCombineWith</code></li>
+</ol>
+<h3 id="根据时间戳延迟发包">根据时间戳延迟发包</h3>
+<p>关键函数:
+<code>UCharacterMovementComponent.CanDelaySendingMove</code></p>
+<figure>
+<img src="./assets/image-20240321165915206.png"
+alt="image-20240321165915206" />
+<figcaption aria-hidden="true">image-20240321165915206</figcaption>
+</figure>
+<h3 id="合并规则">合并规则</h3>
+<p>是否可以合并的关键函数:
+<code>FSavedMove_Character.CanCombineWith</code>.
+其核心是两个<code>FSavedMove_Character</code>是否能合并为一个,
+如果可以合并则会将结果写入<code>FNetworkPredictionData_Client_Character.PendingMove</code>中.</p>
+<p>下面分析不能合并的几种情况:</p>
+<h4 id="root-motion-source-containing类型不能合并">Root motion
+source-containing类型不能合并</h4>
+<p><strong>Root motion source-containing类型的move不能合并.</strong></p>
+<figure>
+<img src="./assets/image-20240103100318660.png"
+alt="image-20240103100318660" />
+<figcaption aria-hidden="true">image-20240103100318660</figcaption>
+</figure>
+<h4 id="animrootmotion不能合并">AnimRootMotion不能合并</h4>
+<p><strong>包含AnimRootMotion的Move不能合并</strong></p>
+<figure>
+<img src="./assets/image-20240103100455079.png"
+alt="image-20240103100455079" />
+<figcaption aria-hidden="true">image-20240103100455079</figcaption>
+</figure>
+<h4 id="launchvelocity不能合并">LaunchVelocity不能合并</h4>
+<p><strong>包含LaunchVelocity的move不能合并.</strong></p>
+<figure>
+<img src="./assets/image-20240103100542830.png"
+alt="image-20240103100542830" />
+<figcaption aria-hidden="true">image-20240103100542830</figcaption>
+</figure>
+<h4 id="triggeroverlap不能合并">TriggerOverlap不能合并</h4>
+<p><strong>包含TriggerOverlap的Move不能合并.</strong>
+因为当回撤或者回放时候会重新触发<code>overlap</code>.</p>
+<figure>
+<img src="./assets/image-20240103100727735.png"
+alt="image-20240103100727735" />
+<figcaption aria-hidden="true">image-20240103100727735</figcaption>
+</figure>
+<h4
+id="初始速度或者最终速度为0的情况不能合并">初始速度或者最终速度为0的情况不能合并</h4>
+<p><strong>速度从0开始, 或者变为0的Move都不能合并.</strong>
+这条表明关键节点的<code>Move</code>不能合并.</p>
+<figure>
+<img src="./assets/image-20240103100934397.png"
+alt="image-20240103100934397" />
+<figcaption aria-hidden="true">image-20240103100934397</figcaption>
+</figure>
+<h4 id="movementmode发生变化不能合并">MovementMode发生变化不能合并</h4>
+<p>当MovementMode发生变化的时候, 不能合并.</p>
+<figure>
+<img src="./assets/image-20240103101303930.png"
+alt="image-20240103101303930" />
+<figcaption aria-hidden="true">image-20240103101303930</figcaption>
+</figure>
+<h4 id="bpressedjump不能合并">bPressedJump不能合并</h4>
+<p>带有<code>Jump</code>的move不允许合并.</p>
+<figure>
+<img src="./assets/image-20240103101556832.png"
+alt="image-20240103101556832" />
+<figcaption aria-hidden="true">image-20240103101556832</figcaption>
+</figure>
+<h4
+id="boldtimestampbeforereset不能合并">bOldTimeStampBeforeReset不能合并</h4>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** If true this move is using an old TimeStamp, before a reset occurred. */</span></span><br><span class="line"><span class="built_in">uint32</span> bOldTimeStampBeforeReset:<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>如果<code>CurrentTimeStamp</code>超过了<code>UCharacterMovementComponent.MinTimeBetweenTimeStampResets</code>会将其限制在[0,
+<code>UCharacterMovementComponent.MinTimeBetweenTimeStampResets</code>]之间.
+与此同时, 将<code>bOldTimeStampBeforeReset</code>设置为true,
+表示<code>CurrentTimeStamp</code>已经Reset过了.
+并且不能<code>CombineMove</code>.</p>
+<h4 id="ds矫正客户端位置时-那时的位置信息不能合并">DS矫正客户端位置时,
+那时的位置信息不能合并</h4>
+<p>关键函数<code>ClientUpdatePositionAfterServerUpdate</code>.
+客户端收到DS矫正RPC(<code>ClientAdjustPosition_Implementation</code>)后会进行移动重放,
+此时如果有PendingMove, 则它不能被合并,
+即该PendingMove所记录的移动信息很关键.</p>
+<figure>
+<img src="./assets/image-20240321114543106.png"
+alt="image-20240321114543106" />
+<figcaption aria-hidden="true">image-20240321114543106</figcaption>
+</figure>
+<h3 id="合并逻辑">合并逻辑</h3>
+<p>合并的关键函数:<code>UCharacterMovementComponent.ReplicateMoveToServer</code>.</p>
+<p><strong>合并流程: </strong>可以清晰的看到,
+合并逻辑是将Character恢复到PendingMove前的状态(位置,速度, 奔跑跳爬等,
+<span style="color:red;">注意,
+加速度使用当前帧而不是使用之前Move的Acceleration</span>),
+然后将Delta时间累计, 重新计算此次移动.
+相当于回滚了PendingMove的移动行为,
+然后根据将PendingMove和此次的移动合并, 重新执行. <span
+style="color:red;">注意: 不是移动结果的叠加, 而是恢复移动前的状态,
+累计Delta时间, 然后重新做一次移动. 切记切结,
+是重新做了一个加长版DeltaTime的移动, 而不是多次移动的叠加.
+是把PendingMove合并到NewMove上, 并用NewMove替代PendingMove.</span></p>
+<p>关键函数:<a href="#函数%60PrepMoveFor%60">PrepMoveFor</a>,<a
+href="#函数%60CombineWith%60">CombineWith</a>, <a
+href="#函数%60SetMoveFor%60">SetMoveFor</a>, <a
+href="#函数%60SetInitialPosition%60">SetInitialPosition</a>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240416170607914.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240328112137481.png" /></p>
+<p>可以看到<code>FSavedMove_Character</code>成员很多,
+但是其中关键的大致分成三类: <code>StartXXX</code>,
+<code>SavedXXX</code>, <code>EndXXX</code>.
+<code>FSavedMove_Character</code>记录了一帧执行的两部分数据,
+帧开始的时候速度,位置等信息, 帧结束时候的速度,位置等信息,
+以及帧执行时间(DeltaTime)等额外信息.</p>
+<ol type="1">
+<li>帧开始的相关信息用<code>StartXXX</code>存储.</li>
+<li>帧结束时<code>Characte</code>r速度,
+位置等相关信息用<code>SavedXXX</code>存储.</li>
+<li>帧结束时<code>CharacterMovement UpdateComponent</code>
+<code>AttachParent</code>,<code>AttachedSocket</code>相对位置和相对旋转的信息用<code>EndXXX</code>存储.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240321164025573.png" /></p>
+<p>帧开始的相关信息用<code>StartXXX</code>存储.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240321175945720.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240321180031913.png" /></p>
+<p>帧结束时<code>Characte</code>r速度,
+位置等相关信息用<code>SavedXXX</code>存储.帧结束时<code>CharacterMovement UpdateComponent</code>
+<code>AttachParent</code>,<code>AttachedSocket</code>相对位置和相对旋转的信息用<code>EndXXX</code>存储.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240321175906269.png" /></p>
+<h3 id="重中之重"><strong>重中之重</strong></h3>
+<p><span style="color:red;">合并规则:
+首先提取<code>PendingMove</code>的速度, 位置和加速度等信息,
+将其设置到Character上, 然后合并Delta时间,
+让character一次性全部执行该时间,
+将执行后的速度位置等信息记录下来放入新的<code>CharacterMove</code>中,
+并以此替换<code>PendingMove</code>.</span></p>
+<p><span style="color:red;">注意: 不是移动结果的叠加,
+而是恢复移动前的状态, 累计Delta时间, 然后重新做一次移动. 切记切结,
+是重新做了一个加长版DeltaTime的移动, 而不是多次移动的叠加.</span></p>
+<figure>
+<img src="./assets/image-20240322120034401.png"
+alt="image-20240322120034401" />
+<figcaption aria-hidden="true">image-20240322120034401</figcaption>
+</figure>
+<figure>
+<img src="./assets/image-20240322121948319.png"
+alt="image-20240322121948319" />
+<figcaption aria-hidden="true">image-20240322121948319</figcaption>
+</figure>
+<h3 id="主端发送移动数据">主端发送移动数据</h3>
+<p>在函数<code>ReplicateMoveToServer</code>中,
+会调用各种函数将数据RPC给DS.
+包括<code>ServerMoveOld</code>,<code>ServerMovePacked_ClientSend</code>,
+<code>ServerMoveDualHybridRootMotion</code>,
+<code>ServerMoveDual</code>, <code>ServerMove</code>.
+ReplicationMovement</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/ReplicateMoveToServer-Detail121.png" /></p>
+<p>发送函数都使用红框标出来了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240327212102475.png" /></p>
+<p>这些函数中, 主要向DS发送的数据为:</p>
+<ol type="1">
+<li>TimeStamp: 客户端时间戳</li>
+<li>Acceleration: 客户端加速度</li>
+<li>SendLocation: 客户端位置</li>
+<li>ClientRollBYTE: 客户端Roll</li>
+<li>ClientYawPitchINT: 客户端Yaw和Pitch</li>
+<li>ClientMovementBase:客户端Base</li>
+<li>ClientBaseBone: 客户端BaseBone</li>
+<li>EndPackedMovementMode: 客户端MovementMode</li>
+</ol>
+<figure>
+<img src="./assets/image-20240327212537695.png"
+alt="image-20240327212537695" />
+<figcaption aria-hidden="true">image-20240327212537695</figcaption>
+</figure>
+<h3 id="主端矫正">主端矫正</h3>
+<p>详见:<strong>矫正位置</strong><a
+href="#ClientAdjustPosition_Implementation">ClientAdjustPosition_Implementation</a>和<strong>重放详解</strong>(<a
+href="#ClientUpdatePositionAfterServerUpdate">ClientUpdatePositionAfterServerUpdate</a>)</p>
+<h2 id="ds">DS</h2>
+<p><span style="color:red">DS只接受客户端输入的时间,
+根据时间进行自主模拟. 将模拟的结果和客户端输入的信息进行比较,
+最终得到纠正信息. 注意;时间也会有各种检测. </span>
+根据Delta时间强制(ForceUpdatePosition)或者被动(ServerMove)进行移动,
+然后校验客户端发来的位置等信息是否合法.
+关键函数<code>ServerMove_Implementation</code>.
+将客户端和DS移动的结果进行对比,
+把对比结果写入<code>FNetworkPredictionData_Server_Character.PendingAdjustment</code>中.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/DSMoveInfo.png" /></p>
+<h3 id="ds强制移动">DS强制移动</h3>
+<p>DS会强制移动(ForceUpdatePosition)或者被动移动(ServerMove).
+根据DeltaTime进行<code>UCharacterMovementComponent.MoveAutonomous</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240401195534967.png" /></p>
+<p>函数<code>UCharacterMovementComponent::ServerMoveHandleClientError</code>主要作用是对比客户端和DS移动数据的差异,
+并将差异结果写入<code>FNetworkPredictionData_Server_Character.PendingAdjustment</code>中.</p>
+<h3 id="ds校验客户端发来的时间">DS校验客户端发来的时间</h3>
+<p>所有时间校验逻辑都在函数<a
+href="#函数%20%60VerifyClientTimeStamp%60"><code>UCharacterMovementComponent.VerifyClientTimeStamp</code></a>中.
+其检测时间戳的核心是, 必须符合环形增长的逻辑, 即从0增长到最大,然后归零,
+以此循环.
+并且增长的区间必须小于<code>MinTimeBetweenTimeStampResets</code>的一半.</p>
+<h3 id="ds执行移动逻辑">DS执行移动逻辑</h3>
+<p>DS只接受客户端发来的时间, 然后进行自主模拟,
+将模拟的结果和客户端发来的结果进行对比.
+关键函数:<code>UCharacterMovementComponent.MoveAutonomous</code>.</p>
+<h3 id="ds校验客户端发来的移动信息">DS校验客户端发来的移动信息</h3>
+<p>核心函数<code>UCharacterMovementComponent.ServerMoveHandleClientError</code>和<code>UCharacterMovementComponent.ServerCheckClientError</code>.</p>
+<ol type="1">
+<li>对于一次发来的两个移动包, 第一个不进行校验.</li>
+<li>一次校验失败后, 会有CD, 防止连续拉回.</li>
+<li>针对特殊情况(客户端执行一些超速移动行为), 为了客户端表现,
+可以直接跳过校验, 认为成功.</li>
+<li>如果忽略检测, 则直接返回false, 即校验结果合法, 没有错误.</li>
+</ol>
+<p><strong>对于一次发来的两个移动包, 第一个不进行校验.</strong></p>
+<figure>
+<img src="./assets/image-20240410194659683.png"
+alt="image-20240410194659683" />
+<figcaption aria-hidden="true">image-20240410194659683</figcaption>
+</figure>
+<p><strong>不能连续校验. 如果每次都错了, 每次都直接拉回, 体验会很差,
+每次校验失败后有CD, 这个CD之后才能继续校验,
+但是移动的模拟还要每次都执行.</strong>
+关键函数:<code>AGameNetworkManager.WithinUpdateDelayBounds</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240410202136004.png" /></p>
+<p>如果忽略检测, 则直接返回false, 即校验结果合法, 没有错误.</p>
+<p><img src="./assets/image-20240410193901879.png" /></p>
+<p>检测位置信息.</p>
+<p><img src="./assets/image-20240410193855038.png" /></p>
+<p>DS和客户端距离差异一定小于阈值:<code>AGameNetworkManager.MAXPOSITIONERRORSQUARED</code>.</p>
+<p><img src="./assets/image-20240410194037258.png" /></p>
+<h3 id="ds-adjustack">DS AdjustAck</h3>
+<p>详见:<strong>矫正位置</strong><a
+href="#ClientAdjustPosition_Implementation">ClientAdjustPosition_Implementation</a>和<strong>重放详解</strong>(<a
+href="#ClientUpdatePositionAfterServerUpdate">ClientUpdatePositionAfterServerUpdate</a>)</p>
+<h3 id="ds-goodack">DS GoodAck</h3>
+<p>如果经过DS校验为GoodMove, 则向客户端发送RPC:
+<code>ClientAckGoodMove</code>. 客户端收到信息后,
+会将ACK的Move信息从SavedMove列表中删除(依据时间戳).</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240408121106591.png" /></p>
+<h3 id="ds发送矫正主端移动信息rpc">DS发送矫正主端移动信息RPC</h3>
+<p><strong>DS纠正客户端位置会向客户端发送RPC(ClientAdjustPosition_Implementation)</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240322160724250.png" /></p>
+<h3 id="ds超时自主模拟">DS超时自主模拟</h3>
+<p>关键函数:
+<code>UCharacterMovementComponent.ForcePositionUpdate</code>.
+<strong>执行限制</strong></p>
+<ol type="1">
+<li>执行<code>ForcePositionUpdate</code>的时间间隔必须大于<code>AGameNetworkManager.MAXCLIENTUPDATEINTERVAL</code></li>
+<li>如果发生卡顿(某一帧执行时间过长), 并且卡顿后还有一段CD,
+二者有任何一个条件不满足都不允许执行.</li>
+<li>是否超时执行, 即<code>ForcePositionUpdate</code>执行有一个区间,
+当执行时间超过该时间后是否还需要继续执行.即如果<code>bForcedUpdateDurationExceeded</code>为false,
+表示没超时, 即使超时了, 但是还需要执行也表示没超时.
+没超时就会继续执行.</li>
+</ol>
+<p><strong>即, 只要满足上述条件, 就会执行.
+需要注意的是每次执行都需要满足上述条件.</strong></p>
+<p><strong>执行<code>ForcePositionUpdate</code>的时间间隔必须大于<code>AGameNetworkManager.MAXCLIENTUPDATEINTERVAL</code></strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240323112400376.png" /></p>
+<p><strong>如果发生卡顿(某一帧执行时间过长,
+参数<code>AGameNetworkManager.ServerForcedUpdateHitchThreshold</code>),
+并且卡顿后还有一段CD(配置:<code>AGameNetworkManager.ServerForcedUpdateHitchCooldown</code>),
+二者有任何一个条件不满足都不允许执行.</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240323112450943.png" /></p>
+<p><strong>关键代码,
+这段代码可以用于卡顿和卡顿CD的计算.(很牛逼的代码)</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">float</span> CurrentRealTime = World-&gt;<span class="built_in">GetRealTimeSeconds</span>();</span><br><span class="line"><span class="type">const</span> <span class="type">bool</span> bHitch = (CurrentRealTime - LastMovementUpdateTime) &gt; GameNetworkManager-&gt;ServerForcedUpdateHitchThreshold &amp;&amp; (LastMovementUpdateTime != <span class="number">0</span>);</span><br><span class="line">LastMovementHitch = bHitch ? CurrentRealTime : LastMovementHitch;</span><br><span class="line"><span class="type">const</span> <span class="type">bool</span> bRecentHitch = bHitch || (CurrentRealTime - LastMovementHitch &lt; GameNetworkManager-&gt;ServerForcedUpdateHitchCooldown);</span><br><span class="line">LastMovementUpdateTime = CurrentRealTime;</span><br></pre></td></tr></table></figure>
+<p><strong>是否超时执行,
+即<code>ForcePositionUpdate</code>执行有一个区间,
+当执行时间超过该时间后是否还需要继续执行.即如果<code>bForcedUpdateDurationExceeded</code>为false,
+表示没超时, 即使超时了, 但是还需要执行也表示没超时.
+没超时就会继续执行.</strong> 详见<a
+href="#bForcedUpdateDurationExceeded">bForcedUpdateDurationExceeded</a></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240323152140667.png" /></p>
+<p>相关堆栈:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240322175529762.png" /></p>
+<h3 id="同步给模拟端">同步给模拟端</h3>
+<p>移动数据分成一下几个部分同步给模拟端:</p>
+<ol type="1">
+<li>ReplicatedMovement</li>
+<li>RepRootMotion</li>
+<li>ReplicatedMovementMode</li>
+<li>ReplicatedBasedMovement</li>
+<li>ReplicatedServerLastTransformUpdateTimeStamp</li>
+</ol>
+<h4 id="replicatedmovement-1">ReplicatedMovement</h4>
+<h4 id="reprootmotion-1">RepRootMotion</h4>
+<h4 id="replicatedmovementmode-1">ReplicatedMovementMode</h4>
+<h4 id="replicatedbasedmovement">ReplicatedBasedMovement</h4>
+<h4
+id="replicatedserverlasttransformupdatetimestamp-1">ReplicatedServerLastTransformUpdateTimeStamp</h4>
+<h2 id="模拟端模拟">模拟端模拟</h2>
+<h3
+id="针对rootmotion的额外处理">针对<code>RootMotion</code>的额外处理</h3>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240430171039642.png" /></p>
+<p>流程图:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240430172804281.png" /></p>
+<h3
+id="针对rootmotionsource的额外处理">针对<code>RootMotionSource</code>的额外处理</h3>
+<h1 id="本地构建测试环境">本地构建测试环境</h1>
+<h2 id="测试移动连续丢包">测试移动连续丢包</h2>
+<h1 id="问">问</h1>
+<h2
+id="如何保证上台阶斜面的移动距离不会缩减">如何保证上台阶/斜面的移动距离不会缩减</h2>
+<p>详见StepUp详解.</p>
+<h2
+id="为什么charactermovement不自己定义rpc-大多使用character身上的">为什么CharacterMovement不自己定义RPC,
+大多使用Character身上的?</h2>
+<p>个人感觉是历史原因, 因为从代码上看, 其性能差异并不大. <span
+style="color:red">在接收时, 由于是Actor自身的属性, 可以直接返回,
+节省了SubObject的处理. 但是在发送的时候没看到有节省的点.</span></p>
+<p>发送RPC堆栈(发送没看到有什么节省的点.):</p>
+<figure>
+<img src="./assets/image-20240329151956536.png"
+alt="image-20240329151956536" />
+<figcaption aria-hidden="true">image-20240329151956536</figcaption>
+</figure>
+<p>接收RPC堆栈:</p>
+<figure>
+<img src="./assets/image-20240329145838825.png"
+alt="image-20240329145838825" />
+<figcaption aria-hidden="true">image-20240329145838825</figcaption>
+</figure>
+<p>如果是Actor自身的属性, 可以直接返回, 节省了SubObject的处理.</p>
+<figure>
+<img src="./assets/image-20240329150334988.png"
+alt="image-20240329150334988" />
+<figcaption aria-hidden="true">image-20240329150334988</figcaption>
+</figure>
+<h2 id="servermoveold是干什么的">ServerMoveOld是干什么的?</h2>
+<p>遍历所有还没Ack的Move, 如果它相对于最后一个LastAckedMove是重要的,
+则需要将其当做OldMove发送. 为了解决丢包问题.</p>
+<p><img src="./assets/image-20240416192524110.png" /></p>
+<p>在<code>UCharacterMovementComponent.CallServerMove</code>调用的时候,
+如果OldMove有效,
+则发送<code>UCharacterMovementComponent.ServerMoveOld</code></p>
+<figure>
+<img src="./assets/image-20240416192046136.png"
+alt="image-20240416192046136" />
+<figcaption aria-hidden="true">image-20240416192046136</figcaption>
+</figure>
+<h2 id="站在地表-如何每次都能保持离地一定高度">站在地表,
+如何每次都能保持离地一定高度?</h2>
+<h1 id="重点">重点</h1>
+<h2
+id="rootmotion之主端向ds发送"><code>RootMotion</code>之主端向DS发送</h2>
+<p><span
+style="color:red">RootMotion和移动数据的同步是分离的.</span></p>
+<p><span style="color:red">DS在移动过程中发现当前动画带有RootMotion,
+会使用RootMotion的位置和当前Delta时间计算速度和加速度, 然后进行移动.
+可以理解成RootMotion覆盖此时人物速度和加速度.
+而附带RootMotion的动画不是移动触发的, 而是技能等其他操作触发的,
+应该由其对应的操作通过RPC发送给DS.
+那会造成主端的移动和动画与DS上的移动和动画不一致吗?
+比如RPC延迟0.3s才到DS? 完全有可能发生, 但是此时应该以DS为准,
+因为你本地网络不好, 不应该进行补偿, 如果进行补偿则需要进行额外校验,
+以及动画的加速执行, 还要考虑模拟端加速, 这样要改动很大,
+具体看项目需求.</span></p>
+<p>如果发现新执行了一个<code>RootMotion</code>(<code>(PendingMove-&gt;RootMotionMontage == NULL) &amp;&amp; (NewMove-&gt;RootMotionMontage != NULL)</code>),
+会调用函数<code>UCharacterMovementComponent.ServerMoveDualHybridRootMotion</code>,
+但是函数中并没有任何关于RootMotion的信息.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422153757768.png" /></p>
+<p>可以看到, DS已经按照当前状态进行本次移动, 并不受主端RootMotion影响.
+只不过在其中执行第一移动的时候忽略RootMotion(即设置<code>ACharacter.bServerMoveIgnoreRootMotion</code>为true).
+表示即使DS当前已经收到RPC了, 但是其实本地DeltaMove是不包含RootMotion的,
+不应该执行RootMotion.
+在代码中表示为不执行<code>UCharacterMovementComponent.TickCharacterPose</code>,
+-&gt;<code>CurrentRootMotion</code>不会被修改,
+最终RootMotion不会影响到速度计算了.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422154103866.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240422155542949.png" /></p>
+<h2 id="碰撞触发handleimpact">碰撞触发<code>HandleImpact</code></h2>
+<p>研究移动的代码的时候,
+可以看到几乎每次碰撞发生时都会调用<code>UCharacterMovementComponent::HandleImpact</code>,
+触发碰撞回调. 那么它是为了什么呢? UE考虑到每次碰撞, 针对不同项目,
+有可能会根据当前碰撞详情, 做出一些行为, 所以特意留有这么一个接口.</p>
+<ol type="1">
+<li>被Blocked了, OwnerCharacter应该如何响应.</li>
+<li>被Blocked了, Agent应该如果响应.</li>
+<li>碰撞对象应该如何响应.</li>
+<li>是否需要应用PhysicsForce.</li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240424105643338.png" /></p>
+<h2 id="移动更新组件updatecomponent">移动更新组件UpdateComponent</h2>
+<p>在移动的过程中, 模型需要一个标志位置/旋转等信息的组件,
+并且该组件可以用于物理检测, 比如各种碰撞查询.
+该组件在UE中使用的是<code>UMovementComponent.UpdatedComponent</code>,
+该类型是一个子类, 针对具体模型(比如Pawn, 载具,
+子弹等)都可以使用不同的碰撞检测类型.</p>
+<p><strong>Pawn使用的<code>CapsuleComponent</code>.</strong></p>
+<p>在<code>ACharacter</code>构造函数中,
+直接将<code>CapsuleComponent</code>作为<code>UpdateComponent</code>使用.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240507100704939.png" /></p>
+<p>在组件<code>UMovementComponent</code>初始化时,
+即在<code>UMovementComponent::InitializeComponent</code>中,
+如果<code>UpdateComponent</code>为空,
+则将<code>Actor</code>的<code>RootComponent</code>作为<code>UpdateComponent</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240507095757289.png" /></p>
+<p><strong>载具使用的是Mesh:</strong></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-2024050709531854612.png" /></p>
+<p><strong>移动过程中碰撞检测关键函数:<code>SafeMovementUpdatedComponent</code>.</strong>
+博客中对该函数有详细解析.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240507102107512.png" /></p>
+<!-- flag of hidden posts -->
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/%E7%A7%BB%E5%8A%A8/" rel="tag"># 移动</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fdcumt.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","width":300,"display":"always","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"utterances","storage":true,"lazyload":true,"nav":null,"activeClass":"utterances"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="重点 碰撞结果的计算都可以根据该表进行.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="碰撞检测备忘录">
+<meta property="og:url" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/index.html">
+<meta property="og:site_name" content="NoBodyNoOne">
+<meta property="og:description" content="重点 碰撞结果的计算都可以根据该表进行.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/assets/image-20240508211257754.png">
+<meta property="article:published_time" content="2024-05-15T02:54:49.003Z">
+<meta property="article:modified_time" content="2024-05-09T06:15:58.229Z">
+<meta property="article:author" content="NoBodyNoOne">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="碰撞检测备忘录">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/assets/image-20240508211257754.png">
+
+
+<link rel="canonical" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/","path":"2024/05/15/UE/移动/碰撞检测备忘录/","title":"碰撞检测备忘录"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>碰撞检测备忘录 | NoBodyNoOne</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NoBodyNoOne</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">白驹过隙</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%87%8D%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">重点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E6%8F%90"><span class="nav-number">2.</span> <span class="nav-text">前提</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%A3%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">使用解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8Etracetype%E7%9A%84%E5%B0%84%E7%BA%BF%E6%A3%80%E6%B5%8B"><span class="nav-number">3.1.</span> <span class="nav-text">基于TraceType的射线检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8Eobjecttype%E7%9A%84%E5%B0%84%E7%BA%BF%E6%A3%80%E6%B5%8B"><span class="nav-number">3.2.</span> <span class="nav-text">基于ObjectType的射线检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8Eprofile%E7%9A%84%E5%B0%84%E7%BA%BF%E6%A3%80%E6%B5%8B"><span class="nav-number">3.3.</span> <span class="nav-text">基于Profile的射线检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84"><span class="nav-number">4.</span> <span class="nav-text">附</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">引用</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">NoBodyNoOne</p>
+  <div class="site-description" itemprop="description">欢迎来到我的世界</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fdcumt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fdcumt" title="知 → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fdcumt" rel="noopener me" target="_blank"><i class="fa zhihu fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="碰撞检测备忘录 | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          碰撞检测备忘录
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:49" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:49+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-09 14:15:58" itemprop="dateModified" datetime="2024-05-09T14:15:58+08:00">2024-05-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/" itemprop="url" rel="index"><span itemprop="name">碰撞检测备忘录</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>661</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="重点">重点</h1>
+<p>碰撞结果的计算都可以根据该表进行.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508211740864.png" /></p>
+<span id="more"></span>
+<h1 id="前提">前提</h1>
+<p>为什么我使用的<code>LineTraceMulti</code>只返回一个对象?</p>
+<p><strong>答案:
+<code>UKismetSystemLibrary.LineTraceMulti</code>函数会返回所有它Overlap的对象,
+并且在检测到第一个Block对象的时候停止.</strong></p>
+<figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Multiline trace will <span class="literal">return</span> all objects that overlap, <span class="keyword">and</span> will <span class="built_in">stop</span> <span class="keyword">the</span> trace when <span class="keyword">it</span> sees <span class="keyword">at</span> least <span class="literal">one</span> blocking hit. In your <span class="keyword">case</span> you’ll probably want <span class="built_in">to</span> use <span class="keyword">a</span> channel other than visibility so that you can have objects that allow <span class="keyword">for</span> bullet penetration <span class="built_in">to</span> be marked <span class="keyword">as</span> overlap instead <span class="keyword">of</span> blocking.</span><br></pre></td></tr></table></figure>
+<h1 id="使用解析">使用解析</h1>
+<p>思考一下下图, 后面都会围绕该如讲解.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508211740864.png" /></p>
+<p>可以将UE的碰撞检测类型分成三种:</p>
+<ol type="1">
+<li><p>基于TraceType的射线检测(注意, 该类型是)</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508202821752.png" /></p></li>
+<li><p>基于ObjectType的射线检测</p></li>
+</ol>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508202432049.png" /></p>
+<ol start="3" type="1">
+<li>基于Profile的射线检测</li>
+</ol>
+<p>​ <img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508202044423.png"
+alt="image-20240508202044423" /></p>
+<h2 id="基于tracetype的射线检测">基于TraceType的射线检测</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">UKismetSystemLibrary::LineTraceSingle</span><span class="params">(<span class="type">const</span> UObject* WorldContextObject, <span class="type">const</span> FVector Start, <span class="type">const</span> FVector End, ETraceTypeQuery TraceChannel, <span class="type">bool</span> bTraceComplex, <span class="type">const</span> TArray&lt;AActor*&gt;&amp; ActorsToIgnore, EDrawDebugTrace::Type DrawDebugType, FHitResult&amp; OutHit, <span class="type">bool</span> bIgnoreSelf, FLinearColor TraceColor, FLinearColor TraceHitColor, <span class="type">float</span> DrawTime)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ECollisionChannel CollisionChannel = UEngineTypes::<span class="built_in">ConvertToCollisionChannel</span>(TraceChannel);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">const</span> FName <span class="title">LineTraceSingleName</span><span class="params">(TEXT(<span class="string">&quot;LineTraceSingle&quot;</span>))</span></span>;</span><br><span class="line">    FCollisionQueryParams Params = <span class="built_in">ConfigureCollisionParams</span>(LineTraceSingleName, bTraceComplex, ActorsToIgnore, bIgnoreSelf, WorldContextObject);</span><br><span class="line"></span><br><span class="line">    UWorld* World = GEngine-&gt;<span class="built_in">GetWorldFromContextObject</span>(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);</span><br><span class="line">    <span class="type">bool</span> <span class="type">const</span> bHit = World ? World-&gt;<span class="built_in">LineTraceSingleByChannel</span>(OutHit, Start, End, CollisionChannel, Params) : <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> ENABLE_DRAW_DEBUG</span></span><br><span class="line">    <span class="built_in">DrawDebugLineTraceSingle</span>(World, Start, End, DrawDebugType, bHit, OutHit, TraceColor, TraceHitColor, DrawTime);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> bHit;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以<code>LineTraceSingle</code>为例,
+其中使用了Trace的类型为<code>ETraceTypeQuery</code>,
+然后UE会将其转换成<code>ECollisionChannel</code>,
+最终调用<code>UWorld.LineTraceSingleByChannel</code>.
+而<code>ECollisionChannel</code>具体类型为:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508203541377.png" /></p>
+<p>而ObjectType和TraceType的区分方式为:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508203638653.png" /></p>
+<p>所以,
+在配置中定义的无论<code>TraceChannels</code>还是<code>ObjectChannels</code>,
+其实都是<code>ECollisionChannel</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508203752110.png" /></p>
+<p><strong>重点:</strong> 可以将LineTrace理解为, 1对所有类型都Block,
+那么Ignore/Overlap/Block与否, 取决于Component本身的Collision配置.
+下图中Cube1配置的是Overlap, 则他们二者最终的结果就是Overlap.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508210944930.png" /></p>
+<p>即:</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508211838584.png" /></p>
+<h2 id="基于objecttype的射线检测">基于ObjectType的射线检测</h2>
+<p>同<code>基于TraceType的射线检测</code>, 这里就不赘述了.</p>
+<h2 id="基于profile的射线检测">基于Profile的射线检测</h2>
+<p>通过传入的Profile, 对场景中的物体进行碰撞检测.</p>
+<p><img src="./assets/image-20240508211257754.png" /></p>
+<p>例如在Profile(<code>TestTraceMulti</code>)中,
+自身类型为<code>1</code>,
+对<code>WorldStatic</code>的检测类型为<code>Overlap</code>.
+而场景中物体对<code>1</code>的碰撞类型为<code>Block</code>,
+则最终结果为<code>Overlap</code></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508211423717.png" /></p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508211635898.png" /></p>
+<p>二者交互类型为<code>Overlap</code>.</p>
+<p><img
+src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-20240508212022023.png" /></p>
+<h2 id="总结">总结</h2>
+<p><strong>使用Profile相当于双向指定,
+所以推荐新增类型都为ObjectType(LineTrace不能双向指定,
+因为Profile类型只能指定为ObjectType). 双向指定可以得到更多可定制的情形,
+可以更好的使用变化的场景.</strong></p>
+<h1 id="附">附</h1>
+<p>将<code>EObjectTypeQuery</code>转换成<code>ECollisionChannel</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ECollisionChannel <span class="title">UEngineTypes::ConvertToCollisionChannel</span><span class="params">(EObjectTypeQuery ObjectType)</span></span></span><br></pre></td></tr></table></figure>
+<p>将<code>ETraceTypeQuery</code>转换成<code>ECollisionChannel</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ECollisionChannel <span class="title">UEngineTypes::ConvertToCollisionChannel</span><span class="params">(ETraceTypeQuery TraceType)</span></span></span><br></pre></td></tr></table></figure>
+<p>将<code>ECollisionChannel</code>转换成<code>EObjectTypeQuery</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">EObjectTypeQuery <span class="title">UEngineTypes::ConvertToObjectType</span><span class="params">(ECollisionChannel CollisionChannel)</span></span></span><br></pre></td></tr></table></figure>
+<p>将<code>ECollisionChannel</code>转换成<code>ETraceTypeQuery</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ETraceTypeQuery <span class="title">UEngineTypes::ConvertToTraceType</span><span class="params">(ECollisionChannel CollisionChannel)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="引用">引用</h1>
+<ol type="1">
+<li><p><a
+target="_blank" rel="noopener" href="https://muyunsoft.com/blog/Unreal4/Basic/CollisionFiltering.html#%E7%A7%BB%E5%8A%A8%E7%89%A9%E4%BD%93%E9%97%B4%E7%9A%84%E7%A2%B0%E6%92%9E">Unreal4碰撞检测-中文版</a></p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://www.unrealengine.com/en-US/blog/collision-filtering">Unreal4碰撞检测-英文版</a></p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://forums.unrealengine.com/t/multi-line-trace-only-returns-one-hit/301989">LineTraceMulti为何只返回一个对象</a></p></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>您的支持将鼓励我持续创作！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="NoBodyNoOne 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="NoBodyNoOne 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E5%A4%87%E5%BF%98%E5%BD%95/" rel="tag"># 碰撞检测备忘录</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%A7%BB%E5%8A%A8/%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B-%E7%BF%BB%E8%AF%91/" rel="prev" title="Geometry Queries(碰撞检测)--翻译">
+                  <i class="fa fa-chevron-left"></i> Geometry Queries(碰撞检测)--翻译
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/Channel%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81/" rel="next" title="Channel的创建和销毁">
+                  Channel的创建和销毁 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2023 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NoBodyNoOne</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">49k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:57</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.8/medium-zoom.min.js" integrity="sha256-7PhEpEWEW0XXQ0k6kQrPKwuoIomz8R8IYyuU1Qew4P8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"ams","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"fdcumt/fdcumt.github.io","issue_term":"title","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
