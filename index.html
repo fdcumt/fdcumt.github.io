@@ -1178,15 +1178,9 @@ id="unetdriver.initialconnecttimeout">UNetDriver.InitialConnectTimeout</h2>
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
+      
 
-      <time title="创建时间：2024-05-15 10:54:54" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-14 14:42:28" itemprop="dateModified" datetime="2024-05-14T14:42:28+08:00">2024-05-14</time>
+      <time title="创建时间：2024-05-15 10:54:54 / 修改时间：14:13:06" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1213,7 +1207,7 @@ id="unetdriver.initialconnecttimeout">UNetDriver.InitialConnectTimeout</h2>
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>652</span>
+      <span>653</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -1237,140 +1231,14 @@ id="withnetsharedserialization是什么">WithNetSharedSerialization是什么</h1
 每当一个属性发生变化都要发给关心该属性的所有Connection,
 如果这些Connection共享一份, 那就可以节省很多内存, 序列化等时间.</p>
 <p>一般与<code>WithNetSerializer</code>组合使用.</p>
-<h1
-id="自定义结构体指定withnetsharedserialization">自定义结构体指定WithNetSharedSerialization</h1>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">USTRUCT</span>()</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">FExampleStruct1</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">GENERATED_USTRUCT_BODY</span>()</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">UPROPERTY</span>()</span><br><span class="line">    int32		ExampleIntProperty;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * @param Ar			FArchive to read or write from.</span></span><br><span class="line"><span class="comment">     * @param Map			PackageMap used to resolve references to UObject*</span></span><br><span class="line"><span class="comment">     * @param bOutSuccess	return value to signify if the serialization was succesfull (if false, an error will be logged by the calling function)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @return return true if the serialization was fully mapped. If false, the property will be considered &#x27;dirty&#x27; and will replicate again on the next update.</span></span><br><span class="line"><span class="comment">     *	This is needed for UActor* properties. If an actor&#x27;s Actorchannel is not fully mapped, properties referencing it must stay dirty.</span></span><br><span class="line"><span class="comment">     *	Note that UPackageMap::SerializeObject returns false if an object is unmapped. Generally, you will want to return false from your ::NetSerialize</span></span><br><span class="line"><span class="comment">     *  if you make any calls to ::SerializeObject that return false.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">NetSerialize</span><span class="params">(FArchive&amp; Ar, <span class="keyword">class</span> UPackageMap* Map, <span class="type">bool</span>&amp; bOutSuccess)</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">TStructOpsTypeTraits</span>&lt; FExampleStruct1 &gt; : <span class="keyword">public</span> TStructOpsTypeTraitsBase2&lt; FExampleStruct1 &gt;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">enum</span></span><br><span class="line">    &#123;</span><br><span class="line">        WithNetSerializer = <span class="literal">true</span>,</span><br><span class="line">        WithNetSharedSerialization = <span class="literal">true</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h1
-id="将withnetsharedserialization映射到estructflagsstruct_netsharedserialization">将<code>WithNetSharedSerialization</code>映射到<code>EStructFlags::STRUCT_NetSharedSerialization</code></h1>
-<h2 id="构建uscriptstruct">构建UScriptStruct</h2>
-<p>在PreInit时候,构建UScriptStruct</p>
-<figure>
-<img
-src="https://pic2.zhimg.com/v2-cfef315c5eff8876f67835ae6016e3f5_r.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2
-id="将withnetsharedserialization属性映射到estructflagsstruct_netsharedserialization">将<code>WithNetSharedSerialization</code>属性映射到<code>EStructFlags::STRUCT_NetSharedSerialization</code></h2>
-<p>构建UScriptStruct, 通过模板, 指定WithNetSharedSerialization属性.</p>
-<figure>
-<img
-src="https://pic3.zhimg.com/v2-48ec703b707632bcd81598c5fd1101a2_r.jpg"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>好了, 到此为止,
-已经将我们指定的WithNetSharedSerialization映射到EStructFlags::STRUCT_NetSharedSerialization上了.
-即UScriptStruct.StructFlags已经包含EStructFlags::STRUCT_NetSharedSerialization属性.</p>
-<h1
-id="将estructflagsstruct_netsharedserialization映射到ereplayoutcmdflagsissharedserialization">将EStructFlags::STRUCT_NetSharedSerialization映射到ERepLayoutCmdFlags::IsSharedSerialization</h1>
-<p>在创建RepLayout时(例如:FRepLayout::InitFromClass),
-设置RepStruct信息.</p>
-<figure>
-<img
-src="https://pic1.zhimg.com/80/v2-67e90a21bb7e3ed3493bc41cd7576958_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>Struct类型为:FStructProperty</p>
-<figure>
-<img
-src="https://pic4.zhimg.com/80/v2-6b80c45dd918f45e347d465f3f4c6867_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>检测Struct-&gt;StructFlags是否包含STRUCT_NetSharedSerialization属性:</p>
-<figure>
-<img
-src="https://pic2.zhimg.com/80/v2-decb6de9ecab69edef5c5eebcd84c179_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>这样,
-就将STRUCT_NetSharedSerialization属性映射成IsSharedSerialization,
-并存储在Cmd.Flags中.</p>
-<figure>
-<img
-src="https://pic3.zhimg.com/80/v2-ff2c24a0bdbbdf12c0341d8b77321d2a_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h1
-id="使用withnetsharedserialization">使用WithNetSharedSerialization</h1>
-<p>通过1-4,已经将WithNetSharedSerialization-&gt;EStructFlags::STRUCT_NetSharedSerialization-&gt;ERepLayoutCmdFlags::IsSharedSerialization的转化讲清楚了,
-并最终存储在Cmd.Flags中.
-这里所说的使用WithNetSharedSerialization其实包括EStructFlags::STRUCT_NetSharedSerialization和ERepLayoutCmdFlags::IsSharedSerialization的使用.</p>
-<h2 id="在序列化时候-优先处理sharedserialization属性">在序列化时候,
-优先处理SharedSerialization属性</h2>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">//序列化流程</span><br><span class="line">--UNetDriver.TickFlush()</span><br><span class="line"> |<span class="string">--UNetDriver.ServerReplicateActors()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string">--UNetDriver.ServerReplicateActors_ProcessPrioritizedActors()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--UActorChannel.ReplicateActor()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.ReplicateProperties()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.ReplicateProperties()</span></span><br><span class="line"><span class="string">            // 优先构建SharedSerialization属性</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.BuildSharedSerialization()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.SendProperties()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.SendProperties_r()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FStructProperty.NetSerializeItem()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FExampleStruct.NetSerialize()</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.SendProperties()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.SendProperties_r()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FStructProperty.NetSerializeItem()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FExampleStruct.NetSerialize()</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.ReplicateCustomDeltaProperties()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FObjectReplicator.SendCustomDeltaProperty()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FNetSerializeCB.SendCustomDeltaProperty()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FRepLayout.SendCustomDeltaProperty()</span></span><br><span class="line"><span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string"> </span>|<span class="string">--FExampleArray.NetDeltaSerialize()</span></span><br></pre></td></tr></table></figure>
-<p>都是在需要序列化时候, 优先构建SharedSerialization属性,
-比如发送RPC和属性同步.</p>
-<figure>
-<img
-src="https://pic4.zhimg.com/80/v2-2f9d36c0ad8d8c09c878772b1b667cbf_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2
-id="一个结构体标记为withnetsharedserialization-会进行sharedserialization吗">一个结构体标记为WithNetSharedSerialization,
-会进行SharedSerialization吗?</h2>
-<p><strong>不会</strong>. 为什么呢?</p>
-<p>只有在FRepLayout.Cmds中的属性,
-才会去判断是否为IsSharedSerialization</p>
-<figure>
-<img
-src="https://pic3.zhimg.com/80/v2-af6619caa4e89ba3ec1b3b82d09c80da_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>一般情况下,
-单独将结构体标记为WithNetSharedSerialization不会有任何效果,
-因为该结构体在构建Replayout时候会被分割成具体的一个个基础类型(float,int,
-byte等), 在检测是否IsSharedSerialization时候, 该属性就丢失了.</p>
-<figure>
-<img
-src="https://pic1.zhimg.com/80/v2-3cf63b34a1e37a5614a387ff676c4860_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<figure>
-<img
-src="https://pic3.zhimg.com/80/v2-5722ce2c228c735d60c526dc4da49aea_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>那么怎么才能不解析一个结构体,
-将该结构体作为一个基础类型放入Cmd中呢?</p>
-<p><strong>标记为:WithNetSerializer就不会进行分割,
-然后整体放入Cmd中.</strong></p>
-<figure>
-<img
-src="https://pic2.zhimg.com/80/v2-cb994ccba1f47db83f8fd964ee978ad1_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>官方示例:</p>
-<figure>
-<img
-src="https://pic1.zhimg.com/80/v2-0783fb4a30a3bce3ccd24120b1d7ef18_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>自己实现的实例:</p>
-<figure>
-<img
-src="https://pic3.zhimg.com/80/v2-ebca7b281e2ab9371d07b16ca032658a_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>结果:</p>
-<figure>
-<img
-src="https://pic3.zhimg.com/80/v2-4659f2a56f398c674dce64beefda360e_1440w.webp"
-alt="img" />
-<figcaption aria-hidden="true">img</figcaption>
-</figure>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-WithNetSharedSerializer%E8%AF%A6%E8%A7%A3/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
