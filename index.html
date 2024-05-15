@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -839,15 +839,9 @@ id="actor开启replicate"><code>Actor</code>开启<code>Replicate</code></h1>
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
+      
 
-      <time title="创建时间：2024-05-15 10:54:54" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-30 19:47:03" itemprop="dateModified" datetime="2024-04-30T19:47:03+08:00">2024-04-30</time>
+      <time title="创建时间：2024-05-15 10:54:54 / 修改时间：11:19:04" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -874,7 +868,7 @@ id="actor开启replicate"><code>Actor</code>开启<code>Replicate</code></h1>
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>282</span>
+      <span>283</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -892,7 +886,8 @@ id="actor开启replicate"><code>Actor</code>开启<code>Replicate</code></h1>
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="动态压缩vector">动态压缩Vector</h1>
+          <span id="more"></span>
+<h1 id="动态压缩vector">动态压缩Vector</h1>
 <p>根据FVector三个分量的最大值, 压缩Vector, 节省带宽. 这里还要注意一点,
 当数值比较大时, 可能压缩后比压缩前占用的bit数量还要大, 即更占用带宽.</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FRepMovement.SerializeQuantizedVector </span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">SerializeQuantizedVector</span><span class="params">(FArchive&amp; Ar, FVector&amp; Vector, EVectorQuantization QuantizationLevel)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Since FRepMovement used to use FVector_NetQuantize100, we&#x27;re allowing enough bits per component</span></span><br><span class="line">    <span class="comment">// regardless of the quantization level so that we can still support at least the same maximum magnitude</span></span><br><span class="line">    <span class="comment">// (2^30 / 100, or ~10 million).</span></span><br><span class="line">    <span class="comment">// This uses no inherent extra bandwidth since we&#x27;re still using the same number of bits to store the</span></span><br><span class="line">    <span class="comment">// bits-per-component value. Of course, larger magnitudes will still use more bandwidth,</span></span><br><span class="line">    <span class="comment">// as has always been the case.</span></span><br><span class="line">    <span class="comment">// 因为FrepMovement使用过FVector_NetQuantize100, 允许每个分量有足够多的bit来忽略量化登记, 所以仍然支持至少同等量级.</span></span><br><span class="line">    <span class="comment">// 他不会使用额外带宽, 因为我们已经使用同等数量的bit来存储每个分量的bit值. 当然, 更大量级将会使用更多带宽.</span></span><br><span class="line">    <span class="keyword">switch</span>(QuantizationLevel)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> EVectorQuantization::RoundTwoDecimals:</span><br><span class="line">        &#123; <span class="comment">// 保留两位小数</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">SerializePackedVector</span>&lt;<span class="number">100</span>, <span class="number">30</span>&gt;(Vector, Ar);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> EVectorQuantization::RoundOneDecimal:</span><br><span class="line">        &#123; <span class="comment">// 保留一位小数</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">SerializePackedVector</span>&lt;<span class="number">10</span>, <span class="number">27</span>&gt;(Vector, Ar);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        &#123; <span class="comment">// 默认不保留小数</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">SerializePackedVector</span>&lt;<span class="number">1</span>, <span class="number">24</span>&gt;(Vector, Ar);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1014,121 +1009,6 @@ id="unetdriver.initialconnecttimeout">UNetDriver.InitialConnectTimeout</h2>
             </div>
           <!--/noindex-->
         
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-%E6%A0%B8%E5%BF%83%E5%85%B3%E9%94%AE%E5%9B%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="NoBodyNoOne">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NoBodyNoOne">
-      <meta itemprop="description" content="欢迎来到我的世界">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | NoBodyNoOne">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/UE%E7%BD%91%E7%BB%9C-%E6%A0%B8%E5%BF%83%E5%85%B3%E9%94%AE%E5%9B%BE/" class="post-title-link" itemprop="url">未命名</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-05-15 10:54:54" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:54+08:00">2024-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-10 15:38:06" itemprop="dateModified" datetime="2024-05-10T15:38:06+08:00">2024-05-10</time>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>37</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>1 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>共享实例</p>
-<figure>
-<img src="./assets/UE4网络-共享实例映射关系.drawio-1715326666034-4.png"
-alt="UE4网络-共享实例映射关系.drawio" />
-<figcaption
-aria-hidden="true">UE4网络-共享实例映射关系.drawio</figcaption>
-</figure>
-<p>Dormancy</p>
-<p><img src="./assets/image-20240510153018874.png" /></p>
-<p>ReplicateActor流程</p>
-<figure>
-<img src="./assets/image-20240510153142508.png"
-alt="image-20240510153142508" />
-<figcaption aria-hidden="true">image-20240510153142508</figcaption>
-</figure>
-<p>Bunch结构</p>
-<figure>
-<img src="./assets/UE4网络-BunchArchetype.drawio.png"
-alt="UE4网络-BunchArchetype.drawio" />
-<figcaption
-aria-hidden="true">UE4网络-BunchArchetype.drawio</figcaption>
-</figure>
-<p>关键结构体共享图</p>
-<p><img
-src="./assets/UE4网络-重中之重-ChangeList+SendingRepState+ReceivingRepState.drawio.png" /></p>
-
       
     </div>
 
@@ -2660,6 +2540,126 @@ src="https://raw.githubusercontent.com/fdcumt/ImageBed/master/image-202307121540
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/RPC%E6%B5%85%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://fdcumt.github.io/2024/05/15/UE/%E7%BD%91%E7%BB%9C/REPNOTIFY_Always%E7%9A%84%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B,%20%E4%B8%80%E6%AC%A1%E5%90%8C%E6%AD%A5%E4%BC%9A%E8%A7%A6%E5%8F%91%E4%B8%A4%E6%AC%A1OnRep/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="NoBodyNoOne">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NoBodyNoOne">
+      <meta itemprop="description" content="欢迎来到我的世界">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | NoBodyNoOne">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/REPNOTIFY_Always%E7%9A%84%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B,%20%E4%B8%80%E6%AC%A1%E5%90%8C%E6%AD%A5%E4%BC%9A%E8%A7%A6%E5%8F%91%E4%B8%A4%E6%AC%A1OnRep/" class="post-title-link" itemprop="url">REPNOTIFY_Always的指针类型, 一次同步会触发两次OnRep</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-05-15 10:54:53" itemprop="dateCreated datePublished" datetime="2024-05-15T10:54:53+08:00">2024-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-04-30 14:39:09" itemprop="dateModified" datetime="2024-04-30T14:39:09+08:00">2024-04-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/" itemprop="url" rel="index"><span itemprop="name">UE</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">UE网络</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/UE/UE%E7%BD%91%E7%BB%9C/Replication/" itemprop="url" rel="index"><span itemprop="name">Replication</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>978</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="前言">前言</h1>
+<p>当指针类型进行OnRep时候, 可能会触发两次. 触发条件为</p>
+<ol type="1">
+<li>该指针成员指向的对象还没有创建, 但是其GUID已经随Bunch发送而来.</li>
+<li>该成员被设置成REPNOTIFY_Always类型.</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2024/05/15/UE/%E7%BD%91%E7%BB%9C/REPNOTIFY_Always%E7%9A%84%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B,%20%E4%B8%80%E6%AC%A1%E5%90%8C%E6%AD%A5%E4%BC%9A%E8%A7%A6%E5%8F%91%E4%B8%A4%E6%AC%A1OnRep/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
